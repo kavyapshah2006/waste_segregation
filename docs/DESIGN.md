@@ -3,6 +3,7 @@
 **Problem statement:** Bharat AI-SoC Challenge, PS2: Edge AI for waste classification and disposal
 **Required stack:** Llama (reasoning/advice) deployed on-device with ExecuTorch, on Arm hardware
 **Status:** Proposal, nothing built yet. All performance figures below are targets to validate on hardware.
+**Primary platform:** Arm Android smartphone (minimal hardware, see [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md)). The Raspberry Pi 5 kiosk is an optional extension using the same models.
 
 ---
 
@@ -125,8 +126,8 @@ The verifier rejects or overwrites `stream`, `bin`, `hazard` and `drop_off` if t
 
 | Layer | Choice | Rationale |
 |---|---|---|
-| Primary hardware | Raspberry Pi 5 (8 GB) + AI HAT+ (Hailo-8L) or AI HAT+ 2 (Hailo-10H) | A smart-bin kiosk is the strongest real-world story; clean NPU (vision) / CPU (Llama) split |
-| Secondary form factor | Android app (Kotlin + ExecuTorch AAR) | Same models and KB; household use; both vision and Llama on ExecuTorch |
+| Primary hardware | Arm Android phone (6 GB+ RAM), Kotlin app + ExecuTorch AAR | No hardware to buy; camera, mic, speaker and screen built in; both vision and Llama on ExecuTorch |
+| Optional extension | Raspberry Pi 5 (8 GB), optionally + AI HAT+ (Hailo) for vision | Smart-bin kiosk story if hardware becomes available; same `.pte` models and KB |
 | LLM | Llama 3.2 1B/3B Instruct, INT4, exported with `export_llm`, XNNPACK + KleidiAI | Meets the mandate; ExecuTorch ≥0.7 enables KleidiAI by default and cites Pi 5 support |
 | Detector | Ultralytics YOLO11n/s → `.hef` (Hailo) or `.pte` (ExecuTorch) | YOLO11 exports to Hailo; YOLO-World/YOLOE cannot be compiled for Hailo, so open-vocab stays on CPU |
 | Open-set fallback | MobileCLIP-S0 via ExecuTorch | Long-tail items without retraining |
@@ -172,14 +173,16 @@ ASR, TTS and translation are separate pipelines from Llama and will be documente
 4. Calibrated uncertainty instead of forced labels.
 5. Honest latency split: instant verdict, streamed explanation.
 6. Six-language offline voice and text.
-7. One core, two form factors (Pi kiosk, Android).
-8. Clearly separated and documented NPU and CPU pipelines.
+7. Runs on a phone people already own, with an optional Pi kiosk using the same core.
+8. Clearly separated and documented vision and Llama pipelines.
 
 ---
 
 ## 9. Risks and open questions (validate in week 1)
 
-- **Llama throughput on Pi 5 via ExecuTorch:** no published figure found. llama.cpp shows roughly 4–7 tok/s for 3B; plan on 1B for the Pi and benchmark on day 1.
+- **Llama throughput on the target phone:** benchmark on day 1; use 1B on 6 GB phones, 3B only on 8 GB+.
+- **Llama throughput on Pi 5 via ExecuTorch (optional kiosk):** no published figure found. llama.cpp shows roughly 4–7 tok/s for 3B; plan on 1B for the Pi.
+- **Arm requirement:** the dev laptop and x86 Android emulators are not Arm; all demos and benchmarks must run on the phone.
 - **AI HAT+ 2:** price sources conflict ($130 vs $200). Its on-NPU LLM support must not be used for Llama, which has to run via ExecuTorch.
 - **India-specific data:** must be collected; budget time for it.
 - **TTS licensing:** MMS voices are non-commercial.
@@ -189,13 +192,13 @@ ASR, TTS and translation are separate pipelines from Llama and will be documente
 
 ## 10. Suggested build order
 
-1. Pi 5 bring-up: ExecuTorch Llama 3.2 1B INT4 running and benchmarked.
-2. YOLO11n baseline on public data → Hailo `.hef`; end-to-end camera → label.
-3. KB v1 (top ~40 items, SWM-2026 streams, English + Hindi) and LED bin output.
+1. Phone bring-up: ExecuTorch Llama 3.2 1B INT4 running in the Android demo app and benchmarked.
+2. YOLO11n baseline on public data → ExecuTorch `.pte`; end-to-end camera → label on the phone.
+3. KB v1 (top ~40 items, SWM-2026 streams, English + Hindi) and full-screen bin-colour output.
 4. Llama grounding, JSON schema, verifier, streaming UI.
 5. Own data collection, attribute head, confidence gate, MobileCLIP fallback.
 6. Voice (ASR/TTS) and remaining languages.
-7. Android app reusing models and KB.
+7. Optional: Pi 5 kiosk reusing models and KB, if hardware is available.
 8. Evaluation runs, technical report, demo video.
 
 ---
