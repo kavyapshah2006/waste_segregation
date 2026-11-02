@@ -137,6 +137,7 @@ The verifier rejects or overwrites `stream`, `bin`, `hazard` and `drop_off` if t
 | TTS | VITS/MMS voices via sherpa-onnx | IndicF5 too heavy for Pi; note MMS voices are CC-BY-NC |
 | Orchestration | Python (FastAPI + WebSocket) on Pi; ExecuTorch C++ Llama runner behind pybind | Fast to build; heavy paths native |
 | UI | Local web app in Chromium kiosk mode; WS2812 LED strip per bin | One UI for touchscreen and physical guidance |
+| Python tooling | uv (`pyproject.toml` + `uv.lock`) | Fast, locked, reproducible environments for laptop, CI and Colab |
 
 ASR, TTS and translation are separate pipelines from Llama and will be documented as such.
 
