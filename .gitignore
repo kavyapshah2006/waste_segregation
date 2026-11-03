@@ -1,0 +1,39 @@
+# Python / uv
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Model artifacts (published as GitHub Release assets, fetched by scripts/download_models.sh)
+*.pte
+*.hef
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.bin
+checkpoints/
+artifacts/
+
+# Datasets (only scripts, label maps and small fixtures are committed)
+data/raw/
+data/processed/
+
+# Evaluation scratch output (committed results live in eval/results/)
+eval/tmp/
+
+# Android / Gradle
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.apk
+*.aab
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

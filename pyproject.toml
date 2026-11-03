@@ -1,0 +1,41 @@
+[project]
+name = "waste-segregation"
+version = "0.1.0"
+description = "On-device waste segregation assistant: vision + Llama on ExecuTorch for Arm devices"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # torch and executorch are pinned together: ExecuTorch 1.5.1 targets torch 2.14.0
+    # (see torch_pin.py in the executorch v1.5.1 tag).
+    "torch==2.14.0",
+    "executorch==1.5.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+# Not an installable package: a workspace of scripts (kb/, models/, data/, eval/).
+package = false
+default-groups = ["dev"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
