@@ -16,13 +16,29 @@ Minimal-hardware plan. The problem statement lists **Arm-based Android smartphon
 
 **Important:** the laptop is x86 (Intel), not Arm. Demos must run on the phone, not on the laptop or an x86 Android emulator, to meet the Arm requirement.
 
+### Borrowed phone
+
+The target Android phone is **borrowed**, so it is only available in sessions. Plan around that:
+
+- **One phone for all benchmarks.** Record its specs once (`docs/DEVICE.md`) and use the same phone for every number in the report.
+- **Batch on-device work.** Prepare builds, `.pte` files and benchmark scripts on the laptop first; use phone time only for installing, running and measuring.
+- **Leave the owner's phone as it was.** Our app lives in its own sandbox; uninstall it and turn off USB debugging after each session if the owner prefers.
+- **Keep it reproducible.** Benchmarks are scripted (`eval/latency/`) so a session can be repeated quickly, or on another borrowed phone if needed.
+
+### iPhone (secondary use only)
+
+An iPhone is not a target device: the brief lists Android phones, Raspberry Pi 5 and Arm Linux devices, and building iOS apps needs macOS + Xcode. It is still useful for:
+
+- **Collecting training photos** of Indian-context waste items (Phase 5).
+- **Filming the demo video** of the Android app in use.
+
 ## Tier 1: Nice to have (cheap or improvised)
 
 | Component | Why | Low-cost substitute |
 |---|---|---|
 | Phone stand or small tripod | Hands-free "kiosk" mode for the demo video | Books, a cardboard stand |
 | Even lighting | Improves accuracy on clear plastic and glass | A desk lamp or window light |
-| Second Android phone (team member's) | Test on a weaker device; show it runs on a range of phones | Borrow one |
+| Second Android phone | Test on a weaker device; show it runs on a range of phones | Borrow one |
 | 4 labelled bins or boxes | Makes the demo video realistic | Cardboard boxes with coloured paper |
 
 ## Tier 2: Optional upgrade (only if hardware becomes available)

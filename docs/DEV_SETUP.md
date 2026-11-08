@@ -27,6 +27,12 @@ Pinned: Python 3.12, `torch==2.14.0` (CPU build), `executorch==1.5.1`. Bump `tor
 
 The phone must be 64-bit Arm with 6 GB+ RAM (see [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md)).
 
+The phone is borrowed, so before each session:
+
+- Have the APK, `.pte` files and benchmark scripts ready on the laptop.
+- Ask the owner before enabling Developer options and USB debugging.
+- At the end, uninstall the app (`adb.exe uninstall <package>`) and turn off USB debugging if the owner prefers.
+
 ## 4. Llama access
 
 Request access to **meta-llama/Llama-3.2-1B-Instruct** (and 3B if the phone has 8 GB+) on Hugging Face and accept the Llama 3.2 Community License. Approval can take time, so do this first.
