@@ -13,6 +13,7 @@ A Kotlin/JVM library with no Android dependencies. The app (WP5) will use it as 
 | `Prompt.kt` | `pipeline/prompt.py` | Llama 3.2 prompt with the prefilled `{"why": "` answer start |
 | `Verify.kt` | `pipeline/verify.py` | JSON extraction and repair, bin/stream/recyclable/compostable/step/unsafe checks |
 | `Assistant.kt` | `pipeline/assistant.py` | Off-topic guard, one short retry, fallback to KB text |
+| `Impact.kt` | `pipeline/impact.py`, `pipeline/education.py` | Scan log summary (repeats within 30 s ignored, streams, estimated kg diverted, streak) and KB-only education cards (did you know, watch out, daily quiz) |
 
 Reading `kb.sqlite` is platform code and not part of `core`: the tests use JDBC, the app will use `android.database.sqlite`. `KbData` holds the loaded rows.
 
@@ -25,7 +26,8 @@ cd android && ./gradlew :core:test
 The test task first builds `kb/build/kb.sqlite` with `uv run python kb/build_kb.py`, then checks:
 
 - every golden fixture in `tests/fixtures/golden/` (verdict, exact prompt text, verified answer);
-- every case in `tests/fixtures/check_cases.json`, the same file the Python tests read.
+- every case in `tests/fixtures/check_cases.json`, the same file the Python tests read;
+- every case in `tests/fixtures/impact/cases.json` (impact summary and education cards).
 
 A change to the Python pipeline that is not mirrored here fails CI (`kotlin-core` job). Needs JDK 17+ and uv. In WSL, if Gradle cannot download its distribution, set `JAVA_TOOL_OPTIONS=-Djava.net.preferIPv4Stack=true` (Java tries IPv6 first and times out there).
 

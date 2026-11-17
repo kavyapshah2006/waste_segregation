@@ -36,6 +36,13 @@ object Json {
             is String -> writeString(out, value)
             is JsonNumber -> out.append(value.text)
             is Int, is Long -> out.append(value.toString())
+            is Double -> {
+                // Python's float repr and Java's agree (shortest round-trip digits) except in
+                // exponent notation, which our values (rates, kg) never reach.
+                val s = value.toString()
+                require(value.isFinite() && 'E' !in s) { "unsupported float $s" }
+                out.append(s)
+            }
             is Map<*, *> -> {
                 out.append('{')
                 var first = true

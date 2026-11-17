@@ -1,0 +1,371 @@
+[
+  {
+    "id": "summary_empty",
+    "kind": "summary",
+    "description": "No scans yet: zeros, no cleaning rate, no streak.",
+    "input": {
+      "scans": [],
+      "now_s": 1794960000
+    },
+    "expected": {
+      "scans": 0,
+      "duplicates_ignored": 0,
+      "by_stream": {
+        "wet": 0,
+        "dry": 0,
+        "sanitary": 0,
+        "special_care": 0
+      },
+      "top_items": [],
+      "diverted_items": 0,
+      "diverted_kg_estimate": 0.0,
+      "needed_cleaning_rate": null,
+      "active_days": 0,
+      "current_streak_days": 0
+    }
+  },
+  {
+    "id": "summary_repeats_within_30s_are_ignored",
+    "kind": "summary",
+    "description": "The bottle at +10 s is a repeat; at +40 s it counts again. The battery is a different item.",
+    "input": {
+      "scans": [
+        {
+          "time_s": 1794960000,
+          "item_id": "pet_bottle"
+        },
+        {
+          "time_s": 1794960005,
+          "item_id": "aa_battery"
+        },
+        {
+          "time_s": 1794960010,
+          "item_id": "pet_bottle"
+        },
+        {
+          "time_s": 1794960040,
+          "item_id": "pet_bottle"
+        }
+      ],
+      "now_s": 1794960100
+    },
+    "expected": {
+      "scans": 3,
+      "duplicates_ignored": 1,
+      "by_stream": {
+        "wet": 0,
+        "dry": 2,
+        "sanitary": 0,
+        "special_care": 1
+      },
+      "top_items": [
+        [
+          "pet_bottle",
+          2
+        ],
+        [
+          "aa_battery",
+          1
+        ]
+      ],
+      "diverted_items": 3,
+      "diverted_kg_estimate": 0.073,
+      "needed_cleaning_rate": 0.0,
+      "active_days": 1,
+      "current_streak_days": 1
+    }
+  },
+  {
+    "id": "summary_mixed_streams_and_diversion",
+    "kind": "summary",
+    "description": "Greasy cardboard becomes wet and compostable (diverted); a diaper and a chips packet are not diverted; a battery goes to e-waste (diverted); a broken bottle stays dry and recyclable.",
+    "input": {
+      "scans": [
+        {
+          "time_s": 1794960000,
+          "item_id": "cardboard_box",
+          "attributes": {
+            "contaminated": true
+          }
+        },
+        {
+          "time_s": 1794960100,
+          "item_id": "diaper"
+        },
+        {
+          "time_s": 1794960200,
+          "item_id": "aa_battery"
+        },
+        {
+          "time_s": 1794960300,
+          "item_id": "chips_packet"
+        },
+        {
+          "time_s": 1794960400,
+          "item_id": "glass_bottle",
+          "attributes": {
+            "broken": true
+          }
+        },
+        {
+          "time_s": 1794960500,
+          "item_id": "chips_packet"
+        }
+      ],
+      "now_s": 1794960600
+    },
+    "expected": {
+      "scans": 6,
+      "duplicates_ignored": 0,
+      "by_stream": {
+        "wet": 1,
+        "dry": 3,
+        "sanitary": 1,
+        "special_care": 1
+      },
+      "top_items": [
+        [
+          "chips_packet",
+          2
+        ],
+        [
+          "aa_battery",
+          1
+        ],
+        [
+          "cardboard_box",
+          1
+        ],
+        [
+          "diaper",
+          1
+        ],
+        [
+          "glass_bottle",
+          1
+        ]
+      ],
+      "diverted_items": 3,
+      "diverted_kg_estimate": 0.523,
+      "needed_cleaning_rate": 0.167,
+      "active_days": 1,
+      "current_streak_days": 1
+    }
+  },
+  {
+    "id": "summary_streak_uses_local_days",
+    "kind": "summary",
+    "description": "Scans at 23:00 and 01:00 IST fall on different local days although the UTC date is the same; three consecutive days ending yesterday give a streak of 3.",
+    "input": {
+      "scans": [
+        {
+          "time_s": 1794767400,
+          "item_id": "newspaper"
+        },
+        {
+          "time_s": 1794873600,
+          "item_id": "newspaper"
+        },
+        {
+          "time_s": 1794880800,
+          "item_id": "pet_bottle"
+        },
+        {
+          "time_s": 1794960000,
+          "item_id": "pet_bottle"
+        }
+      ],
+      "now_s": 1795030000,
+      "tz_offset_minutes": 330
+    },
+    "expected": {
+      "scans": 4,
+      "duplicates_ignored": 0,
+      "by_stream": {
+        "wet": 0,
+        "dry": 4,
+        "sanitary": 0,
+        "special_care": 0
+      },
+      "top_items": [
+        [
+          "newspaper",
+          2
+        ],
+        [
+          "pet_bottle",
+          2
+        ]
+      ],
+      "diverted_items": 4,
+      "diverted_kg_estimate": 0.45,
+      "needed_cleaning_rate": 0.0,
+      "active_days": 3,
+      "current_streak_days": 3
+    }
+  },
+  {
+    "id": "did_you_know_day0_en",
+    "kind": "did_you_know",
+    "description": "Day 0 shows the first item in id order.",
+    "input": {
+      "day": 0,
+      "language": "en"
+    },
+    "expected": {
+      "item_id": "aa_battery",
+      "heading": "Did you know?",
+      "title": "Battery (AA, AAA, button cell)",
+      "text": "Recycling batteries recovers metals like zinc, manganese, nickel and lithium."
+    }
+  },
+  {
+    "id": "did_you_know_day20774_hi",
+    "kind": "did_you_know",
+    "description": "A real day number (2026-11-17), in Hindi.",
+    "input": {
+      "day": 20774,
+      "language": "hi"
+    },
+    "expected": {
+      "item_id": "eggshells",
+      "heading": "क्या आप जानते हैं?",
+      "title": "अंडे के छिलके",
+      "text": "पिसे हुए अंडे के छिलके खाद में कैल्शियम जोड़ते हैं।"
+    }
+  },
+  {
+    "id": "quiz_day0_en",
+    "kind": "quiz",
+    "description": "Quiz options are the city's four bins in stream order.",
+    "input": {
+      "day": 0,
+      "language": "en"
+    },
+    "expected": {
+      "item_id": "blister_pack",
+      "question": "Which bin does Empty medicine blister pack go in?",
+      "options": [
+        {
+          "stream": "wet",
+          "bin": "green",
+          "label": "green (Wet waste)"
+        },
+        {
+          "stream": "dry",
+          "bin": "blue",
+          "label": "blue (Dry waste)"
+        },
+        {
+          "stream": "sanitary",
+          "bin": "red",
+          "label": "red (Sanitary waste)"
+        },
+        {
+          "stream": "special_care",
+          "bin": "black",
+          "label": "black (Special care waste)"
+        }
+      ],
+      "answer": "dry",
+      "explanation": "Blister packs mix plastic and foil, so they are hard to recycle."
+    }
+  },
+  {
+    "id": "quiz_day20774_hi",
+    "kind": "quiz",
+    "description": "Hindi quiz for a real day number.",
+    "input": {
+      "day": 20774,
+      "language": "hi"
+    },
+    "expected": {
+      "item_id": "kulhad",
+      "question": "कुल्हड़ किस डिब्बे में जाएगा?",
+      "options": [
+        {
+          "stream": "wet",
+          "bin": "green",
+          "label": "हरा (गीला कचरा)"
+        },
+        {
+          "stream": "dry",
+          "bin": "blue",
+          "label": "नीला (सूखा कचरा)"
+        },
+        {
+          "stream": "sanitary",
+          "bin": "red",
+          "label": "लाल (सैनिटरी कचरा)"
+        },
+        {
+          "stream": "special_care",
+          "bin": "black",
+          "label": "काला (विशेष देखभाल कचरा)"
+        }
+      ],
+      "answer": "dry",
+      "explanation": "मिट्टी प्राकृतिक है और तोड़ने पर वापस मिट्टी में मिल जाती है।"
+    }
+  },
+  {
+    "id": "watch_out_en",
+    "kind": "watch_out",
+    "description": "Every condition rule with a note becomes a card.",
+    "input": {
+      "language": "en"
+    },
+    "expected": [
+      {
+        "item_id": "cardboard_box",
+        "condition": {
+          "contaminated": true
+        },
+        "title": "Cardboard box",
+        "stream": "wet",
+        "bin": "green",
+        "text": "Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts."
+      },
+      {
+        "item_id": "newspaper",
+        "condition": {
+          "contaminated": true
+        },
+        "title": "Newspaper",
+        "stream": "wet",
+        "bin": "green",
+        "text": "Oily or food-soiled paper cannot be recycled, but it can be composted."
+      }
+    ]
+  },
+  {
+    "id": "watch_out_hi",
+    "kind": "watch_out",
+    "description": "The same cards in Hindi.",
+    "input": {
+      "language": "hi"
+    },
+    "expected": [
+      {
+        "item_id": "cardboard_box",
+        "condition": {
+          "contaminated": true
+        },
+        "title": "गत्ते का डिब्बा",
+        "stream": "wet",
+        "bin": "green",
+        "text": "चिकनाई वाला हिस्सा (जैसे पिज़्ज़ा बॉक्स का तला) रीसायकल नहीं होता; उसे फाड़कर हरे डिब्बे में डालें और साफ़ हिस्सा रीसायकल करें।"
+      },
+      {
+        "item_id": "newspaper",
+        "condition": {
+          "contaminated": true
+        },
+        "title": "अख़बार",
+        "stream": "wet",
+        "bin": "green",
+        "text": "तेल या खाने से गंदा काग़ज़ रीसायकल नहीं होता, लेकिन उसकी खाद बन सकती है।"
+      }
+    ]
+  }
+]

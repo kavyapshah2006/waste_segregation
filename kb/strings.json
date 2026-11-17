@@ -3,7 +3,9 @@
     "off_topic": {
       "en": "I can only help with sorting and disposing of waste.",
       "hi": "मैं सिर्फ़ कचरे को अलग करने और सही तरीके से फेंकने में मदद कर सकता हूँ।"
-    }
+    },
+    "did_you_know": {"en": "Did you know?", "hi": "क्या आप जानते हैं?"},
+    "quiz_which_bin": {"en": "Which bin does {item} go in?", "hi": "{item} किस डिब्बे में जाएगा?"}
   },
   "streams": {
     "wet": {"en": "Wet waste", "hi": "गीला कचरा"},

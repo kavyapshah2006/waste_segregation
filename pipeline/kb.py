@@ -98,6 +98,9 @@ class KnowledgeBase:
     def item(self, item_id: str) -> dict:
         return self._items[item_id]
 
+    def city(self, city_id: str) -> dict:
+        return self._cities[city_id]
+
     def item_for_class(self, detector_class: str) -> str | None:
         return self._classes.get(detector_class)
 

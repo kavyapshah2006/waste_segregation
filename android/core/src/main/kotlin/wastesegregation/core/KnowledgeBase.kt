@@ -104,6 +104,8 @@ class KnowledgeBase(private val data: KbData) {
 
     fun item(itemId: String): Map<String, Any?> = data.items.getValue(itemId)
 
+    fun city(cityId: String): Map<String, Any?> = data.cities.getValue(cityId)
+
     fun itemForClass(detectorClass: String): String? = data.detectorClasses[detectorClass]
 
     /** Item ids whose name or alias matches the text: exact matches first, then partial. */
