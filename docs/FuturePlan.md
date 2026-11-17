@@ -51,7 +51,7 @@ Camera / photo
 | LLM | Llama 3.2 1B Instruct, INT4, ExecuTorch, XNNPACK (KleidiAI). 3B only if the phone has 8 GB+ and benchmarks allow |
 | Decision logic | Disposal stream, bin, hazards and drop-off come from the knowledge base, never from Llama |
 | Regulation | India's Solid Waste Management Rules 2026: wet, dry, sanitary, special care |
-| Detector | **Ultralytics YOLO26n**, exported with `format="executorch"`, NMS-free head. *Supersedes YOLO11n in DESIGN.md and roadmap.md* |
+| Detector | **Ultralytics YOLO26n** (8.4.202), exported with `format="executorch"`. The exporter drops YOLO26's NMS-free head, so the `.pte` outputs raw `(1, 4 + classes, 8400)` predictions and **NMS runs in post-processing** (`pipeline/detect.py`, then the app). *Supersedes YOLO11n in DESIGN.md and roadmap.md* |
 | Licence | Repo is released under **AGPL-3.0** at submission, because Ultralytics code and trained weights are AGPL-3.0. *New since DESIGN.md* |
 | App | Kotlin, Jetpack Compose, CameraX, `org.pytorch:executorch-android` |
 | Python | uv only (`uv add`, `uv run`, `uv sync --locked`). Python 3.12. `torch==2.14.0` + `executorch==1.5.1` move together |
@@ -145,6 +145,7 @@ Rules:
 ```json
 {
   "item_id": "pet_bottle",
+  "detector_class": "pet_bottle",
   "confidence": 0.91,
   "bbox": [0.12, 0.30, 0.45, 0.80],
   "attributes": {"contaminated": false, "broken": false},
@@ -153,6 +154,7 @@ Rules:
 ```
 
 - `bbox` is `[x1, y1, x2, y2]` normalised to 0–1.
+- `detector_class` is the model's class name; `item_id` is set only when that name is a KB item in `data/taxonomy.yaml`.
 - `source` is `detector`, `clip_fallback` or `user_typed`.
 - Below the confidence gate the record is replaced by `{"item_id": null, "reason": "low_confidence"}` and the UI asks the user to reframe, show the label, or type the item.
 
@@ -280,13 +282,13 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 
 - **Goal:** a YOLO26n detector for our classes, exported to `.pte`, verified on host.
 - **Depends on:** WP2 (class list). **Human:** Colab run.
-- **Create:** `data/taxonomy.yaml`, `data/scripts/{download,remap,split}.py`, `models/vision/train.ipynb`, `models/vision/export_executorch.py`, `models/vision/README.md`, `tests/test_taxonomy.py`.
+- **Create:** `data/taxonomy.yaml`, `data/scripts/download_taco.py`, `data/scripts/prepare.py`, `models/vision/{train.py,train.ipynb,export_executorch.py,README.md}`, `pipeline/detect.py`, tests.
 - **Steps:**
-  1. `taxonomy.yaml`: 30–40 classes, each mapped to a KB item id, plus a mapping from TACO, TrashNet, Garbage Dataset (2026) and Roboflow e-waste labels. Record each dataset's licence; drop non-commercial sets from anything shipped.
-  2. Data scripts produce a YOLO-format dataset with a fixed train/val/test split (seeded).
-  3. Notebook trains `yolo26n.pt` on Colab (Ultralytics installed there with `uv pip install --system ultralytics`), logs mAP per class, saves weights to a GitHub Release.
-  4. Export: `model.export(format="executorch", nms=False, imgsz=640)`; if latency is too high, also export at 480 and 320.
-  5. Host check: load the `.pte` with `executorch.runtime`, run on fixture images, compare boxes with the PyTorch model.
+  1. `taxonomy.yaml`: the 40 KB items as classes, plus each dataset's label map and drop list. Record each dataset's licence; drop non-commercial sets from anything shipped.
+  2. `download_taco.py` (pinned annotations commit) and `prepare.py` (COCO → YOLO format, EXIF orientation applied, hash-based train/val/test split, classes under `min_instances` left out and reported).
+  3. `train.ipynb` runs on Colab/Kaggle with the runtime's CUDA torch plus `uv pip install --system ultralytics==8.4.202`; `train.py` writes per-class test metrics. Upload `best.pt` to a GitHub Release.
+  4. Export: `export_executorch.py --weights best.pt` (raw head, see section 3); if latency is too high, also export at 480 and 320.
+  5. Host check: the same script runs `pipeline.detect` on the `.pte` and Ultralytics PyTorch inference on the same images and fails below IoU 0.9.
 - **Tests:** every taxonomy class maps to an existing KB item; every external label maps to a class or is listed as dropped.
 - **Acceptance:** baseline mAP table in `models/vision/README.md`; `.pte` output matches PyTorch within tolerance on host.
 - **Note:** track clear plastic and glass separately; they are the known weak classes in prior work.
@@ -431,7 +433,7 @@ If a goal is missed, report the real number and the reason; do not tune the test
 |---|---|
 | Llama too slow or too large on the borrowed phone | 1B only, shorter prompts, pre-filled system prompt, lower max tokens; verdict never waits for Llama |
 | AAR and export versions drift | Keep `executorch` (Python) and `executorch-android` (Gradle) on the same version; bump together |
-| YOLO26 ExecuTorch export fails on an op | Try another `imgsz`; fall back to YOLO11n (keep NMS in Kotlin); last resort a classification-only model |
+| YOLO26 ExecuTorch export fails on an op | Export works (checked 2026-11-17, raw head + NMS in post-processing). If a later version breaks: pin Ultralytics, try another `imgsz`, fall back to YOLO11n; last resort a classification-only model |
 | AGPL-3.0 is unacceptable later | Swap the detector for an Apache-licensed one (for example an RT-DETR-family model outside Ultralytics) and retrain |
 | Not enough India-specific data | Prioritise the 15 most common items; lean on the confidence gate and CLIP fallback |
 | Phone unavailable near the deadline | Keep a recorded benchmark set and demo footage from every session |
@@ -463,7 +465,7 @@ Update this table in the same commit that completes a WP.
 | 0 | Repo and tooling | Done | uv, CI, ExecuTorch smoke test |
 | 1 | Llama on the phone | Not started | Needs phone + HF access |
 | 2 | Knowledge base v1 | Done | 40 items, 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
-| 3 | Data, taxonomy, detector baseline | Not started | |
+| 3 | Data, taxonomy, detector baseline | Code done | Scripts, notebook, `pipeline/detect.py`, export + host check all work (COCO yolo26n: same detections as PyTorch, IoU ≥ 0.94). **Needs a human:** Colab training run, Roboflow download; baseline mAP table still empty |
 | 4 | Host reference pipeline | Done | `pipeline/` kb, prompt, verify, assistant (retry), cli; 22 golden fixtures. `detect.py` lands with WP3; host Llama runner not built (phone is the reference) |
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |

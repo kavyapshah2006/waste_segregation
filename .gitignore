@@ -40,3 +40,7 @@ Thumbs.db
 
 # Knowledge base build output (regenerate with: uv run python kb/build_kb.py)
 kb/build/
+
+# Vision training runs and exports (weights go to GitHub Releases)
+models/vision/runs/
+models/vision/out/

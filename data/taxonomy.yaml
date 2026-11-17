@@ -1,0 +1,147 @@
+# Detector taxonomy.
+#
+# Every detector class is a knowledge base item id (kb/items/<id>.json), so a detection maps
+# straight to a disposal decision. Class index order is NOT fixed here: it comes from the
+# dataset.yaml written by data/scripts/prepare.py and is stored in the exported model's
+# metadata.yaml, which pipeline/detect.py and the app read.
+#
+# Each dataset maps its own labels to our classes. Labels listed under `drop` are known and
+# deliberately ignored (no matching KB item yet). tests/test_taxonomy.py checks that every
+# label is either mapped or dropped and that every target is a real KB item.
+
+version: 1
+
+# Classes with fewer training instances than this are left out of a training run (and
+# reported), rather than trained on a handful of examples.
+min_instances: 30
+
+classes:
+  # wet
+  - food_scraps
+  - fruit_veg_peels
+  - cooked_food_leftovers
+  - eggshells
+  - tea_bag
+  - garden_waste
+  - flowers_puja
+  - coconut_shell
+  # dry
+  - newspaper
+  - cardboard_box
+  - paper_cup
+  - pet_bottle
+  - plastic_carry_bag
+  - milk_pouch
+  - chips_packet
+  - tetra_pak
+  - aluminium_can
+  - tin_can
+  - glass_bottle
+  - broken_glass
+  - thermocol
+  - blister_pack
+  - old_clothes
+  - toothbrush
+  - kulhad
+  # sanitary
+  - sanitary_pad
+  - diaper
+  - used_tissue
+  - condom
+  # special care
+  - aa_battery
+  - mobile_phone
+  - charger_cable
+  - earphones
+  - cfl_bulb
+  - led_bulb
+  - expired_medicine
+  - mercury_thermometer
+  - paint_can
+  - syringe
+  - aerosol_can
+
+datasets:
+  taco:
+    description: Trash Annotations in Context, 1,500 images of litter in the wild (COCO format)
+    url: http://tacodataset.org
+    annotations: https://raw.githubusercontent.com/pedropro/TACO/70479ad9adc3da971a8ae75ac97eb1026910eec7/data/annotations.json
+    # Repo code is MIT. TODO(verify): the data licence on tacodataset.org before shipping the
+    # trained model; per-image `license` fields in the annotations are mostly empty.
+    licence: MIT (repository code); data licence to verify
+    map:
+      Battery: aa_battery
+      Aluminium blister pack: blister_pack
+      Carded blister pack: blister_pack
+      Other plastic bottle: pet_bottle
+      Clear plastic bottle: pet_bottle
+      Glass bottle: glass_bottle
+      Glass jar: glass_bottle
+      Broken glass: broken_glass
+      Food Can: tin_can
+      Aerosol: aerosol_can
+      Drink can: aluminium_can
+      Toilet tube: cardboard_box
+      Other carton: cardboard_box
+      Egg carton: cardboard_box
+      Corrugated carton: cardboard_box
+      Meal carton: cardboard_box
+      Pizza box: cardboard_box
+      Drink carton: tetra_pak
+      Paper cup: paper_cup
+      Foam cup: thermocol
+      Foam food container: thermocol
+      Styrofoam piece: thermocol
+      Food waste: food_scraps
+      Magazine paper: newspaper
+      Normal paper: newspaper
+      Tissues: used_tissue
+      Plastic film: plastic_carry_bag
+      Garbage bag: plastic_carry_bag
+      Single-use carrier bag: plastic_carry_bag
+      Polypropylene bag: plastic_carry_bag
+      Crisp packet: chips_packet
+      Other plastic wrapper: chips_packet
+    drop:
+      - Aluminium foil
+      - Plastic bottle cap
+      - Metal bottle cap
+      - Disposable plastic cup
+      - Glass cup
+      - Other plastic cup
+      - Plastic lid
+      - Metal lid
+      - Other plastic
+      - Wrapping paper
+      - Paper bag
+      - Plastified paper bag
+      - Six pack rings
+      - Spread tub
+      - Tupperware
+      - Disposable food container
+      - Other plastic container
+      - Plastic glooves
+      - Plastic utensils
+      - Pop tab
+      - Rope & strings
+      - Scrap metal
+      - Shoe
+      - Squeezable tube
+      - Plastic straw
+      - Paper straw
+      - Unlabeled litter
+      - Cigarette
+
+  roboflow_ewaste:
+    description: Roboflow Universe e-waste detection sets (phones, cables, batteries, bulbs)
+    url: https://universe.roboflow.com/greenflight/e-waste-qft1o
+    licence: CC BY 4.0 (per the Universe page; verify on download)
+    # Needs a Roboflow account and API key (human step). Fill `map` and `drop` after
+    # downloading, from the export's data.yaml names.
+    map: {}
+    drop: []
+
+  india:
+    description: Our own photos of Indian-context items (WP7), labelled directly with KB item ids
+    licence: Own collection
+    identity: true

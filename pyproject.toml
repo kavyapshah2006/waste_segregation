@@ -10,12 +10,18 @@ dependencies = [
     "torch==2.14.0",
     "executorch==1.5.1",
     "jsonschema>=4.23",
+    "pyyaml>=6.0",
+    "pillow>=11",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8",
     "ruff>=0.8",
+]
+vision = [
+    "torchvision==0.29.0",
+    "ultralytics==8.4.202",
 ]
 
 [tool.uv]
@@ -25,6 +31,7 @@ default-groups = ["dev"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
