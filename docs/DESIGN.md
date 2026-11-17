@@ -3,6 +3,7 @@
 **Problem statement:** Bharat AI-SoC Challenge, PS2: Edge AI for waste classification and disposal
 **Required stack:** Llama (reasoning/advice) deployed on-device with ExecuTorch, on Arm hardware
 **Status:** Proposal, nothing built yet. All performance figures below are targets to validate on hardware.
+**Superseded in part:** [FuturePlan.md](FuturePlan.md) is the implementation guide and wins where it differs (detector is now YOLO26n; repo licence is AGPL-3.0).
 **Primary platform:** Arm Android smartphone (minimal hardware, see [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md)). The Raspberry Pi 5 kiosk is an optional extension using the same models.
 
 ---

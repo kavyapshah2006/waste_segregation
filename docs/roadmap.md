@@ -2,6 +2,8 @@
 
 Step-by-step path from an empty repo to the full solution in [DESIGN.md](DESIGN.md), using the minimal hardware in [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md): **an Arm Android phone + the dev laptop**, with an optional Raspberry Pi 5 kiosk at the end.
 
+For step-by-step implementation (interfaces, files, tests, acceptance checks), use [FuturePlan.md](FuturePlan.md); it wins where it differs from this file (detector is now YOLO26n; repo licence is AGPL-3.0).
+
 Each phase lists its goal, tasks, exit criteria, edge cases, advantages, disadvantages and alternatives. Phases 0–4 produce a working MVP; everything after improves it. Follow the brief's advice: **get something working on the real phone early, then iterate.**
 
 ---

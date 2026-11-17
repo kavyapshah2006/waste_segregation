@@ -9,6 +9,8 @@ On-device AI assistant that identifies waste, decides the correct bin under Indi
 - [Design](docs/DESIGN.md): problem, state of the art, architecture, tech stack
 - [Hardware requirements](docs/HARDWARE_REQUIREMENTS.md): minimal, phone-first
 - [Roadmap](docs/roadmap.md): phased plan from setup to submission
+- [Future plan](docs/FuturePlan.md): work-package implementation guide with contracts, tests and status
+- [Dev setup](docs/DEV_SETUP.md): Python, Android and phone setup
 
 ## Quick start (WSL Ubuntu)
 
