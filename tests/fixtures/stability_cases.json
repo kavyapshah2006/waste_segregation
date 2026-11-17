@@ -1,0 +1,404 @@
+[
+  {
+    "id": "steady_item_becomes_stable_on_the_third_vote",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.7
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.9
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      }
+    ]
+  },
+  {
+    "id": "below_the_gate_never_counts",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.45
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.49
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.3
+        }
+      ],
+      []
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "flicker_between_two_items_stays_unsure",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "glass_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "glass_bottle",
+          "confidence": 0.8
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "best_item_per_frame_wins_and_unmapped_boxes_are_ignored",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": null,
+          "confidence": 0.99
+        },
+        {
+          "item_id": "aa_battery",
+          "confidence": 0.6
+        },
+        {
+          "item_id": "earphones",
+          "confidence": 0.55
+        }
+      ],
+      [
+        {
+          "item_id": "aa_battery",
+          "confidence": 0.7
+        }
+      ],
+      [
+        {
+          "item_id": "earphones",
+          "confidence": 0.9
+        },
+        {
+          "item_id": "aa_battery",
+          "confidence": 0.65
+        }
+      ],
+      [
+        {
+          "item_id": "aa_battery",
+          "confidence": 0.75
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "stable",
+        "item_id": "aa_battery",
+        "votes": 3,
+        "confidence": 0.6833
+      }
+    ]
+  },
+  {
+    "id": "old_votes_leave_the_window",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [],
+      [],
+      [],
+      [],
+      []
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "empty",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      }
+    ]
+  },
+  {
+    "id": "switching_items_needs_a_new_majority",
+    "params": {
+      "window": 5,
+      "min_votes": 3,
+      "gate": 0.5
+    },
+    "frames": [
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "pet_bottle",
+          "confidence": 0.8
+        }
+      ],
+      [
+        {
+          "item_id": "tin_can",
+          "confidence": 0.9
+        }
+      ],
+      [
+        {
+          "item_id": "tin_can",
+          "confidence": 0.9
+        }
+      ],
+      [
+        {
+          "item_id": "tin_can",
+          "confidence": 0.9
+        }
+      ]
+    ],
+    "expected": [
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "unsure",
+        "item_id": null,
+        "votes": 0,
+        "confidence": null
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "stable",
+        "item_id": "pet_bottle",
+        "votes": 3,
+        "confidence": 0.8
+      },
+      {
+        "state": "stable",
+        "item_id": "tin_can",
+        "votes": 3,
+        "confidence": 0.9
+      }
+    ]
+  }
+]
