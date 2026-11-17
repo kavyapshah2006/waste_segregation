@@ -11,6 +11,9 @@ Usage:
     # 2b. Or generate on the laptop (functional check only, not a benchmark):
     uv run python eval/llm_quality/run.py --llm-model m.pte --tokenizer tokenizer.model --label host
 
+`raw` is the text the model generated after the prompt (the prompt ends with {"why": ").
+With --label, the raw answers are also saved next to the report so they can be rescored.
+
 Metrics: JSON validity (not "fallback"), clean rate ("ok": no contradiction), useful rate
 (clean, has a `why`, in the requested language: the headline number), contradiction counts
 by type, answer language matches the request, and mean length of `why` in words.
@@ -31,6 +34,7 @@ sys.path.insert(0, str(REPO))
 from kb.build_kb import build  # noqa: E402
 from models.llm.synth_data.generate import Example, generate  # noqa: E402
 from pipeline.kb import KnowledgeBase  # noqa: E402
+from pipeline.prompt import full_answer  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
 
 RESULTS = REPO / "eval" / "results"
@@ -60,7 +64,7 @@ def score(kb: KnowledgeBase, cases: list[Example], answers: dict[str, str]) -> d
             status["missing"] += 1
             continue
         verdict = kb.resolve(case.item_id, case.attributes, case.language)
-        result = verify(raw, verdict)
+        result = verify(full_answer(raw), verdict)
         status[result.status] += 1
         contradictions.update(result.contradictions)
         why = result.output["why"]
@@ -132,7 +136,13 @@ def main(argv: list[str] | None = None) -> int:
         RESULTS.mkdir(parents=True, exist_ok=True)
         out = RESULTS / f"llm_quality_{args.label}.json"
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-        print(f"saved {out}")
+        raw_out = out.with_suffix(".answers.jsonl")
+        with raw_out.open("w", encoding="utf-8") as fh:
+            for c in cases:
+                if c.id in answers:
+                    row = {"id": c.id, "raw": answers[c.id]}
+                    fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+        print(f"saved {out} and {raw_out.name}")
     return 0
 
 

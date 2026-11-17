@@ -3,7 +3,7 @@ import json
 import pytest
 
 from pipeline.assistant import explain
-from pipeline.prompt import EOT, build_prompt, prompt_prefix
+from pipeline.prompt import ANSWER_PREFIX, EOT, build_prompt, full_answer, prompt_prefix
 from pipeline.verify import bins_mentioned, extract_json, verify
 
 
@@ -15,7 +15,11 @@ from pipeline.verify import bins_mentioned, extract_json, verify
         ('{"a": "say \\"hi\\" {x}"}', {"a": 'say "hi" {x}'}),
         ('[1, 2] then {"b": 2}', {"b": 2}),
         ('{broken} {"c": 3}', {"c": 3}),
-        ('{"a": 1', None),
+        ('{"a": 1', {"a": 1}),  # missing final brace is repaired
+        ('{"a": "x", "b": "y"<|eot_id|>', {"a": "x", "b": "y"}),
+        ('{"a": "cut off mid-sen', None),  # never repaired: would show a cut-off sentence
+        ('{"a": {"b": 1}', {"a": {"b": 1}}),
+        ('{"a": 1,', None),
         ("no json here", None),
         ("", None),
     ],
@@ -77,7 +81,7 @@ def test_prompt_shape(kb):
     verdict = kb.resolve("pet_bottle", language="hi")
     prompt = build_prompt(verdict, {}, "Hindi")
     assert prompt.startswith(prompt_prefix())
-    assert prompt.endswith("<|start_header_id|>assistant<|end_header_id|>\n\n")
+    assert prompt.endswith("<|start_header_id|>assistant<|end_header_id|>\n\n" + ANSWER_PREFIX)
     assert prompt.count(EOT) == 2
     assert "LANGUAGE: Hindi" in prompt
     assert not build_prompt(verdict, {}, "Hindi", include_bos=False).startswith("<|begin")
@@ -90,12 +94,24 @@ def test_system_prefix_is_the_same_for_every_item_and_language(kb):
     assert a.startswith(prefix) and b.startswith(prefix)
 
 
+def test_full_answer_joins_the_prefix_and_the_generated_text(kb):
+    generated = 'Batteries leak metals.", "tip": "Tape the ends."}' + EOT
+    result = verify(full_answer(generated), kb.resolve("aa_battery"))
+    assert result.status == "ok"
+    assert (result.output["why"], result.output["tip"]) == (
+        "Batteries leak metals.",
+        "Tape the ends.",
+    )
+    assert result.output["bin"] == "black"
+
+
 def test_explain_retries_once_with_a_short_prompt(kb):
     verdict = kb.resolve("aa_battery")
-    outputs = iter(["not json", json.dumps({"stream": "special_care", "bin": "black"})])
+    outputs = iter(["cut off mid-sent", 'Batteries leak metals.", "tip": "Tape the ends."}'])
     result = explain(kb, verdict, {}, lambda prompt: next(outputs))
     assert result.attempts == 2
     assert "CONDITION" in result.prompts[0] and "CONDITION" not in result.prompts[1]
+    assert result.raw_outputs[1].startswith("Batteries")
     assert result.verified.status == "ok"
 
 
@@ -109,6 +125,7 @@ def test_explain_falls_back_after_two_failures(kb):
 
 def test_explain_stops_after_first_good_answer(kb):
     verdict = kb.resolve("aa_battery")
-    result = explain(kb, verdict, {}, lambda prompt: '{"stream": "dry"}')
+    result = explain(kb, verdict, {}, lambda prompt: 'Use the green bin.", "tip": "x"}')
     assert result.attempts == 1
     assert result.verified.status == "corrected"
+    assert result.verified.contradictions == ("why_bin",)

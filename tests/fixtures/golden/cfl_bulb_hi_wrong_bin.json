@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "hi",
     "question": null,
-    "raw_llm_output": "{\"item\": \"सीएफ़एल बल्ब\", \"stream\": \"विशेष देखभाल\", \"bin\": \"काला\", \"steps\": [\"Follow the steps\"], \"why\": \"इसे नीले डिब्बे में डालें क्योंकि यह काँच है।\", \"tip\": \"एलईडी बल्ब लगाएँ।\", \"language\": \"hi\"}"
+    "raw_llm_output": "इसे नीले डिब्बे में डालें क्योंकि यह काँच है।\", \"tip\": \"एलईडी बल्ब लगाएँ।\"}"
   },
   "expected": {
     "verdict": {
@@ -47,7 +47,7 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"सीएफ़एल बल्ब या ट्यूबलाइट\", \"stream\": \"विशेष देखभाल कचरा\", \"bin\": \"काला\", \"recyclable\": true, \"steps\": [\"इसे तोड़ें नहीं\", \"इसके डिब्बे या अख़बार में लपेटें\", \"ख़तरनाक कचरा या ई-कचरा संग्रह केंद्र पर दें\"], \"hazard\": \"इसमें पारा होता है। टूट जाए तो कमरे में हवा आने दें और टुकड़ों पर वैक्यूम न चलाएँ।\", \"drop_off\": \"शहर के विशेष देखभाल (घरेलू ख़तरनाक) कचरा संग्रह या केंद्र पर दें।\", \"notes\": [], \"impact\": \"सीएफ़एल इकट्ठा करने से पारा मिट्टी और पानी में नहीं जाता।\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Hindi\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"सीएफ़एल बल्ब या ट्यूबलाइट\", \"stream\": \"विशेष देखभाल कचरा\", \"bin\": \"काला\", \"recyclable\": true, \"steps\": [\"इसे तोड़ें नहीं\", \"इसके डिब्बे या अख़बार में लपेटें\", \"ख़तरनाक कचरा या ई-कचरा संग्रह केंद्र पर दें\"], \"hazard\": \"इसमें पारा होता है। टूट जाए तो कमरे में हवा आने दें और टुकड़ों पर वैक्यूम न चलाएँ।\", \"drop_off\": \"शहर के विशेष देखभाल (घरेलू ख़तरनाक) कचरा संग्रह या केंद्र पर दें।\", \"notes\": [], \"impact\": \"सीएफ़एल इकट्ठा करने से पारा मिट्टी और पानी में नहीं जाता।\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Hindi\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
       "status": "corrected",
       "output": {

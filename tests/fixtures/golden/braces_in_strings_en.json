@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "{\"item\": \"Tin can\", \"stream\": \"dry\", \"bin\": \"blue\", \"steps\": [\"Follow the steps\"], \"why\": \"Steel {cans} are melted into new steel.\", \"tip\": \"Put the lid inside {safely}.\", \"language\": \"en\"}"
+    "raw_llm_output": "Steel {cans} are melted into new steel.\", \"tip\": \"Put the lid inside {safely}.\"}"
   },
   "expected": {
     "verdict": {
@@ -47,7 +47,7 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Tin or steel food can\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty and rinse it\", \"Put the lid inside so the edge cannot cut anyone\", \"Put it in the blue bin or give it to a scrap dealer\"], \"hazard\": \"Cut edges can be sharp.\", \"drop_off\": \"A local scrap dealer (kabadiwala) will often buy it.\", \"notes\": [], \"impact\": \"Steel cans are pulled out with magnets and melted into new steel.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Tin or steel food can\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty and rinse it\", \"Put the lid inside so the edge cannot cut anyone\", \"Put it in the blue bin or give it to a scrap dealer\"], \"hazard\": \"Cut edges can be sharp.\", \"drop_off\": \"A local scrap dealer (kabadiwala) will often buy it.\", \"notes\": [], \"impact\": \"Steel cans are pulled out with magnets and melted into new steel.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
       "status": "ok",
       "output": {

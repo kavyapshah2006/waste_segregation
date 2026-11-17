@@ -1,9 +1,13 @@
 """Check Llama's answer against the knowledge base (FuturePlan section 5.5, verifier rules).
 
 The knowledge base always wins on facts: item, stream, bin, steps, hazard and drop-off are
-taken from the Verdict. Only `why` and `tip` come from Llama, and they are dropped if they
-name a different bin. Every disagreement is recorded as a contradiction so the raw
-contradiction rate can be measured.
+taken from the Verdict. Llama is asked only for `why` and `tip` (pipeline/prompt.py), and
+they are dropped if they name a different bin. If Llama adds `stream`, `bin` or `steps` keys
+anyway, they are checked too; a wrong stream or bin also tightens the free-text check.
+Every disagreement is recorded as a contradiction so the raw contradiction rate can be
+measured.
+
+verify() takes the complete answer text; for runner output use prompt.full_answer() first.
 """
 
 from __future__ import annotations
@@ -59,8 +63,26 @@ class VerifiedOutput:
         }
 
 
+_SPECIAL_TOKENS = ("<|eot_id|>", "<|end_of_text|>")
+
+
+def _try_object(text: str) -> dict | None:
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return None
+    return value if isinstance(value, dict) else None
+
+
 def extract_json(text: str) -> dict | None:
-    """Return the first balanced JSON object in the text, ignoring prose and code fences."""
+    """Return the first JSON object in the text, ignoring prose and code fences.
+
+    One repair is made: an object that ends after a complete value but lacks its final "}"
+    (seen from the stock 1B model) is closed. Text cut off inside a string is not repaired,
+    because the cut-off sentence would be shown to the user.
+    """
+    for token in _SPECIAL_TOKENS:
+        text = text.replace(token, "")
     start = text.find("{")
     while start != -1:
         depth, in_string, escaped = 0, False, False
@@ -80,13 +102,15 @@ def extract_json(text: str) -> dict | None:
             elif ch == "}":
                 depth -= 1
                 if depth == 0:
-                    try:
-                        value = json.loads(text[start : i + 1])
-                    except json.JSONDecodeError:
-                        break
-                    if isinstance(value, dict):
+                    value = _try_object(text[start : i + 1])
+                    if value is not None:
                         return value
                     break
+        else:
+            if depth == 1 and not in_string:
+                value = _try_object(text[start:].rstrip() + "}")
+                if value is not None:
+                    return value
         start = text.find("{", start + 1)
     return None
 

@@ -1,6 +1,6 @@
 {
   "id": "syringe_malformed_en",
-  "description": "Missing closing brace: falls back to KB text.",
+  "description": "Missing closing brace before <|eot_id|> (seen from the stock model) is repaired.",
   "input": {
     "detection": {
       "item_id": "syringe",
@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "{\"item\": \"Syringe\", \"stream\": \"special_care\", \"bin\": \"black\", \"why\": \"Needles are sharp\""
+    "raw_llm_output": "Needles are sharp.\", \"tip\": \"Keep used needles in a hard plastic bottle.\"<|eot_id|>"
   },
   "expected": {
     "verdict": {
@@ -47,9 +47,9 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Used syringe or needle\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": false, \"steps\": [\"Never recap or bend the needle\", \"Put it in a hard plastic bottle with a tight lid\", \"Give it to a hospital, pharmacy or special care collection point\"], \"hazard\": \"Sharp and may carry infection.\", \"drop_off\": \"Hand it to your city's special care (household hazardous) waste collection or drop-off centre.\", \"notes\": [], \"impact\": \"Loose needles injure waste workers and can spread infection.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Used syringe or needle\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": false, \"steps\": [\"Never recap or bend the needle\", \"Put it in a hard plastic bottle with a tight lid\", \"Give it to a hospital, pharmacy or special care collection point\"], \"hazard\": \"Sharp and may carry infection.\", \"drop_off\": \"Hand it to your city's special care (household hazardous) waste collection or drop-off centre.\", \"notes\": [], \"impact\": \"Loose needles injure waste workers and can spread infection.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
-      "status": "fallback",
+      "status": "ok",
       "output": {
         "item": "Used syringe or needle",
         "stream": "special_care",
@@ -61,13 +61,11 @@
         ],
         "hazard": "Sharp and may carry infection.",
         "drop_off": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
-        "why": null,
-        "tip": null,
+        "why": "Needles are sharp.",
+        "tip": "Keep used needles in a hard plastic bottle.",
         "language": "en"
       },
-      "contradictions": [
-        "unparseable"
-      ]
+      "contradictions": []
     }
   }
 }

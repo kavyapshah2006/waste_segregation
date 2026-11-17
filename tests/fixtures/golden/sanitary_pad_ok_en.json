@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "{\"item\": \"Sanitary pad\", \"stream\": \"sanitary\", \"bin\": \"red\", \"steps\": [\"Follow the steps\"], \"why\": \"Wrapped sanitary waste protects workers.\", \"tip\": \"Consider a menstrual cup.\", \"language\": \"en\"}"
+    "raw_llm_output": "Wrapped sanitary waste protects workers.\", \"tip\": \"Consider a menstrual cup.\"}"
   },
   "expected": {
     "verdict": {
@@ -47,7 +47,7 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Used sanitary pad\", \"stream\": \"Sanitary waste\", \"bin\": \"red\", \"recyclable\": false, \"steps\": [\"Wrap it in paper or the pad's wrapper\", \"Mark the wrap with a red dot if your area asks for it\", \"Put it in the red bin, separate from other waste\"], \"hazard\": \"Contains body fluids; always wrap it before binning.\", \"drop_off\": \"Hand it to the municipal waste collector separately, in the red bin.\", \"notes\": [], \"impact\": \"Wrapping sanitary waste protects waste workers from infection.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Used sanitary pad\", \"stream\": \"Sanitary waste\", \"bin\": \"red\", \"recyclable\": false, \"steps\": [\"Wrap it in paper or the pad's wrapper\", \"Mark the wrap with a red dot if your area asks for it\", \"Put it in the red bin, separate from other waste\"], \"hazard\": \"Contains body fluids; always wrap it before binning.\", \"drop_off\": \"Hand it to the municipal waste collector separately, in the red bin.\", \"notes\": [], \"impact\": \"Wrapping sanitary waste protects waste workers from infection.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
       "status": "ok",
       "output": {

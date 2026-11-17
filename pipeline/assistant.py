@@ -6,10 +6,10 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from pipeline.kb import KnowledgeBase, Verdict
-from pipeline.prompt import build_prompt
+from pipeline.prompt import build_prompt, full_answer
 from pipeline.verify import VerifiedOutput, verify
 
-# Takes the full prompt text, returns the model's raw completion.
+# Takes the full prompt text, returns the text the model generated after it.
 Generator = Callable[[str], str]
 
 
@@ -41,7 +41,7 @@ def explain(
         raw = generate(prompt)
         result.prompts.append(prompt)
         result.raw_outputs.append(raw)
-        result.verified = verify(raw, verdict)
+        result.verified = verify(full_answer(raw), verdict)
         if result.verified.status != "fallback":
             break
     return result

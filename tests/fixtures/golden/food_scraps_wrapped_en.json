@@ -1,6 +1,6 @@
 {
   "id": "food_scraps_wrapped_en",
-  "description": "JSON wrapped in prose and a code fence is still parsed.",
+  "description": "Prose and a code fence after the JSON are ignored.",
   "input": {
     "detection": {
       "item_id": "food_scraps",
@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "Sure! Here is the answer:\n```json\n{\"item\": \"Food scraps\", \"stream\": \"wet\", \"bin\": \"green\", \"steps\": [\"Follow the steps\"], \"why\": \"Food scraps make compost.\", \"tip\": \"Keep a small kitchen bin.\", \"language\": \"en\"}\n```\nHope this helps."
+    "raw_llm_output": "Food scraps make compost.\", \"tip\": \"Keep a small kitchen bin.\"}\n```\nHope this helps."
   },
   "expected": {
     "verdict": {
@@ -47,7 +47,7 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Food scraps\", \"stream\": \"Wet waste\", \"bin\": \"green\", \"recyclable\": false, \"steps\": [\"Drain off extra liquid\", \"Remove any plastic, foil or rubber bands\", \"Put it in the green bin or a home compost pit\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Composted food waste returns nutrients to the soil and keeps methane-producing waste out of landfills.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Food scraps\", \"stream\": \"Wet waste\", \"bin\": \"green\", \"recyclable\": false, \"steps\": [\"Drain off extra liquid\", \"Remove any plastic, foil or rubber bands\", \"Put it in the green bin or a home compost pit\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Composted food waste returns nutrients to the soil and keeps methane-producing waste out of landfills.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
       "status": "ok",
       "output": {

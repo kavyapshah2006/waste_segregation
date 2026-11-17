@@ -165,46 +165,43 @@ Prompt uses the Llama 3.2 chat format. The system message is identical for every
 ```
 <|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
-You are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin,
-hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these
-keys: "item", "stream", "bin", "steps", "why", "tip", "language". Write why and tip in the
-requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>
+You are a waste disposal guide for India. Use only the FACTS given and never contradict them.
+The app already shows the facts to the user; your job is to explain. Reply with one JSON object
+with exactly two keys: "why" (answer the QUESTION in one or two short sentences) and "tip" (one
+short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON
+object.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
 FACTS: {verdict facts JSON}
 CONDITION: {attributes JSON}
 LANGUAGE: {language name}
 QUESTION: {question, default "Explain how to dispose of this and why."}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
 
+{"why": "
 ```
 
-The retry prompt (`short=True`) keeps only item, stream, bin and steps in FACTS and drops CONDITION.
+The prompt ends with the answer prefix `{"why": "` (`ANSWER_PREFIX`), so the model's first token is already inside the `why` string. The runner returns only what comes after it; join the two (`full_answer()`) before verifying. The retry prompt (`short=True`) keeps only item, stream, bin and steps in FACTS and drops CONDITION.
 
-Output schema:
+Llama writes only:
 
 ```json
-{
-  "item": "PET plastic bottle",
-  "stream": "dry",
-  "bin": "blue",
-  "steps": ["Empty it", "Rinse", "Crush and put the cap back on"],
-  "why": "Clean PET is easy to recycle; leftover liquid spoils paper in the same bin.",
-  "tip": "Reuse it a few times before recycling.",
-  "language": "en"
-}
+{"why": "Clean PET is easy to recycle; leftover liquid spoils paper in the same bin.",
+ "tip": "Reuse it a few times before recycling."}
 ```
 
+Why two keys: the first format asked Llama to copy item, stream, bin, steps and language back as well. The app never showed those copies (it uses the KB), but the model spent most of its tokens on them: in the stock-model baseline nearly every Hindi answer hit the 200-token limit and was cut off, and only 10% of answers were useful (`eval/results/llm_quality_spinquant_stock_host.json`). Two keys cut the answer to a fraction of the tokens, which also cuts phone latency.
+
 Verifier rules (identical in Python `pipeline/verify.py` and Kotlin):
-1. Extract the first balanced `{...}` from the output (string- and escape-aware); if parsing fails, retry once with the short prompt, then fall back to KB text only (`status: "fallback"`).
-2. `item`, `stream`, `bin`, `steps`, `hazard` and `drop_off` shown to the user always come from the KB. A `stream` or `bin` from Llama that disagrees is recorded as a contradiction (stream ids, stream names and colour names in any supported language are accepted as agreeing).
-3. Llama's `steps` are never shown; if they name a different bin, `steps_bin` is recorded.
-4. `why` and `tip` are the only text shown from Llama. Each is whitespace-normalised, cut to 400 characters, and dropped (`why_bin` / `tip_bin`) if it names a different bin, in English or Hindi.
+1. Remove `<|eot_id|>` / `<|end_of_text|>` text, then extract the first balanced `{...}` (string- and escape-aware). One repair: if the object ends after a complete value but lacks its final `}`, close it. Text cut off inside a string is never repaired. If parsing fails, retry once with the short prompt, then fall back to KB text only (`status: "fallback"`).
+2. `item`, `stream`, `bin`, `steps`, `hazard` and `drop_off` shown to the user always come from the KB. If Llama adds `stream` or `bin` keys anyway and they disagree, a contradiction is recorded (stream ids, stream names and colour names in any supported language count as agreeing).
+3. If Llama adds a `steps` key, it is never shown; if it names a different bin, `steps_bin` is recorded.
+4. `why` and `tip` are the only text shown from Llama. Each is whitespace-normalised, cut to 400 characters, and dropped (`why_bin` / `tip_bin`) if it names a bin other than the verdict's bin or a bin the KB steps or notes themselves name (greasy cardboard: green and blue). After a stream or bin contradiction, only the verdict's bin is allowed.
 5. Output `status` is `ok` (no contradictions), `corrected` (contradictions found and overridden) or `fallback`.
 
 EOS ids for Llama 3.2: 128009 and 128001. *Verify the chat template against Meta's Llama 3.2 model card before first use.*
 
 ### 5.6 Golden fixtures (`tests/fixtures/golden/`)
 
-JSON files of `{id, description, input: {detection, city, language, question, raw_llm_output}, expected: {verdict, prompt, verified}}`. The Python pipeline and the Kotlin app both run them, so the two implementations cannot drift (including the exact prompt text). Add a fixture for every bug found. `tests/fixtures/golden/regen.py` recomputes `expected` after an intended change; review every diff by hand before committing.
+JSON files of `{id, description, input: {detection, city, language, question, raw_llm_output}, expected: {verdict, prompt, verified}}`. `raw_llm_output` is the text the model generated after the prompt (it starts inside the `why` string). The Python pipeline and the Kotlin app both run them, so the two implementations cannot drift (including the exact prompt text). Add a fixture for every bug found. `tests/fixtures/golden/regen.py` recomputes `expected` after an intended change; review every diff by hand before committing.
 
 ### 5.7 Android module boundaries (`android/app/src/main/java/.../`)
 
@@ -256,7 +253,7 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 - **Depends on:** Phase 0 (done). **Human:** HF licence, phone session.
 - **Create:** `models/llm/README.md`, `models/llm/export.py`, `scripts/download_models.sh`, `scripts/push_models.sh`, `eval/latency/llm_bench.md`, `eval/results/llm_<device>_<date>.json`, `docs/DEVICE.md`.
 - **Steps:**
-  1. Fast path: `./scripts/download_models.sh llama-spinquant --accept-llama-license` fetches the prebuilt `executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET` (`.pte` about 1.1 GB plus tokenizer; not gated). Alternative: `llama-qlora`. First check it loads on the host with `pipeline.cli --llm-model`, since these files predate ExecuTorch 1.0.
+  1. Fast path: `./scripts/download_models.sh llama-spinquant --accept-llama-license` fetches the prebuilt `executorch-community/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8-ET` (`.pte` about 1.1 GB plus tokenizer; not gated). Alternative: `llama-qlora`. First check it loads on the host with `pipeline.cli --llm-model`, since these files predate ExecuTorch 1.0. (Done: it loads with ExecuTorch 1.5.1 once the `llama::custom_sdpa`, `llama::fast_hadamard_transform` and `quantized_decomposed::embedding_byte` kernels are registered, which `pipeline/llm.py` does. The Android AAR must include the same custom and quantized kernels; check this in the first phone session.)
   2. Build the ExecuTorch Llama Android demo app (from the `executorch-examples` repo) against AAR 1.5.1. Push model + tokenizer with `adb.exe push`.
   3. Human session: run `scripts/device_info.sh > docs/DEVICE.md`; run three prompts in airplane mode; record load time, time to first token, tokens/s, peak RSS, and tokens/s after 5 minutes of use.
   4. Own export: `models/llm/export.py` wraps `python -m extension.llm.export.export_llm` with the XNNPACK SpinQuant (or QAT+LoRA) config and Llama 3.2 params. It must reproduce a `.pte` that loads in the same app.
@@ -463,10 +460,10 @@ Update this table in the same commit that completes a WP.
 | WP | Title | Status | Notes |
 |---|---|---|---|
 | 0 | Repo and tooling | Done | uv, CI, ExecuTorch smoke test |
-| 1 | Llama on the phone | Code done | `models/llm/export.py` (verified on a tiny random-weight model), download/push scripts, host runner (`pipeline/llm.py`), phone run-list `eval/latency/llm_bench.md`. **Needs a human:** accept the Llama 3.2 licence, phone session. Prebuilt `.pte` repos are not gated (no HF login needed) |
+| 1 | Llama on the phone | Code done | `models/llm/export.py` (verified on a tiny random-weight model), download/push scripts, host runner (`pipeline/llm.py`), phone run-list `eval/latency/llm_bench.md`. Licence accepted; prebuilt SpinQuant 1B downloaded and answering on the host. **Needs a human:** phone session |
 | 2 | Knowledge base v1 | Done | 40 items, 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
 | 3 | Data, taxonomy, detector baseline | Code done | Scripts, notebook, `pipeline/detect.py`, export + host check all work (COCO yolo26n: same detections as PyTorch, IoU ≥ 0.94). **Needs a human:** Colab training run, Roboflow download; baseline mAP table still empty |
-| 4 | Host reference pipeline | Done | `pipeline/` kb, prompt, verify, assistant (retry), cli; 22 golden fixtures. `detect.py` lands with WP3; host Llama runner not built (phone is the reference) |
+| 4 | Host reference pipeline | Done | `pipeline/` kb, prompt (why + tip answer format with prefilled `{"why": "`), verify, assistant (retry), cli, detect, llm; 23 golden fixtures |
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |
 | 7 | Accuracy and robustness | Not started | |

@@ -1,9 +1,10 @@
 """Build supervised fine-tuning data for Llama from the knowledge base (WP8).
 
 Every example is (prompt, completion): the prompt is exactly what the app sends
-(pipeline/prompt.py) and the completion is the JSON answer we want back, written from KB
-facts. Each completion must pass pipeline/verify.py with status "ok", so the model is never
-trained on an answer the app would reject.
+(pipeline/prompt.py, ending with the answer prefix {"why": ") and the completion is the
+rest of the {"why", "tip"} answer we want back, written from KB facts. Each completion must
+pass pipeline/verify.py with status "ok", so the model is never trained on an answer the
+app would reject.
 
 Usage:
     uv run python models/llm/synth_data/generate.py            # writes train/val JSONL
@@ -30,7 +31,7 @@ sys.path.insert(0, str(REPO))
 
 from kb.build_kb import build  # noqa: E402
 from pipeline.kb import KnowledgeBase, Verdict  # noqa: E402
-from pipeline.prompt import EOT, build_prompt  # noqa: E402
+from pipeline.prompt import ANSWER_PREFIX, EOT, build_prompt, full_answer  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
 
 OUT_DIR = Path(__file__).resolve().parent / "out"
@@ -129,17 +130,11 @@ def why_for(kind: str, v: Verdict) -> str:
 
 
 def completion_for(kind: str, v: Verdict) -> str:
+    """The text the model should generate after the prompt (which ends with ANSWER_PREFIX)."""
     tip = TIPS[v.stream][v.language] if v.hazard is None else v.hazard
-    answer = {
-        "item": v.name,
-        "stream": v.stream,
-        "bin": v.bin_colour,
-        "steps": list(v.steps),
-        "why": why_for(kind, v),
-        "tip": tip,
-        "language": v.language,
-    }
-    return json.dumps(answer, ensure_ascii=False) + EOT
+    answer = json.dumps({"why": why_for(kind, v), "tip": tip}, ensure_ascii=False)
+    assert answer.startswith(ANSWER_PREFIX)
+    return answer[len(ANSWER_PREFIX) :] + EOT
 
 
 def condition_variants(item: dict) -> list[dict]:
@@ -160,7 +155,7 @@ def generate(kb: KnowledgeBase) -> list[Example]:
                         verdict, attributes, kb.language_name(lang), questions[lang]
                     )
                     completion = completion_for(kind, verdict)
-                    check = verify(completion, verdict)
+                    check = verify(full_answer(completion), verdict)
                     if check.status != "ok":
                         raise AssertionError(f"{item_id}/{lang}/{kind}: {check.contradictions}")
                     cond = "_".join(k for k, val in sorted(attributes.items()) if val) or "plain"

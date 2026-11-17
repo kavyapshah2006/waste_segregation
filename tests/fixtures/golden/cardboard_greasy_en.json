@@ -1,6 +1,6 @@
 {
   "id": "cardboard_greasy_en",
-  "description": "Greasy cardboard becomes wet waste; Llama wrongly says the blue bin.",
+  "description": "Greasy cardboard becomes wet waste; Llama may name the blue bin too, because the KB steps send the clean parts there.",
   "input": {
     "detection": {
       "item_id": "cardboard_box",
@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "{\"item\": \"Pizza box\", \"stream\": \"dry\", \"bin\": \"blue bin\", \"steps\": [\"Follow the steps\"], \"why\": \"Cardboard goes in the blue bin for recycling.\", \"tip\": \"Flatten it.\", \"language\": \"en\"}"
+    "raw_llm_output": "Soiled parts go in the green bin and clean parts in the blue bin.\", \"tip\": \"Tear off the greasy base first.\"}"
   },
   "expected": {
     "verdict": {
@@ -51,9 +51,9 @@
       ],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Cardboard box\", \"stream\": \"Wet waste\", \"bin\": \"green\", \"recyclable\": false, \"steps\": [\"Tear off the greasy or food-soiled parts\", \"Put those parts in the green bin\", \"Flatten the clean parts and put them in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [\"Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts.\"], \"impact\": \"Cardboard is one of the most recycled materials; keeping it dry keeps it valuable.\"}\nCONDITION: {\"broken\": false, \"contaminated\": true}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Cardboard box\", \"stream\": \"Wet waste\", \"bin\": \"green\", \"recyclable\": false, \"steps\": [\"Tear off the greasy or food-soiled parts\", \"Put those parts in the green bin\", \"Flatten the clean parts and put them in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [\"Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts.\"], \"impact\": \"Cardboard is one of the most recycled materials; keeping it dry keeps it valuable.\"}\nCONDITION: {\"broken\": false, \"contaminated\": true}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
-      "status": "corrected",
+      "status": "ok",
       "output": {
         "item": "Cardboard box",
         "stream": "wet",
@@ -65,15 +65,11 @@
         ],
         "hazard": null,
         "drop_off": null,
-        "why": null,
-        "tip": "Flatten it.",
+        "why": "Soiled parts go in the green bin and clean parts in the blue bin.",
+        "tip": "Tear off the greasy base first.",
         "language": "en"
       },
-      "contradictions": [
-        "stream",
-        "bin",
-        "why_bin"
-      ]
+      "contradictions": []
     }
   }
 }

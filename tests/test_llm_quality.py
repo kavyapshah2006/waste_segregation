@@ -4,6 +4,7 @@ import pytest
 
 from eval.llm_quality.run import language_ok, load_cases, score
 from models.llm.synth_data.generate import generate
+from pipeline.prompt import EOT, full_answer
 
 
 @pytest.fixture(scope="module")
@@ -25,12 +26,13 @@ def test_validation_items_never_appear_in_training(examples):
     assert val and not train & val
 
 
-def test_completions_end_with_eot_and_use_kb_facts(kb, examples):
+def test_completions_are_why_and_tip_only_and_use_kb_facts(kb, examples):
     e = next(x for x in examples if x.id == "aa_battery__plain__en__which_bin")
-    assert e.completion.endswith("<|eot_id|>")
-    answer = json.loads(e.completion.removesuffix("<|eot_id|>"))
-    assert (answer["stream"], answer["bin"]) == ("special_care", "black")
+    assert e.completion.endswith(EOT)
+    answer = json.loads(full_answer(e.completion).removesuffix(EOT))
+    assert set(answer) == {"why", "tip"}
     assert answer["why"].startswith("It goes in the black bin")
+    assert answer["tip"] == kb.resolve("aa_battery").hazard
 
 
 def test_perfect_answers_score_clean(kb):
@@ -45,22 +47,23 @@ def test_perfect_answers_score_clean(kb):
 
 def test_empty_answers_are_clean_but_not_useful(kb):
     cases = load_cases(kb)[:5]
-    report = score(kb, cases, {c.id: "{}" for c in cases})
+    report = score(kb, cases, {c.id: '"}' for c in cases})  # {"why": ""}
     assert report["clean_rate"] == 1.0
     assert report["useful_rate"] == 0.0
 
 
 def test_bad_answers_are_counted(kb):
     cases = load_cases(kb)[:4]
+    wrong_bin = "red" if kb.resolve(cases[1].item_id).bin_colour != "red" else "green"
     answers = {
-        cases[0].id: "not json",
-        cases[1].id: json.dumps({"stream": "sanitary", "bin": "red"}),
+        cases[0].id: "cut off mid-sent",
+        cases[1].id: f'Put it in the {wrong_bin} bin.", "tip": "x"}}',
         cases[2].id: cases[2].completion,
     }  # cases[3] has no answer
     report = score(kb, cases, answers)
     assert report["status"] == {"fallback": 1, "corrected": 1, "ok": 1, "missing": 1}
     assert report["json_valid_rate"] == round(2 / 3, 3)
-    assert report["contradictions"]["bin"] == 1
+    assert report["contradictions"] == {"unparseable": 1, "why_bin": 1}
 
 
 @pytest.mark.parametrize(

@@ -2,6 +2,8 @@
 
 Each `*.json` file is one end-to-end case: a detection (or none), a language, an optional question and an optional recorded Llama output, with the expected verdict, prompt and verified answer.
 
+`raw_llm_output` is only the text the model generated. The prompt already ends with the start of the answer, `{"why": "`, so a recorded output starts inside the `why` string. Both implementations prepend that prefix before verifying.
+
 Both implementations must reproduce `expected` exactly:
 
 - Python: `tests/test_pipeline_golden.py`

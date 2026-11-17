@@ -12,6 +12,13 @@ BOS handling: the prompt text includes <|begin_of_text|>, so the runner must add
 (GenerationConfig.num_bos=0, which is the Python runner's default; see pipeline/llm.py).
 TODO(verify): the Android LlmModule's BOS behaviour on the phone (WP1). If it adds one,
 call build_prompt(..., include_bos=False) there so the BOS token is not doubled.
+
+Answer format: Llama writes only {"why": ..., "tip": ...}. Item, stream, bin, steps, hazard
+and drop-off are already in the KB verdict, so having Llama copy them back only cost tokens
+(Hindi answers ran past the token limit in the stock-model baseline). The prompt ends with
+ANSWER_PREFIX, the start of the JSON object, so the model's first token is already inside
+the `why` string. Whatever the runner returns is the text after that prefix; join the two
+with full_answer() before verifying.
 """
 
 from __future__ import annotations
@@ -24,15 +31,17 @@ BOS = "<|begin_of_text|>"
 EOT = "<|eot_id|>"
 
 SYSTEM_PROMPT = (
-    "You are a waste disposal guide for India. Use only the FACTS given. "
-    "Never change the stream, bin, hazard or drop-off. "
-    "Keep the answer under 80 words. "
-    "Reply with one JSON object with exactly these keys: "
-    '"item", "stream", "bin", "steps", "why", "tip", "language". '
-    "Write why and tip in the requested LANGUAGE. Output nothing except the JSON object."
+    "You are a waste disposal guide for India. Use only the FACTS given and never "
+    "contradict them. The app already shows the facts to the user; your job is to explain. "
+    'Reply with one JSON object with exactly two keys: "why" (answer the QUESTION in one or '
+    'two short sentences) and "tip" (one short practical tip). '
+    "Write both in the requested LANGUAGE. Output nothing except the JSON object."
 )
 
 DEFAULT_QUESTION = "Explain how to dispose of this and why."
+
+# The assistant turn starts with this text; the model continues inside the "why" string.
+ANSWER_PREFIX = '{"why": "'
 
 
 def _header(role: str) -> str:
@@ -76,11 +85,17 @@ def build_prompt(
     short: bool = False,
     include_bos: bool = True,
 ) -> str:
-    """Full prompt text, ending with the assistant header so the model writes the answer."""
+    """Full prompt text, ending with the assistant header and ANSWER_PREFIX."""
     return (
         prompt_prefix(include_bos)
         + _header("user")
         + user_message(verdict, attributes, language_name, question, short)
         + EOT
         + _header("assistant")
+        + ANSWER_PREFIX
     )
+
+
+def full_answer(generated: str) -> str:
+    """The complete answer text: ANSWER_PREFIX plus what the model generated after it."""
+    return ANSWER_PREFIX + generated

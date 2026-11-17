@@ -1,6 +1,6 @@
 {
   "id": "tetra_pak_stream_name_en",
-  "description": "Stream given as 'Dry Waste' is accepted.",
+  "description": "Extra stream and bin keys given as 'Dry Waste' and 'Blue' are accepted.",
   "input": {
     "detection": {
       "item_id": "tetra_pak",
@@ -20,7 +20,7 @@
     "city": "default_in",
     "language": "en",
     "question": null,
-    "raw_llm_output": "{\"item\": \"Tetra Pak\", \"stream\": \"Dry Waste\", \"bin\": \"Blue\", \"steps\": [\"Follow the steps\"], \"why\": \"Cartons are recycled by special recyclers.\", \"tip\": \"Flatten to save space.\", \"language\": \"en\"}"
+    "raw_llm_output": "Cartons are recycled by special recyclers.\", \"tip\": \"Flatten to save space.\", \"stream\": \"Dry Waste\", \"bin\": \"Blue\"}"
   },
   "expected": {
     "verdict": {
@@ -47,7 +47,7 @@
       "applied": [],
       "missing_translation": false
     },
-    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Tetra Pak carton\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty and rinse it\", \"Flatten it\", \"Put it in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Cartons are layers of paper, plastic and aluminium; special recyclers separate them into new products.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Tetra Pak carton\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty and rinse it\", \"Flatten it\", \"Put it in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Cartons are layers of paper, plastic and aluminium; special recyclers separate them into new products.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
     "verified": {
       "status": "ok",
       "output": {

@@ -19,7 +19,7 @@ sys.path.insert(0, str(REPO))
 
 from kb.build_kb import build  # noqa: E402
 from pipeline.kb import KnowledgeBase  # noqa: E402
-from pipeline.prompt import build_prompt  # noqa: E402
+from pipeline.prompt import build_prompt, full_answer  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
 
 
@@ -39,7 +39,7 @@ def expected_for(kb: KnowledgeBase, case_input: dict) -> dict:
     return {
         "verdict": verdict.to_dict(),
         "prompt": prompt,
-        "verified": None if raw is None else verify(raw, verdict).to_dict(),
+        "verified": None if raw is None else verify(full_answer(raw), verdict).to_dict(),
     }
 
 

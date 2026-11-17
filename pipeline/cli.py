@@ -7,6 +7,8 @@ Examples:
     uv run python -m pipeline.cli --image photo.jpg --detector yolo26n.pte
 
 Prints JSON: the verdict, the Llama prompt, and (with --llm-output) the verified answer.
+A recorded output is the text the model generated after the prompt, which already ends with
+the opening of the answer ({"why": ").
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ import sys
 from pathlib import Path
 
 from pipeline.kb import DEFAULT_CITY, KnowledgeBase
-from pipeline.prompt import build_prompt
+from pipeline.prompt import build_prompt, full_answer
 from pipeline.verify import verify
 
 REPO = Path(__file__).resolve().parents[1]
@@ -107,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
             if args.llm_output == "-"
             else Path(args.llm_output).read_text(encoding="utf-8")
         )
-        result["verified"] = verify(raw, verdict).to_dict()
+        result["verified"] = verify(full_answer(raw), verdict).to_dict()
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

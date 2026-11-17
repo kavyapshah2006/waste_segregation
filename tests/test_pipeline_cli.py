@@ -29,7 +29,7 @@ def test_unknown_text(capsys, kb_path):
 
 def test_recorded_llm_output_is_verified(capsys, kb_path, tmp_path):
     raw = tmp_path / "raw.txt"
-    raw.write_text('{"stream": "dry", "bin": "blue", "why": "metal"}', encoding="utf-8")
+    raw.write_text('Put it in the blue bin.", "tip": "metal"}', encoding="utf-8")
     code, out = run(capsys, "--item", "aa_battery", "--llm-output", str(raw), "--kb", str(kb_path))
     assert code == 0
     assert out["verified"]["status"] == "corrected"
