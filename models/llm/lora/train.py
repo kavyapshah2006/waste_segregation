@@ -191,8 +191,15 @@ def main(argv: list[str] | None = None) -> int:
     )
     scaler = torch.amp.GradScaler("cuda", enabled=amp_dtype == torch.float16)
 
-    log = {"args": {k: str(v) for k, v in vars(args).items()}, "data_hash": data_hash(args.data),
-           "device": device, "amp": str(amp_dtype), "steps": total, "train_loss": [], "val_loss": []}  # fmt: skip
+    log = {
+        "args": {k: str(v) for k, v in vars(args).items()},
+        "data_hash": data_hash(args.data),
+        "device": device,
+        "amp": str(amp_dtype),
+        "steps": total,
+        "train_loss": [],
+        "val_loss": [],
+    }
     log["val_loss"].append({"step": 0, "loss": eval_loss(model, val, args.batch, device, amp)})
     print(f"step 0: val loss {log['val_loss'][-1]['loss']:.4f}")
 
