@@ -28,6 +28,7 @@ android/.gradle/
 android/build/
 android/app/build/
 android/core/build/
+models/llm/lora/out/
 android/.kotlin/
 android/local.properties
 android/.idea/

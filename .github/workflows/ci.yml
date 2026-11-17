@@ -16,7 +16,8 @@ jobs:
           enable-cache: true
 
       - name: Sync environment (locked)
-        run: uv sync --locked
+        # finetune: transformers/peft, so the LoRA weight-conversion tests run here too
+        run: uv sync --locked --group finetune
 
       - name: Lint
         run: |

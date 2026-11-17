@@ -4,6 +4,7 @@
 #   ./scripts/download_models.sh llama-spinquant --accept-llama-license
 #   ./scripts/download_models.sh llama-qlora     --accept-llama-license
 #   ./scripts/download_models.sh llama-original  --accept-llama-license   # needs `hf auth login`
+#   ./scripts/download_models.sh llama-hf        --accept-llama-license   # needs `hf auth login`
 #   ./scripts/download_models.sh vision <release-tag>                     # needs `gh auth login`
 #
 # Llama 3.2 is licensed under the Llama 3.2 Community License. Using or downloading it means
@@ -50,6 +51,12 @@ case "$target" in
         hf_download meta-llama/Llama-3.2-1B-Instruct models/llm/out/original \
             original/consolidated.00.pth original/params.json original/tokenizer.model
         ;;
+    llama-hf)
+        # Hugging Face layout, for merging a LoRA adapter (models/llm/lora/convert.py).
+        require_licence "${2:-}"
+        hf_download meta-llama/Llama-3.2-1B-Instruct models/llm/out/hf \
+            config.json generation_config.json model.safetensors original/tokenizer.model
+        ;;
     vision)
         tag="${2:?usage: download_models.sh vision <release-tag>}"
         dest="models/vision/out/release-$tag"
@@ -58,7 +65,7 @@ case "$target" in
         echo "downloaded to $dest"
         ;;
     *)
-        sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'
+        sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'
         exit 2
         ;;
 esac
