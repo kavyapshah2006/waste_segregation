@@ -1,0 +1,32 @@
+{
+  "dataset": "eval/tmp/taco80",
+  "crops": 133,
+  "items": {
+    "aerosol_can": 5,
+    "aluminium_can": 25,
+    "broken_glass": 2,
+    "cardboard_box": 10,
+    "chips_packet": 10,
+    "food_scraps": 2,
+    "glass_bottle": 9,
+    "newspaper": 5,
+    "paper_cup": 3,
+    "pet_bottle": 22,
+    "plastic_carry_bag": 10,
+    "tetra_pak": 2,
+    "thermocol": 4,
+    "tin_can": 22,
+    "used_tissue": 2
+  },
+  "fp32": {
+    "top1": 0.692,
+    "top3": 0.835,
+    "stream_top1": 0.835
+  },
+  "int8": {
+    "top1": 0.684,
+    "top3": 0.835,
+    "stream_top1": 0.812
+  },
+  "fp32_int8_top1_agreement": 0.932
+}

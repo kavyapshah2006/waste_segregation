@@ -1,0 +1,110 @@
+{
+  "_doc": "Ranking cases for pipeline/fallback.py rank(), shared with android/core. Small made-up vectors, with cosines in the 0.1-0.2 range real SigLIP 2 embeddings give and its real logit scale/bias, so the sigmoid scores are not saturated. Regenerate expected with REGEN=1 pytest tests/test_fallback.py -k regen.",
+  "item_ids": [
+    "aa_battery",
+    "pet_bottle",
+    "tin_can",
+    "newspaper"
+  ],
+  "text": [
+    [
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0
+    ],
+    [
+      0.6,
+      0.8,
+      0.0
+    ]
+  ],
+  "logit_scale": 112.6689,
+  "logit_bias": -16.7717,
+  "cases": [
+    {
+      "image": [
+        0.15,
+        0.1,
+        0.18
+      ],
+      "k": 3,
+      "expected": [
+        {
+          "item_id": "tin_can",
+          "cosine": 0.18,
+          "score": 0.9709
+        },
+        {
+          "item_id": "newspaper",
+          "cosine": 0.17,
+          "score": 0.9154
+        },
+        {
+          "item_id": "aa_battery",
+          "cosine": 0.15,
+          "score": 0.5321
+        }
+      ]
+    },
+    {
+      "image": [
+        0.0,
+        0.0,
+        0.11
+      ],
+      "k": 2,
+      "expected": [
+        {
+          "item_id": "tin_can",
+          "cosine": 0.11,
+          "score": 0.0124
+        },
+        {
+          "item_id": "aa_battery",
+          "cosine": 0.0,
+          "score": 0.0
+        }
+      ]
+    },
+    {
+      "image": [
+        0.12,
+        0.12,
+        0.0
+      ],
+      "k": 4,
+      "expected": [
+        {
+          "item_id": "newspaper",
+          "cosine": 0.168,
+          "score": 0.8963
+        },
+        {
+          "item_id": "aa_battery",
+          "cosine": 0.12,
+          "score": 0.0373
+        },
+        {
+          "item_id": "pet_bottle",
+          "cosine": 0.12,
+          "score": 0.0373
+        },
+        {
+          "item_id": "tin_can",
+          "cosine": 0.0,
+          "score": 0.0
+        }
+      ]
+    }
+  ]
+}
