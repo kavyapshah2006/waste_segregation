@@ -39,6 +39,13 @@ def test_stream_change_clears_drop_off_and_replaces_steps(kb):
     assert v.notes
 
 
+def test_rule_can_clear_drop_off_without_changing_stream(kb):
+    whole = kb.resolve("glass_bottle")
+    broken = kb.resolve("glass_bottle", {"broken": True})
+    assert whole.drop_off == "scrap_dealer"
+    assert broken.stream == "dry" and broken.drop_off is None and broken.hazard
+
+
 def test_extra_steps_are_prepended(kb):
     v = kb.resolve("pet_bottle", {"contaminated": True})
     assert v.steps[0] == "Rinse out food or liquid first"

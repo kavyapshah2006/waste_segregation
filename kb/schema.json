@@ -60,6 +60,7 @@
                 "$ref": "#/$defs/textList"
               },
               "extra_steps": {"$ref": "#/$defs/textList"},
+              "drop_off": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/dropOff"}]},
               "note": {"$ref": "#/$defs/text"}
             }
           }

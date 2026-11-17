@@ -162,6 +162,7 @@ class KnowledgeBase:
             recyclable = then.get("recyclable", recyclable)
             compostable = then.get("compostable", compostable)
             hazard = then.get("hazard", hazard)
+            drop_off = then.get("drop_off", drop_off)
             if "steps" in then:
                 steps_by_lang = then["steps"]
             if "extra_steps" in then:

@@ -36,16 +36,21 @@
         "broken": true
       },
       "then": {
+        "drop_off": null,
         "hazard": {
           "en": "Sharp: can cut you and waste workers.",
           "hi": "धारदार: आपको और सफ़ाई कर्मचारियों को चोट लग सकती है।"
         },
-        "extra_steps": {
+        "steps": {
           "en": [
-            "Wrap the pieces in newspaper and label the bundle 'broken glass'"
+            "Pick up the pieces carefully, with gloves if possible",
+            "Wrap them in newspaper and label the bundle 'broken glass'",
+            "Put the bundle in the blue bin"
           ],
           "hi": [
-            "टुकड़ों को अख़बार में लपेटें और ऊपर 'टूटा काँच' लिखें"
+            "टुकड़ों को सावधानी से उठाएँ, हो सके तो दस्ताने पहनें",
+            "टुकड़ों को अख़बार में लपेटें और ऊपर 'टूटा काँच' लिखें",
+            "बंडल को नीले डिब्बे में डालें"
           ]
         }
       }
