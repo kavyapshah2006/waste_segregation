@@ -1,0 +1,21 @@
+{
+  "kb_version": "eb3686ae6e3118db",
+  "split": "val",
+  "cases": 80,
+  "answered": 80,
+  "json_valid_rate": 0.287,
+  "clean_rate": 0.225,
+  "useful_rate": 0.1,
+  "status": {
+    "fallback": 57,
+    "ok": 18,
+    "corrected": 5
+  },
+  "contradictions": {
+    "unparseable": 57,
+    "stream": 5,
+    "bin": 3
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 9.5
+}
