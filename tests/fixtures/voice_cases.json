@@ -1,0 +1,243 @@
+{
+  "_doc": "Transcripts (most taken from real recogniser output in models/speech/check_hindi.py runs) and the items pipeline/voice.py should suggest. Shared with android/core. Regenerate expected with REGEN=1 pytest tests/test_voice.py -k regen, then read the diff.",
+  "romanise": [
+    {
+      "text": "गत्ते का डिब्बा",
+      "expected": [
+        "gatte kaa dibbaa",
+        "gatekadiba"
+      ]
+    },
+    {
+      "text": "पानी की बोतल",
+      "expected": [
+        "paanii kii botal",
+        "panikibotal"
+      ]
+    },
+    {
+      "text": "सीएफ़एल बल्ब",
+      "expected": [
+        "siiefael balb",
+        "siefaelbalb"
+      ]
+    },
+    {
+      "text": "कुल्हड़",
+      "expected": [
+        "kulhar",
+        "kulhar"
+      ]
+    },
+    {
+      "text": "అల్యూమినియం",
+      "expected": [
+        "alyuuminiyn",
+        "aliuminin"
+      ]
+    },
+    {
+      "text": "پاستک کی بوتل",
+      "expected": [
+        "pastk ki bvtl",
+        "pastkibvtl"
+      ]
+    }
+  ],
+  "match": [
+    {
+      "transcript": "gatte ka dibba",
+      "why": "Latin output for गत्ते का डिब्बा",
+      "expected": [
+        {
+          "item_id": "cardboard_box",
+          "score": 1.0,
+          "confirm": false
+        },
+        {
+          "item_id": "tin_can",
+          "score": 0.778,
+          "confirm": true
+        },
+        {
+          "item_id": "plastic_carry_bag",
+          "score": 0.714,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "eliuminiam ka ken",
+      "why": "Latin output for एल्युमिनियम का कैन",
+      "expected": [
+        {
+          "item_id": "aluminium_can",
+          "score": 1.0,
+          "confirm": false
+        },
+        {
+          "item_id": "charger_cable",
+          "score": 0.6,
+          "confirm": true
+        },
+        {
+          "item_id": "kulhad",
+          "score": 0.556,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "दबा की खाली पति",
+      "why": "small slips: दवा -> दबा, पत्ती -> पति",
+      "expected": [
+        {
+          "item_id": "blister_pack",
+          "score": 0.929,
+          "confirm": false
+        },
+        {
+          "item_id": "tea_bag",
+          "score": 0.667,
+          "confirm": true
+        },
+        {
+          "item_id": "cooked_food_leftovers",
+          "score": 0.625,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "tutahu akachu",
+      "why": "टूटा हुआ काँच, run together",
+      "expected": [
+        {
+          "item_id": "broken_glass",
+          "score": 0.833,
+          "confirm": true
+        },
+        {
+          "item_id": "toothbrush",
+          "score": 0.625,
+          "confirm": true
+        },
+        {
+          "item_id": "newspaper",
+          "score": 0.6,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "BATVAE A button SIM",
+      "why": "Whisper's Latin guess for बैटरी (AA, AAA, बटन सेल)",
+      "expected": [
+        {
+          "item_id": "aa_battery",
+          "score": 0.6,
+          "confirm": true
+        },
+        {
+          "item_id": "cardboard_box",
+          "score": 0.571,
+          "confirm": true
+        },
+        {
+          "item_id": "earphones",
+          "score": 0.571,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "پاستک کی بوتل کہان",
+      "why": "Whisper writing Hindi in Urdu script",
+      "expected": [
+        {
+          "item_id": "pet_bottle",
+          "score": 0.636,
+          "confirm": true
+        },
+        {
+          "item_id": "charger_cable",
+          "score": 0.5,
+          "confirm": true
+        },
+        {
+          "item_id": "cooked_food_leftovers",
+          "score": 0.5,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "मेरे पास पानी की बोतल है इसे कहाँ डालूँ",
+      "why": "item inside a sentence",
+      "expected": [
+        {
+          "item_id": "pet_bottle",
+          "score": 1.0,
+          "confirm": false
+        },
+        {
+          "item_id": "chips_packet",
+          "score": 0.8,
+          "confirm": true
+        },
+        {
+          "item_id": "cardboard_box",
+          "score": 0.667,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "Purani Baitri ke kak",
+      "why": "Latin sentence naming a battery",
+      "expected": [
+        {
+          "item_id": "aa_battery",
+          "score": 1.0,
+          "confirm": false
+        },
+        {
+          "item_id": "tetra_pak",
+          "score": 0.625,
+          "confirm": true
+        },
+        {
+          "item_id": "charger_cable",
+          "score": 0.6,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "यह किस डिब्बे में जाएगा",
+      "why": "no item named: nothing confident",
+      "expected": [
+        {
+          "item_id": "flowers_puja",
+          "score": 0.6,
+          "confirm": true
+        },
+        {
+          "item_id": "aerosol_can",
+          "score": 0.5,
+          "confirm": true
+        },
+        {
+          "item_id": "sanitary_pad",
+          "score": 0.5,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "transcript": "",
+      "why": "silence",
+      "expected": []
+    }
+  ]
+}

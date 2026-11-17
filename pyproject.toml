@@ -24,6 +24,10 @@ finetune = [
     "peft==0.21.2",
     "transformers==5.22.2",
 ]
+speech = [
+    "sherpa-onnx==1.13.8",
+    "sherpa-onnx-core==1.13.8",
+]
 vision = [
     "torchvision==0.29.0",
     "ultralytics==8.4.202",

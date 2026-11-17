@@ -25,6 +25,17 @@ Labelled object crops, laptop. The fallback only offers suggestions for the user
 
 Useful = valid, passes every verifier check (bins, negations, recyclable/compostable claims, KB steps, unsafe instructions) and has a `why` in the requested language. Earlier runs were scored with fewer checks; rescore saved answers with `run.py --answers` to compare like with like.
 
+## Hindi voice input
+
+| Run | Recogniser | MB | Median CER | Name top-1 | Sentence top-1 | Sentence top-3 |
+|---|---|---|---|---|---|---|
+| `laptop_tts_roundtrip` | dolphin_base_int8 | 104 | 30.0% | 50.0% | 82.5% | 95.0% |
+| `laptop_tts_roundtrip` | dolphin_small_int8 | 250 | 64.9% | 52.5% | 27.5% | 50.0% |
+| `laptop_tts_roundtrip` | whisper_base_int8_hi | 160 | 100.0% | 55.0% | 45.0% | 67.5% |
+| `laptop_tts_roundtrip` | omnilingual_300m_ctc_v2_int8 | 366 | 15.0% | 92.5% | 87.5% | 97.5% |
+
+Synthetic speech from one voice on the laptop: an upper bound until native speakers are recorded. Item lookup uses `pipeline/voice.py`.
+
 ## Llama speed on the phone
 
 No phone results yet (run list: `eval/latency/llm_bench.md`; laptop speed is never reported).

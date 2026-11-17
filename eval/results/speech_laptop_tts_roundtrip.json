@@ -1,0 +1,359 @@
+{
+  "audio": "synthetic: Piper hi_IN pratham (test-only voice)",
+  "utterances": 85,
+  "items": 40,
+  "sentence_template": "मेरे पास {} है, इसे कहाँ डालूँ?",
+  "tts_realtime_factor_laptop": 0.149,
+  "dolphin_base_int8": {
+    "model_mb": 103.7,
+    "median_cer": 0.3,
+    "name_exact_top1": 0.025,
+    "name_match_top1": 0.5,
+    "name_match_top3": 0.6,
+    "sentence_exact_top1": 0.225,
+    "sentence_match_top1": 0.825,
+    "sentence_match_top3": 0.95,
+    "confident_match_on_item_free_questions": 0,
+    "asr_realtime_factor_laptop": 0.093,
+    "examples": [
+      {
+        "said": "बैटरी (AA, AAA, बटन सेल)",
+        "heard": "",
+        "matched": []
+      },
+      {
+        "said": "एयरोसोल स्प्रे कैन",
+        "heard": "эрrussul pekan",
+        "matched": [
+          "aerosol_can"
+        ]
+      },
+      {
+        "said": "एल्युमिनियम का कैन",
+        "heard": "elลิminiเนียum กาแกน",
+        "matched": [
+          "used_tissue"
+        ]
+      },
+      {
+        "said": "दवा की खाली पत्ती",
+        "heard": "दवा की खालीपति",
+        "matched": [
+          "blister_pack"
+        ]
+      },
+      {
+        "said": "टूटा हुआ काँच",
+        "heard": "ч",
+        "matched": []
+      },
+      {
+        "said": "गत्ते का डिब्बा",
+        "heard": "geti diba",
+        "matched": [
+          "tin_can"
+        ]
+      },
+      {
+        "said": "यह किस डिब्बे में जाएगा?",
+        "heard": "यह किस डिब्बी में जाएगा",
+        "matched": [
+          "flowers_puja"
+        ]
+      },
+      {
+        "said": "क्या यह रीसायकल हो सकता है?",
+        "heard": "क्या यह रिसाइकल हो सकता है",
+        "matched": [
+          "charger_cable"
+        ]
+      },
+      {
+        "said": "इसे फेंकने से पहले कैसे तैयार करूँ?",
+        "heard": "इसे भhinंंकिंग से पहले कैसे तैयार करू",
+        "matched": [
+          "earphones"
+        ]
+      },
+      {
+        "said": "इसे कहाँ फेंकना चाहिए?",
+        "heard": "इसे कहा हंकना चाहिए",
+        "matched": [
+          "cooked_food_leftovers"
+        ]
+      },
+      {
+        "said": "क्या यह खतरनाक है?",
+        "heard": "क्या यहख拿开",
+        "matched": [
+          "old_clothes"
+        ]
+      }
+    ]
+  },
+  "dolphin_small_int8": {
+    "model_mb": 249.7,
+    "median_cer": 0.649,
+    "name_exact_top1": 0.1,
+    "name_match_top1": 0.525,
+    "name_match_top3": 0.6,
+    "sentence_exact_top1": 0.175,
+    "sentence_match_top1": 0.275,
+    "sentence_match_top3": 0.5,
+    "confident_match_on_item_free_questions": 0,
+    "asr_realtime_factor_laptop": 0.088,
+    "examples": [
+      {
+        "said": "बैटरी (AA, AAA, बटन सेल)",
+        "heard": "",
+        "matched": []
+      },
+      {
+        "said": "एयरोसोल स्प्रे कैन",
+        "heard": "эруссп。",
+        "matched": []
+      },
+      {
+        "said": "एल्युमिनियम का कैन",
+        "heard": "",
+        "matched": []
+      },
+      {
+        "said": "दवा की खाली पत्ती",
+        "heard": "दवा की खालीपति",
+        "matched": [
+          "blister_pack"
+        ]
+      },
+      {
+        "said": "टूटा हुआ काँच",
+        "heard": "हुआканंच",
+        "matched": [
+          "broken_glass"
+        ]
+      },
+      {
+        "said": "गत्ते का डिब्बा",
+        "heard": "gette का diba",
+        "matched": [
+          "cardboard_box"
+        ]
+      },
+      {
+        "said": "यह किस डिब्बे में जाएगा?",
+        "heard": "यह किस टिब्बे में जाएगा",
+        "matched": [
+          "flowers_puja"
+        ]
+      },
+      {
+        "said": "क्या यह रीसायकल हो सकता है?",
+        "heard": "क्या यह रिसाइकल हो सकता है",
+        "matched": [
+          "charger_cable"
+        ]
+      },
+      {
+        "said": "इसे फेंकने से पहले कैसे तैयार करूँ?",
+        "heard": "इसे پھینंकنے से पहले कैसे तैयार करू",
+        "matched": [
+          "earphones"
+        ]
+      },
+      {
+        "said": "इसे कहाँ फेंकना चाहिए?",
+        "heard": "इसे कहा पेंंकना चाहिए",
+        "matched": [
+          "flowers_puja"
+        ]
+      },
+      {
+        "said": "क्या यह खतरनाक है?",
+        "heard": "क्या यह खतरनाक है",
+        "matched": [
+          "old_clothes"
+        ]
+      }
+    ]
+  },
+  "whisper_base_int8_hi": {
+    "model_mb": 159.8,
+    "median_cer": 1.0,
+    "name_exact_top1": 0.0,
+    "name_match_top1": 0.55,
+    "name_match_top3": 0.675,
+    "sentence_exact_top1": 0.0,
+    "sentence_match_top1": 0.45,
+    "sentence_match_top3": 0.675,
+    "confident_match_on_item_free_questions": 0,
+    "asr_realtime_factor_laptop": 0.223,
+    "examples": [
+      {
+        "said": "बैटरी (AA, AAA, बटन सेल)",
+        "heard": "by 3a button cell",
+        "matched": [
+          "aa_battery"
+        ]
+      },
+      {
+        "said": "एयरोसोल स्प्रे कैन",
+        "heard": "Airos old spicken",
+        "matched": [
+          "aerosol_can"
+        ]
+      },
+      {
+        "said": "एल्युमिनियम का कैन",
+        "heard": "aluminium cacan",
+        "matched": [
+          "aluminium_can"
+        ]
+      },
+      {
+        "said": "दवा की खाली पत्ती",
+        "heard": "دو à کی خلپت",
+        "matched": [
+          "blister_pack"
+        ]
+      },
+      {
+        "said": "टूटा हुआ काँच",
+        "heard": "ھو تہو",
+        "matched": []
+      },
+      {
+        "said": "गत्ते का डिब्बा",
+        "heard": "گتے قدیب",
+        "matched": [
+          "cardboard_box"
+        ]
+      },
+      {
+        "said": "यह किस डिब्बे में जाएगा?",
+        "heard": "یہاں ke s tibbe mi",
+        "matched": [
+          "syringe"
+        ]
+      },
+      {
+        "said": "क्या यह रीसायकल हो सकता है?",
+        "heard": "क्या ‫ری ‫سائک",
+        "matched": [
+          "newspaper"
+        ]
+      },
+      {
+        "said": "इसे फेंकने से पहले कैसे तैयार करूँ?",
+        "heard": "اسے پھینkni سے پہلے کی",
+        "matched": [
+          "syringe"
+        ]
+      },
+      {
+        "said": "इसे कहाँ फेंकना चाहिए?",
+        "heard": "اسے کہاں پھیک نہ",
+        "matched": [
+          "cooked_food_leftovers"
+        ]
+      },
+      {
+        "said": "क्या यह खतरनाक है?",
+        "heard": "کیا یہاں ختم",
+        "matched": [
+          "syringe"
+        ]
+      }
+    ]
+  },
+  "omnilingual_300m_ctc_v2_int8": {
+    "model_mb": 365.8,
+    "median_cer": 0.15,
+    "name_exact_top1": 0.25,
+    "name_match_top1": 0.925,
+    "name_match_top3": 0.975,
+    "sentence_exact_top1": 0.35,
+    "sentence_match_top1": 0.875,
+    "sentence_match_top3": 0.975,
+    "confident_match_on_item_free_questions": 0,
+    "asr_realtime_factor_laptop": 0.259,
+    "examples": [
+      {
+        "said": "बैटरी (AA, AAA, बटन सेल)",
+        "heard": "बैठरिए ए बटन सेल",
+        "matched": [
+          "aa_battery"
+        ]
+      },
+      {
+        "said": "एयरोसोल स्प्रे कैन",
+        "heard": "एरो सोलस पे कैं",
+        "matched": [
+          "aerosol_can"
+        ]
+      },
+      {
+        "said": "एल्युमिनियम का कैन",
+        "heard": "ɛlium iniem kakɛn",
+        "matched": [
+          "aluminium_can"
+        ]
+      },
+      {
+        "said": "दवा की खाली पत्ती",
+        "heard": "दवा की खाली पती",
+        "matched": [
+          "blister_pack"
+        ]
+      },
+      {
+        "said": "टूटा हुआ काँच",
+        "heard": "tuta هakاnč",
+        "matched": [
+          "broken_glass"
+        ]
+      },
+      {
+        "said": "गत्ते का डिब्बा",
+        "heard": "gත්്തെ කdඩി്ബ",
+        "matched": [
+          "tin_can"
+        ]
+      },
+      {
+        "said": "यह किस डिब्बे में जाएगा?",
+        "heard": "यहाँ किस टिबबे में जाएगा",
+        "matched": [
+          "flowers_puja"
+        ]
+      },
+      {
+        "said": "क्या यह रीसायकल हो सकता है?",
+        "heard": "کیयا یह ریساइکل ہو سکتا ہے",
+        "matched": [
+          "aa_battery"
+        ]
+      },
+      {
+        "said": "इसे फेंकने से पहले कैसे तैयार करूँ?",
+        "heard": "इसे फेंकनी से पहले कैसे तैयार करूँ",
+        "matched": [
+          "cardboard_box"
+        ]
+      },
+      {
+        "said": "इसे कहाँ फेंकना चाहिए?",
+        "heard": "इसे कहाँ फेंकना चाहिए",
+        "matched": [
+          "cardboard_box"
+        ]
+      },
+      {
+        "said": "क्या यह खतरनाक है?",
+        "heard": "कیा یह خطر ناک ہے",
+        "matched": [
+          "paint_can"
+        ]
+      }
+    ]
+  }
+}

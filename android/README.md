@@ -15,6 +15,7 @@ A Kotlin/JVM library with no Android dependencies. The app (WP5) will use it as 
 | `Assistant.kt` | `pipeline/assistant.py` | Off-topic guard, one short retry, fallback to KB text |
 | `Stability.kt` | `pipeline/stability.py` | Confidence gate and voting over camera frames: a verdict shows once one item wins 3 of the last 5 frames |
 | `FallbackRank.kt` | `rank()` in `pipeline/fallback.py` | Top-3 KB items from a SigLIP 2 image embedding, for the unknown-item fallback |
+| `Voice.kt` | `pipeline/voice.py` | Speech transcript → KB items (pronunciation key, script mapping, sentence windows, confidence margin) |
 | `Impact.kt` | `pipeline/impact.py`, `pipeline/education.py` | Scan log summary (repeats within 30 s ignored, streams, estimated kg diverted, streak) and KB-only education cards (did you know, watch out, daily quiz) |
 
 Reading `kb.sqlite` is platform code and not part of `core`: the tests use JDBC, the app will use `android.database.sqlite`. `KbData` holds the loaded rows.
