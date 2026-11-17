@@ -35,7 +35,10 @@ The phone is borrowed, so before each session:
 
 ## 4. Llama access
 
-Request access to **meta-llama/Llama-3.2-1B-Instruct** (and 3B if the phone has 8 GB+) on Hugging Face and accept the Llama 3.2 Community License. Approval can take time, so do this first.
+Read and accept the [Llama 3.2 Community License](https://www.llama.com/llama3_2/license/). After that:
+
+- **Prebuilt `.pte` (enough for the first phone test):** `./scripts/download_models.sh llama-spinquant --accept-llama-license`. These repos are not gated, so no Hugging Face login is needed.
+- **Own export and fine-tuning (WP8):** request access to the gated **meta-llama/Llama-3.2-1B-Instruct** on Hugging Face, run `uvx --from "huggingface_hub>=0.34" hf auth login`, then `./scripts/download_models.sh llama-original --accept-llama-license`. Approval can take time, so request it early.
 
 ## Phase 0 checklist
 

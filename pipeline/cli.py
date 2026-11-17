@@ -47,7 +47,12 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
     p.add_argument("--lang", default="en")
     p.add_argument("--city", default=DEFAULT_CITY)
     p.add_argument("--question")
-    p.add_argument("--llm-output", help="recorded raw Llama output: a file path, or - for stdin")
+    llm = p.add_mutually_exclusive_group()
+    llm.add_argument("--llm-output", help="recorded raw Llama output: a file path, or - for stdin")
+    llm.add_argument(
+        "--llm-model", type=Path, help="Llama .pte to run on the host (needs --tokenizer)"
+    )
+    p.add_argument("--tokenizer", type=Path, help="tokenizer.model for --llm-model")
     p.add_argument("--kb", type=Path, default=DEFAULT_KB)
     return p.parse_args(argv)
 
@@ -85,7 +90,18 @@ def main(argv: list[str] | None = None) -> int:
     verdict = kb.resolve(item_id, attributes, args.lang, args.city)
     result["verdict"] = verdict.to_dict()
     result["prompt"] = build_prompt(verdict, attributes, kb.language_name(args.lang), args.question)
-    if args.llm_output:
+    if args.llm_model:
+        if args.tokenizer is None:
+            print("--llm-model needs --tokenizer", file=sys.stderr)
+            return 2
+        from pipeline.assistant import explain
+        from pipeline.llm import ExecuTorchGenerator
+
+        generator = ExecuTorchGenerator(args.llm_model, args.tokenizer)
+        explanation = explain(kb, verdict, attributes, generator, args.question)
+        result["raw_outputs"] = explanation.raw_outputs
+        result["verified"] = explanation.verified.to_dict()
+    elif args.llm_output:
         raw = (
             sys.stdin.read()
             if args.llm_output == "-"

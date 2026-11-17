@@ -1,0 +1,15 @@
+{
+  "kind": "llm_phone_benchmark",
+  "date": "YYYY-MM-DD",
+  "commit": "git rev-parse --short HEAD",
+  "device": {"model": "", "soc": "", "ram_gb": 0, "android": "", "i8mm": null, "dotprod": null},
+  "model": {"file": "", "sha256": "", "mode": "spinquant|qat_lora|int4", "max_seq_len": 0},
+  "runtime": {"app": "LlamaDemo", "executorch_android": "1.5.1"},
+  "conditions": {"airplane_mode": true, "battery_start_pct": 0, "notes": ""},
+  "load_time_s": null,
+  "runs": [
+    {"prompt": "pet_bottle_ok_en", "ttft_s": null, "prefill_tok_s": null, "decode_tok_s": null}
+  ],
+  "sustained_5min_decode_tok_s": null,
+  "peak_pss_mb": null
+}

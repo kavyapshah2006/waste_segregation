@@ -8,8 +8,10 @@ Chat format, from the Llama 3.2 Instruct tokenizer chat template:
     <|begin_of_text|><|start_header_id|>{role}<|end_header_id|>\\n\\n{content}<|eot_id|>...
 Generation stops at <|eot_id|> (128009) or <|end_of_text|> (128001).
 
-TODO(verify): whether the ExecuTorch Android runner adds <|begin_of_text|> itself. If it
-does, call build_prompt(..., include_bos=False) on the phone so the BOS token is not doubled.
+BOS handling: the prompt text includes <|begin_of_text|>, so the runner must add none
+(GenerationConfig.num_bos=0, which is the Python runner's default; see pipeline/llm.py).
+TODO(verify): the Android LlmModule's BOS behaviour on the phone (WP1). If it adds one,
+call build_prompt(..., include_bos=False) there so the BOS token is not doubled.
 """
 
 from __future__ import annotations

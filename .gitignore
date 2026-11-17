@@ -44,3 +44,6 @@ kb/build/
 # Vision training runs and exports (weights go to GitHub Releases)
 models/vision/runs/
 models/vision/out/
+
+# Llama model files and export outputs (never committed)
+models/llm/out/
