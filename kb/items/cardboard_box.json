@@ -41,6 +41,18 @@
         "stream": "wet",
         "recyclable": false,
         "compostable": true,
+        "steps": {
+          "en": [
+            "Tear off the greasy or food-soiled parts",
+            "Put those parts in the green bin",
+            "Flatten the clean parts and put them in the blue bin"
+          ],
+          "hi": [
+            "चिकनाई या खाने से गंदे हिस्से फाड़ लें",
+            "उन हिस्सों को हरे डिब्बे में डालें",
+            "साफ़ हिस्सों को चपटा करके नीले डिब्बे में डालें"
+          ]
+        },
         "note": {
           "en": "Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts.",
           "hi": "चिकनाई वाला हिस्सा (जैसे पिज़्ज़ा बॉक्स का तला) रीसायकल नहीं होता; उसे फाड़कर हरे डिब्बे में डालें और साफ़ हिस्सा रीसायकल करें।"

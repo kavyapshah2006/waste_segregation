@@ -40,6 +40,16 @@
         "stream": "wet",
         "recyclable": false,
         "compostable": true,
+        "steps": {
+          "en": [
+            "Put oily or food-soiled paper in the green bin",
+            "Keep clean paper separate for recycling"
+          ],
+          "hi": [
+            "तेल या खाने से गंदा काग़ज़ हरे डिब्बे में डालें",
+            "साफ़ काग़ज़ को रीसायकल के लिए अलग रखें"
+          ]
+        },
         "note": {
           "en": "Oily or food-soiled paper cannot be recycled, but it can be composted.",
           "hi": "तेल या खाने से गंदा काग़ज़ रीसायकल नहीं होता, लेकिन उसकी खाद बन सकती है।"

@@ -1,0 +1,69 @@
+{
+  "id": "kulhad_blue_bin_en",
+  "description": "Bin given as 'Blue bin' is accepted.",
+  "input": {
+    "detection": {
+      "item_id": "kulhad",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Kulhad\", \"stream\": \"dry\", \"bin\": \"Blue bin\", \"steps\": [\"Follow the steps\"], \"why\": \"Clay returns to the soil.\", \"tip\": \"Reuse it as a small planter.\", \"language\": \"en\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "kulhad",
+      "name": "Clay cup (kulhad)",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": false,
+      "compostable": false,
+      "steps": [
+        "Rinse it",
+        "Crush it and mix it into garden soil, or put it in the blue bin"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [],
+      "impact": "Clay is natural and goes back into the soil when crushed.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Clay cup (kulhad)\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": false, \"steps\": [\"Rinse it\", \"Crush it and mix it into garden soil, or put it in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Clay is natural and goes back into the soil when crushed.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "Clay cup (kulhad)",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "Rinse it",
+          "Crush it and mix it into garden soil, or put it in the blue bin"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": "Clay returns to the soil.",
+        "tip": "Reuse it as a small planter.",
+        "language": "en"
+      },
+      "contradictions": []
+    }
+  }
+}

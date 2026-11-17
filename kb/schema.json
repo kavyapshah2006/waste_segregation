@@ -55,6 +55,10 @@
               "recyclable": {"type": "boolean"},
               "compostable": {"type": "boolean"},
               "hazard": {"$ref": "#/$defs/text"},
+              "steps": {
+                "description": "Replaces prep_steps. Required when the rule changes the stream.",
+                "$ref": "#/$defs/textList"
+              },
               "extra_steps": {"$ref": "#/$defs/textList"},
               "note": {"$ref": "#/$defs/text"}
             }

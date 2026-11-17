@@ -1,0 +1,71 @@
+{
+  "id": "mobile_phone_extra_keys_en",
+  "description": "Extra keys from Llama are ignored.",
+  "input": {
+    "detection": {
+      "item_id": "mobile_phone",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Phone\", \"stream\": \"special care\", \"bin\": \"black\", \"steps\": [\"Reset it\"], \"why\": \"Phones contain valuable metals.\", \"tip\": \"Repair before replacing.\", \"language\": \"en\", \"confidence\": 0.99, \"extra\": {\"nested\": true}}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "mobile_phone",
+      "name": "Old mobile phone",
+      "stream": "special_care",
+      "stream_name": "Special care waste",
+      "bin_colour": "black",
+      "bin_colour_name": "black",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Back up your data and factory-reset it",
+        "Remove the SIM and memory card",
+        "Give it to an authorised e-waste collector or a brand take-back programme"
+      ],
+      "hazard": "Swollen batteries can catch fire; do not crush or puncture it.",
+      "drop_off": "e_waste_centre",
+      "drop_off_text": "Give it to an authorised e-waste collection centre, a brand take-back programme or your city's e-waste drive.",
+      "notes": [],
+      "impact": "Phones contain gold, copper and rare metals that recyclers recover.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Old mobile phone\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": true, \"steps\": [\"Back up your data and factory-reset it\", \"Remove the SIM and memory card\", \"Give it to an authorised e-waste collector or a brand take-back programme\"], \"hazard\": \"Swollen batteries can catch fire; do not crush or puncture it.\", \"drop_off\": \"Give it to an authorised e-waste collection centre, a brand take-back programme or your city's e-waste drive.\", \"notes\": [], \"impact\": \"Phones contain gold, copper and rare metals that recyclers recover.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "Old mobile phone",
+        "stream": "special_care",
+        "bin": "black",
+        "steps": [
+          "Back up your data and factory-reset it",
+          "Remove the SIM and memory card",
+          "Give it to an authorised e-waste collector or a brand take-back programme"
+        ],
+        "hazard": "Swollen batteries can catch fire; do not crush or puncture it.",
+        "drop_off": "Give it to an authorised e-waste collection centre, a brand take-back programme or your city's e-waste drive.",
+        "why": "Phones contain valuable metals.",
+        "tip": "Repair before replacing.",
+        "language": "en"
+      },
+      "contradictions": []
+    }
+  }
+}

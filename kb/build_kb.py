@@ -69,6 +69,13 @@ def validate(src: KbSource, kb_dir: Path = KB_DIR) -> list[str]:
             errors.append(f"items/{stem}.json: {err.json_path}: {err.message}")
         if item.get("id") != stem:
             errors.append(f"items/{stem}.json: id {item.get('id')!r} does not match file name")
+        for n, rule in enumerate(item.get("condition_rules", [])):
+            then = rule.get("then", {})
+            if "stream" in then and then["stream"] != item.get("stream") and "steps" not in then:
+                errors.append(
+                    f"items/{stem}.json: condition_rules[{n}] changes the stream but does not "
+                    "replace the steps"
+                )
 
     for stem, city in src.cities.items():
         for err in city_validator.iter_errors(city):

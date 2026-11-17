@@ -1,0 +1,19 @@
+{
+  "id": "low_confidence",
+  "description": "Detector below the confidence gate: no verdict, the UI asks again.",
+  "input": {
+    "detection": {
+      "item_id": null,
+      "reason": "low_confidence"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": null
+  },
+  "expected": {
+    "verdict": null,
+    "prompt": null,
+    "verified": null
+  }
+}

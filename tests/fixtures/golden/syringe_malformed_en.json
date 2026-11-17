@@ -1,0 +1,73 @@
+{
+  "id": "syringe_malformed_en",
+  "description": "Missing closing brace: falls back to KB text.",
+  "input": {
+    "detection": {
+      "item_id": "syringe",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Syringe\", \"stream\": \"special_care\", \"bin\": \"black\", \"why\": \"Needles are sharp\""
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "syringe",
+      "name": "Used syringe or needle",
+      "stream": "special_care",
+      "stream_name": "Special care waste",
+      "bin_colour": "black",
+      "bin_colour_name": "black",
+      "recyclable": false,
+      "compostable": false,
+      "steps": [
+        "Never recap or bend the needle",
+        "Put it in a hard plastic bottle with a tight lid",
+        "Give it to a hospital, pharmacy or special care collection point"
+      ],
+      "hazard": "Sharp and may carry infection.",
+      "drop_off": "hazardous_collection",
+      "drop_off_text": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+      "notes": [],
+      "impact": "Loose needles injure waste workers and can spread infection.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Used syringe or needle\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": false, \"steps\": [\"Never recap or bend the needle\", \"Put it in a hard plastic bottle with a tight lid\", \"Give it to a hospital, pharmacy or special care collection point\"], \"hazard\": \"Sharp and may carry infection.\", \"drop_off\": \"Hand it to your city's special care (household hazardous) waste collection or drop-off centre.\", \"notes\": [], \"impact\": \"Loose needles injure waste workers and can spread infection.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "fallback",
+      "output": {
+        "item": "Used syringe or needle",
+        "stream": "special_care",
+        "bin": "black",
+        "steps": [
+          "Never recap or bend the needle",
+          "Put it in a hard plastic bottle with a tight lid",
+          "Give it to a hospital, pharmacy or special care collection point"
+        ],
+        "hazard": "Sharp and may carry infection.",
+        "drop_off": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+        "why": null,
+        "tip": null,
+        "language": "en"
+      },
+      "contradictions": [
+        "unparseable"
+      ]
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "id": "cardboard_clean_hi",
+  "description": "Clean cardboard in Hindi; Llama agrees.",
+  "input": {
+    "detection": {
+      "item_id": "cardboard_box",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "hi",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"गत्ते का डिब्बा\", \"stream\": \"सूखा कचरा\", \"bin\": \"नीला\", \"steps\": [\"Follow the steps\"], \"why\": \"सूखा गत्ता आसानी से रीसायकल होता है।\", \"tip\": \"डिब्बे को चपटा करें।\", \"language\": \"hi\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "cardboard_box",
+      "name": "गत्ते का डिब्बा",
+      "stream": "dry",
+      "stream_name": "सूखा कचरा",
+      "bin_colour": "blue",
+      "bin_colour_name": "नीला",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "टेप और प्लास्टिक हटा दें",
+        "डिब्बे को चपटा करें",
+        "सूखा रखें और नीले डिब्बे में डालें या कबाड़ी को दें"
+      ],
+      "hazard": null,
+      "drop_off": "scrap_dealer",
+      "drop_off_text": "स्थानीय कबाड़ीवाला अक्सर इसे ख़रीद लेता है।",
+      "notes": [],
+      "impact": "गत्ता सबसे ज़्यादा रीसायकल होने वाली चीज़ों में से है; सूखा रखने से उसकी कीमत बनी रहती है।",
+      "language": "hi",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"गत्ते का डिब्बा\", \"stream\": \"सूखा कचरा\", \"bin\": \"नीला\", \"recyclable\": true, \"steps\": [\"टेप और प्लास्टिक हटा दें\", \"डिब्बे को चपटा करें\", \"सूखा रखें और नीले डिब्बे में डालें या कबाड़ी को दें\"], \"hazard\": null, \"drop_off\": \"स्थानीय कबाड़ीवाला अक्सर इसे ख़रीद लेता है।\", \"notes\": [], \"impact\": \"गत्ता सबसे ज़्यादा रीसायकल होने वाली चीज़ों में से है; सूखा रखने से उसकी कीमत बनी रहती है।\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Hindi\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "गत्ते का डिब्बा",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "टेप और प्लास्टिक हटा दें",
+          "डिब्बे को चपटा करें",
+          "सूखा रखें और नीले डिब्बे में डालें या कबाड़ी को दें"
+        ],
+        "hazard": null,
+        "drop_off": "स्थानीय कबाड़ीवाला अक्सर इसे ख़रीद लेता है।",
+        "why": "सूखा गत्ता आसानी से रीसायकल होता है।",
+        "tip": "डिब्बे को चपटा करें।",
+        "language": "hi"
+      },
+      "contradictions": []
+    }
+  }
+}

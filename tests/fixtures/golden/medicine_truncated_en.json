@@ -1,0 +1,73 @@
+{
+  "id": "medicine_truncated_en",
+  "description": "Output cut off mid-string: falls back to KB text.",
+  "input": {
+    "detection": {
+      "item_id": "expired_medicine",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Medicine\", \"stream\": \"special_care\", \"bin\": \"black\", \"why\": \"Expired medic"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "expired_medicine",
+      "name": "Expired or unused medicines",
+      "stream": "special_care",
+      "stream_name": "Special care waste",
+      "bin_colour": "black",
+      "bin_colour_name": "black",
+      "recyclable": false,
+      "compostable": false,
+      "steps": [
+        "Do not flush them or throw them in the open",
+        "Keep them in their packaging",
+        "Return them to a pharmacy take-back box or a special care collection point"
+      ],
+      "hazard": "Can be poisonous to children, animals and water.",
+      "drop_off": "pharmacy_takeback",
+      "drop_off_text": "Return it to a pharmacy with a medicine take-back box, or to your city's special care waste collection.",
+      "notes": [],
+      "impact": "Medicines thrown in the open can poison children, animals and water.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Expired or unused medicines\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": false, \"steps\": [\"Do not flush them or throw them in the open\", \"Keep them in their packaging\", \"Return them to a pharmacy take-back box or a special care collection point\"], \"hazard\": \"Can be poisonous to children, animals and water.\", \"drop_off\": \"Return it to a pharmacy with a medicine take-back box, or to your city's special care waste collection.\", \"notes\": [], \"impact\": \"Medicines thrown in the open can poison children, animals and water.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "fallback",
+      "output": {
+        "item": "Expired or unused medicines",
+        "stream": "special_care",
+        "bin": "black",
+        "steps": [
+          "Do not flush them or throw them in the open",
+          "Keep them in their packaging",
+          "Return them to a pharmacy take-back box or a special care collection point"
+        ],
+        "hazard": "Can be poisonous to children, animals and water.",
+        "drop_off": "Return it to a pharmacy with a medicine take-back box, or to your city's special care waste collection.",
+        "why": null,
+        "tip": null,
+        "language": "en"
+      },
+      "contradictions": [
+        "unparseable"
+      ]
+    }
+  }
+}

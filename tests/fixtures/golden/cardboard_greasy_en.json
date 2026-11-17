@@ -1,0 +1,79 @@
+{
+  "id": "cardboard_greasy_en",
+  "description": "Greasy cardboard becomes wet waste; Llama wrongly says the blue bin.",
+  "input": {
+    "detection": {
+      "item_id": "cardboard_box",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": true,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Pizza box\", \"stream\": \"dry\", \"bin\": \"blue bin\", \"steps\": [\"Follow the steps\"], \"why\": \"Cardboard goes in the blue bin for recycling.\", \"tip\": \"Flatten it.\", \"language\": \"en\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "cardboard_box",
+      "name": "Cardboard box",
+      "stream": "wet",
+      "stream_name": "Wet waste",
+      "bin_colour": "green",
+      "bin_colour_name": "green",
+      "recyclable": false,
+      "compostable": true,
+      "steps": [
+        "Tear off the greasy or food-soiled parts",
+        "Put those parts in the green bin",
+        "Flatten the clean parts and put them in the blue bin"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [
+        "Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts."
+      ],
+      "impact": "Cardboard is one of the most recycled materials; keeping it dry keeps it valuable.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [
+        "rule:contaminated=true"
+      ],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Cardboard box\", \"stream\": \"Wet waste\", \"bin\": \"green\", \"recyclable\": false, \"steps\": [\"Tear off the greasy or food-soiled parts\", \"Put those parts in the green bin\", \"Flatten the clean parts and put them in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [\"Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts.\"], \"impact\": \"Cardboard is one of the most recycled materials; keeping it dry keeps it valuable.\"}\nCONDITION: {\"broken\": false, \"contaminated\": true}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "Cardboard box",
+        "stream": "wet",
+        "bin": "green",
+        "steps": [
+          "Tear off the greasy or food-soiled parts",
+          "Put those parts in the green bin",
+          "Flatten the clean parts and put them in the blue bin"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": null,
+        "tip": "Flatten it.",
+        "language": "en"
+      },
+      "contradictions": [
+        "stream",
+        "bin",
+        "why_bin"
+      ]
+    }
+  }
+}

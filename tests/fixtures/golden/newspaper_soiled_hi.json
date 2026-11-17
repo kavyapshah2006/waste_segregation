@@ -1,0 +1,73 @@
+{
+  "id": "newspaper_soiled_hi",
+  "description": "Oily newspaper becomes wet waste in Hindi; Llama agrees.",
+  "input": {
+    "detection": {
+      "item_id": "newspaper",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": true,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "hi",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"अख़बार\", \"stream\": \"गीला\", \"bin\": \"हरा\", \"steps\": [\"Follow the steps\"], \"why\": \"तेल वाला काग़ज़ खाद बन सकता है।\", \"tip\": \"साफ़ अख़बार अलग रखें।\", \"language\": \"hi\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "newspaper",
+      "name": "अख़बार",
+      "stream": "wet",
+      "stream_name": "गीला कचरा",
+      "bin_colour": "green",
+      "bin_colour_name": "हरा",
+      "recyclable": false,
+      "compostable": true,
+      "steps": [
+        "तेल या खाने से गंदा काग़ज़ हरे डिब्बे में डालें",
+        "साफ़ काग़ज़ को रीसायकल के लिए अलग रखें"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [
+        "तेल या खाने से गंदा काग़ज़ रीसायकल नहीं होता, लेकिन उसकी खाद बन सकती है।"
+      ],
+      "impact": "रीसायकल किया गया अख़बार नए काग़ज़ और अंडे की ट्रे में बदलता है।",
+      "language": "hi",
+      "city": "default_in",
+      "applied": [
+        "rule:contaminated=true"
+      ],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"अख़बार\", \"stream\": \"गीला कचरा\", \"bin\": \"हरा\", \"recyclable\": false, \"steps\": [\"तेल या खाने से गंदा काग़ज़ हरे डिब्बे में डालें\", \"साफ़ काग़ज़ को रीसायकल के लिए अलग रखें\"], \"hazard\": null, \"drop_off\": null, \"notes\": [\"तेल या खाने से गंदा काग़ज़ रीसायकल नहीं होता, लेकिन उसकी खाद बन सकती है।\"], \"impact\": \"रीसायकल किया गया अख़बार नए काग़ज़ और अंडे की ट्रे में बदलता है।\"}\nCONDITION: {\"broken\": false, \"contaminated\": true}\nLANGUAGE: Hindi\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "अख़बार",
+        "stream": "wet",
+        "bin": "green",
+        "steps": [
+          "तेल या खाने से गंदा काग़ज़ हरे डिब्बे में डालें",
+          "साफ़ काग़ज़ को रीसायकल के लिए अलग रखें"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": "तेल वाला काग़ज़ खाद बन सकता है।",
+        "tip": "साफ़ अख़बार अलग रखें।",
+        "language": "hi"
+      },
+      "contradictions": []
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "id": "chips_packet_why_wrong_bin_en",
+  "description": "Llama's 'why' names the green bin; it is dropped.",
+  "input": {
+    "detection": {
+      "item_id": "chips_packet",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Chips packet\", \"stream\": \"dry\", \"bin\": \"blue\", \"steps\": [\"Follow the steps\"], \"why\": \"It is food packaging so it goes in the green bin.\", \"tip\": \"Buy bigger packs.\", \"language\": \"en\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "chips_packet",
+      "name": "Chips or snack packet",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": false,
+      "compostable": false,
+      "steps": [
+        "Empty out crumbs",
+        "Put it in the blue bin (dry waste)"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [],
+      "impact": "Snack packets are layers of plastic and foil that are hard to recycle; they are usually sent to be used as fuel.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Chips or snack packet\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": false, \"steps\": [\"Empty out crumbs\", \"Put it in the blue bin (dry waste)\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Snack packets are layers of plastic and foil that are hard to recycle; they are usually sent to be used as fuel.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "Chips or snack packet",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "Empty out crumbs",
+          "Put it in the blue bin (dry waste)"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": null,
+        "tip": "Buy bigger packs.",
+        "language": "en"
+      },
+      "contradictions": [
+        "why_bin"
+      ]
+    }
+  }
+}

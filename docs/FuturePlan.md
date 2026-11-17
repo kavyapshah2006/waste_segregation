@@ -158,20 +158,24 @@ Rules:
 
 ### 5.5 Llama prompt and output
 
-Prompt uses the Llama 3.2 chat format. The system message is fixed (so its KV cache can be pre-filled once); the user message carries the facts.
+Prompt uses the Llama 3.2 chat format. The system message is identical for every item and language (so its KV cache can be pre-filled once); the user message carries everything that varies. Implemented in `pipeline/prompt.py`; the exact text for each golden fixture is stored in `expected.prompt`.
 
 ```
 <|begin_of_text|><|start_header_id|>system<|end_header_id|>
 
 You are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin,
-hazard or drop-off. Answer in {language}. Keep it under 80 words. Reply as JSON matching the schema.
-<|eot_id|><|start_header_id|>user<|end_header_id|>
+hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these
+keys: "item", "stream", "bin", "steps", "why", "tip", "language". Write why and tip in the
+requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>
 
-FACTS: {kb_entry_json}
-CONDITION: {attributes_json}
-QUESTION: {user_question_or_"Explain how to dispose of this and why."}
-<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+FACTS: {verdict facts JSON}
+CONDITION: {attributes JSON}
+LANGUAGE: {language name}
+QUESTION: {question, default "Explain how to dispose of this and why."}<|eot_id|><|start_header_id|>assistant<|end_header_id|>
+
 ```
+
+The retry prompt (`short=True`) keeps only item, stream, bin and steps in FACTS and drops CONDITION.
 
 Output schema:
 
@@ -187,17 +191,18 @@ Output schema:
 }
 ```
 
-Verifier rules (identical in Python and Kotlin):
-1. Extract the first balanced `{...}` from the output; if parsing fails, retry once with a shorter prompt, then fall back to KB text only.
-2. `stream`, `bin` and any hazard/drop-off text are **overwritten** with KB values. A mismatch is logged as a contradiction.
-3. `steps` must not be empty; if empty, use KB `prep_steps`.
-4. `why` and `tip` are the only free-text fields shown from Llama.
+Verifier rules (identical in Python `pipeline/verify.py` and Kotlin):
+1. Extract the first balanced `{...}` from the output (string- and escape-aware); if parsing fails, retry once with the short prompt, then fall back to KB text only (`status: "fallback"`).
+2. `item`, `stream`, `bin`, `steps`, `hazard` and `drop_off` shown to the user always come from the KB. A `stream` or `bin` from Llama that disagrees is recorded as a contradiction (stream ids, stream names and colour names in any supported language are accepted as agreeing).
+3. Llama's `steps` are never shown; if they name a different bin, `steps_bin` is recorded.
+4. `why` and `tip` are the only text shown from Llama. Each is whitespace-normalised, cut to 400 characters, and dropped (`why_bin` / `tip_bin`) if it names a different bin, in English or Hindi.
+5. Output `status` is `ok` (no contradictions), `corrected` (contradictions found and overridden) or `fallback`.
 
 EOS ids for Llama 3.2: 128009 and 128001. *Verify the chat template against Meta's Llama 3.2 model card before first use.*
 
 ### 5.6 Golden fixtures (`tests/fixtures/golden/`)
 
-JSON files of `{input: {detection, question, language, raw_llm_output}, expected: {verdict, verified_output}}`. The Python pipeline and the Kotlin app both run them, so the two implementations cannot drift. Add a fixture for every bug found.
+JSON files of `{id, description, input: {detection, city, language, question, raw_llm_output}, expected: {verdict, prompt, verified}}`. The Python pipeline and the Kotlin app both run them, so the two implementations cannot drift (including the exact prompt text). Add a fixture for every bug found. `tests/fixtures/golden/regen.py` recomputes `expected` after an intended change; review every diff by hand before committing.
 
 ### 5.7 Android module boundaries (`android/app/src/main/java/.../`)
 
@@ -459,7 +464,7 @@ Update this table in the same commit that completes a WP.
 | 1 | Llama on the phone | Not started | Needs phone + HF access |
 | 2 | Knowledge base v1 | Done | 40 items, 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
 | 3 | Data, taxonomy, detector baseline | Not started | |
-| 4 | Host reference pipeline | Not started | |
+| 4 | Host reference pipeline | Done | `pipeline/` kb, prompt, verify, assistant (retry), cli; 22 golden fixtures. `detect.py` lands with WP3; host Llama runner not built (phone is the reference) |
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |
 | 7 | Accuracy and robustness | Not started | |

@@ -1,0 +1,73 @@
+{
+  "id": "aerosol_steps_wrong_bin_en",
+  "description": "Llama steps name the blue bin; steps always come from the KB.",
+  "input": {
+    "detection": {
+      "item_id": "aerosol_can",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"Aerosol can\", \"stream\": \"special_care\", \"bin\": \"black\", \"steps\": [\"Empty it\", \"Put it in the blue bin\"], \"why\": \"Pressurised cans can explode.\", \"tip\": \"Use pump sprays.\", \"language\": \"en\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "aerosol_can",
+      "name": "Aerosol spray can",
+      "stream": "special_care",
+      "stream_name": "Special care waste",
+      "bin_colour": "black",
+      "bin_colour_name": "black",
+      "recyclable": false,
+      "compostable": false,
+      "steps": [
+        "Use it until it is completely empty",
+        "Do not puncture or burn it",
+        "Take it to a special care collection point"
+      ],
+      "hazard": "Pressurised: can explode if heated or punctured.",
+      "drop_off": "hazardous_collection",
+      "drop_off_text": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+      "notes": [],
+      "impact": "Aerosol cans can explode in garbage trucks and fires if they are not empty.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Aerosol spray can\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": false, \"steps\": [\"Use it until it is completely empty\", \"Do not puncture or burn it\", \"Take it to a special care collection point\"], \"hazard\": \"Pressurised: can explode if heated or punctured.\", \"drop_off\": \"Hand it to your city's special care (household hazardous) waste collection or drop-off centre.\", \"notes\": [], \"impact\": \"Aerosol cans can explode in garbage trucks and fires if they are not empty.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "Aerosol spray can",
+        "stream": "special_care",
+        "bin": "black",
+        "steps": [
+          "Use it until it is completely empty",
+          "Do not puncture or burn it",
+          "Take it to a special care collection point"
+        ],
+        "hazard": "Pressurised: can explode if heated or punctured.",
+        "drop_off": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+        "why": "Pressurised cans can explode.",
+        "tip": "Use pump sprays.",
+        "language": "en"
+      },
+      "contradictions": [
+        "steps_bin"
+      ]
+    }
+  }
+}

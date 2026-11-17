@@ -72,6 +72,12 @@ def test_validate_reports_duplicate_detector_class(src):
     assert any("aluminium_can" in e for e in validate(bad))
 
 
+def test_validate_requires_new_steps_when_a_rule_changes_stream(src):
+    bad = copy.deepcopy(src)
+    del bad.items["cardboard_box"]["condition_rules"][0]["then"]["steps"]
+    assert any("replace the steps" in e for e in validate(bad))
+
+
 def test_validate_reports_missing_drop_off_text(src):
     bad = copy.deepcopy(src)
     del bad.cities["default_in"]["drop_off_info"]["scrap_dealer"]

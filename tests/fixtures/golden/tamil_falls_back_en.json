@@ -1,0 +1,54 @@
+{
+  "id": "tamil_falls_back_en",
+  "description": "Tamil text is not written yet: English is used and flagged.",
+  "input": {
+    "detection": {
+      "item_id": "pet_bottle",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "ta",
+    "question": null,
+    "raw_llm_output": null
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "pet_bottle",
+      "name": "PET plastic bottle",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Empty it",
+        "Rinse it",
+        "Crush it and put the cap back on",
+        "Put it in the blue bin or give it to a scrap dealer"
+      ],
+      "hazard": null,
+      "drop_off": "scrap_dealer",
+      "drop_off_text": "A local scrap dealer (kabadiwala) will often buy it.",
+      "notes": [],
+      "impact": "Recycled PET becomes fibre for clothes and new bottles.",
+      "language": "ta",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": true
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"PET plastic bottle\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty it\", \"Rinse it\", \"Crush it and put the cap back on\", \"Put it in the blue bin or give it to a scrap dealer\"], \"hazard\": null, \"drop_off\": \"A local scrap dealer (kabadiwala) will often buy it.\", \"notes\": [], \"impact\": \"Recycled PET becomes fibre for clothes and new bottles.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Tamil\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": null
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "id": "pet_bottle_ok_en",
+  "description": "Clean PET bottle, Llama agrees with the KB.",
+  "input": {
+    "detection": {
+      "item_id": "pet_bottle",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"PET bottle\", \"stream\": \"dry\", \"bin\": \"blue\", \"steps\": [\"Follow the steps\"], \"why\": \"Clean PET is easy to recycle into fibre.\", \"tip\": \"Reuse it a few times first.\", \"language\": \"en\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "pet_bottle",
+      "name": "PET plastic bottle",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Empty it",
+        "Rinse it",
+        "Crush it and put the cap back on",
+        "Put it in the blue bin or give it to a scrap dealer"
+      ],
+      "hazard": null,
+      "drop_off": "scrap_dealer",
+      "drop_off_text": "A local scrap dealer (kabadiwala) will often buy it.",
+      "notes": [],
+      "impact": "Recycled PET becomes fibre for clothes and new bottles.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"PET plastic bottle\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Empty it\", \"Rinse it\", \"Crush it and put the cap back on\", \"Put it in the blue bin or give it to a scrap dealer\"], \"hazard\": null, \"drop_off\": \"A local scrap dealer (kabadiwala) will often buy it.\", \"notes\": [], \"impact\": \"Recycled PET becomes fibre for clothes and new bottles.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "PET plastic bottle",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "Empty it",
+          "Rinse it",
+          "Crush it and put the cap back on",
+          "Put it in the blue bin or give it to a scrap dealer"
+        ],
+        "hazard": null,
+        "drop_off": "A local scrap dealer (kabadiwala) will often buy it.",
+        "why": "Clean PET is easy to recycle into fibre.",
+        "tip": "Reuse it a few times first.",
+        "language": "en"
+      },
+      "contradictions": []
+    }
+  }
+}
