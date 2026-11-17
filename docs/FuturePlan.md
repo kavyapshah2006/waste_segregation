@@ -195,7 +195,15 @@ Verifier rules (identical in Python `pipeline/verify.py` and Kotlin):
 2. `item`, `stream`, `bin`, `steps`, `hazard` and `drop_off` shown to the user always come from the KB. If Llama adds `stream` or `bin` keys anyway and they disagree, a contradiction is recorded (stream ids, stream names and colour names in any supported language count as agreeing).
 3. If Llama adds a `steps` key, it is never shown; if it names a different bin, `steps_bin` is recorded.
 4. `why` and `tip` are the only text shown from Llama. Each is whitespace-normalised, cut to 400 characters, and dropped (`why_bin` / `tip_bin`) if it names a bin other than the verdict's bin or a bin the KB steps or notes themselves name (greasy cardboard: green and blue). After a stream or bin contradiction, only the verdict's bin is allowed.
-5. Output `status` is `ok` (no contradictions), `corrected` (contradictions found and overridden) or `fallback`.
+5. Content checks, clause by clause (clauses split at punctuation, "and/but/or/so that/because", "और/लेकिन/या/ताकि/क्योंकि/जिससे"). If either field fails any check (including rule 4), **both** `why` and `tip` are dropped: in the stock-model run the other field usually repeated the same mistake.
+   - `*_negates`: a negated clause ("not", "never", "don't", "नहीं", "मत", standalone "न") names the verdict's own bin or stream, or the bin or stream follows "instead of" (English) or comes before "के बजाय / की जगह" (Hindi).
+   - `*_recyclable` / `*_compostable`: any clause claims the opposite of the KB flag ("not recyclable", "रीसायकल नहीं हो सकता" vs "can be recycled", "रीसायकल किया जा सकता है"). A bare leading "No," / "नहीं," or "Yes," / "हाँ," in a text about recycling is a claim too ("No, glass can be recycled" contradicts itself and fails either way). Hedged claims ("rarely", "hard to", "शायद ही", "मुश्किल") count as no claim.
+   - `*_negates_step`: a negated clause carries at least 80% of the content words of a positive KB step ("Do not remove stickers").
+   - `*_unsafe`: an un-negated clause tells the user to put waste in a drain, toilet, road or river (English verbs, Hindi command forms only) or to burn it, unless it repeats the KB's own text (diapers: empty solid waste into the toilet).
+   These are word rules, chosen to drop rather than pass when unsure. Every KB-written training answer passes them (the generator fails otherwise).
+6. Output `status` is `ok` (no contradictions), `corrected` (contradictions found and overridden), `fallback`, or `declined` (see below).
+
+**Off-topic guard** (`pipeline/assistant.py`, before any Llama call): a free-text question that uses no waste word (English or Hindi list), does not name the item, and does not say "this"/"यह" is answered with the fixed `messages.off_topic` text from `kb/strings.json`, without calling Llama (`status: "declined"`, no prompt). The system prompt also tells Llama to decline off-topic questions, as a second line.
 
 EOS ids for Llama 3.2: 128009 and 128001. *Verify the chat template against Meta's Llama 3.2 model card before first use.*
 
@@ -467,7 +475,7 @@ Update this table in the same commit that completes a WP.
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |
 | 7 | Accuracy and robustness | Not started | |
-| 8 | Llama specialisation | Data + eval done; base scored | `generate.py`: KB-verified examples (en/hi, 5 question kinds, 6 held-out items); `eval/llm_quality/run.py`. Stock SpinQuant 1B on the host, 80 held-out cases: useful rate 10% with the 7-key answer, 97.5% with why + tip (`eval/results/llm_quality_spinquant_stock_host*.json`). **The useful rate only checks format and bin names, not content.** Reading the why + tip answers by hand: about 2 in 3 on-topic English answers and about half the Hindi ones are factually right; the model often negates the facts ("do not put plastic bags in the blue bin"), gets "is it recyclable?" wrong against the KB flag, and answers off-topic questions instead of declining. Next: content checks in the eval/verifier, then the LoRA run. **Needs a human:** gated checkpoint + Colab GPU for the LoRA run |
+| 8 | Llama specialisation | Data + eval done; base scored | `generate.py`: KB-verified examples (en/hi, 5 question kinds, 6 held-out items); `eval/llm_quality/run.py`. Stock SpinQuant 1B on the host, 80 held-out cases (`eval/results/llm_quality_spinquant_stock_host*.json`, raw answers in `*.answers.jsonl`): 7-key answer 10% useful (format checks only); why + tip 97.5% on format checks alone, **61% of the 64 on-topic cases once the content checks run** (`_checked`); all 16 off-topic questions declined by the guard, no false declines. Hand reading agrees roughly (about 2 in 3 English, half of Hindi right). What the checks cannot see: nonsense that states no checkable fact, mostly Hindi "how do I prepare this?" answers. That needs the LoRA run. **Needs a human:** gated checkpoint + Colab GPU for the LoRA run |
 | 9 | Languages and voice | Not started | |
 | 10 | Impact and education | Not started | |
 | 11 | Evaluation | Not started | |

@@ -1,0 +1,28 @@
+{
+  "kb_version": "2a3af8c9a0ec1928",
+  "split": "val",
+  "cases": 80,
+  "off_topic_declined_rate": 1.0,
+  "false_declines": 0,
+  "sent_to_llm": 64,
+  "answered": 64,
+  "json_valid_rate": 0.953,
+  "clean_rate": 0.609,
+  "useful_rate": 0.609,
+  "status": {
+    "corrected": 22,
+    "ok": 39,
+    "fallback": 3
+  },
+  "contradictions": {
+    "why_negates": 4,
+    "why_recyclable": 12,
+    "tip_negates": 4,
+    "tip_recyclable": 3,
+    "why_negates_step": 3,
+    "unparseable": 3,
+    "tip_bin": 1
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 17.7
+}
