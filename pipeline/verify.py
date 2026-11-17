@@ -166,32 +166,64 @@ def _negated(clause: str) -> bool:
     return bool(_NEG_EN.search(clause) or _NEG_HI.search(clause))
 
 
+_INSTEAD_OF_EN = re.compile(r"\binstead\s+of\b", re.I)  # negates what follows
+_INSTEAD_OF_HI = re.compile(r"के\s+बजाय|की\s+जगह")  # negates what comes before
+
+
+def _names_verdict(part: str, verdict: Verdict) -> bool:
+    en, hi = _STREAM_WORDS[verdict.stream]
+    return (
+        verdict.bin_colour in bins_mentioned(part)
+        or bool(re.search(en, part, re.I))
+        or bool(re.search(hi, part))
+    )
+
+
 def negates_verdict(text: str, verdict: Verdict) -> bool:
     """True if a clause says not to use the verdict's own bin or stream ('do not put it in the
-    blue bin' when blue is right). Bins are matched as in bins_mentioned; streams by name."""
-    en, hi = _STREAM_WORDS[verdict.stream]
+    blue bin' or '... instead of the blue bin' when blue is right)."""
     for clause in _clauses(text):
-        if not _negated(clause):
-            continue
-        if verdict.bin_colour in bins_mentioned(clause):
+        if _negated(clause) and _names_verdict(clause, verdict):
             return True
-        if re.search(en, clause, re.I) or re.search(hi, clause):
+        if (m := _INSTEAD_OF_EN.search(clause)) and _names_verdict(clause[m.end() :], verdict):
+            return True
+        if (m := _INSTEAD_OF_HI.search(clause)) and _names_verdict(clause[: m.start()], verdict):
             return True
     return False
 
 
-def recyclable_claim(text: str) -> bool | None:
-    """The text's claim about recyclability: False ('not recyclable'), True ('can be
-    recycled'), or None when it makes no clear claim. A negative claim wins."""
-    claim = None
+_RECYCLE_TOPIC = re.compile(rf"recycl|{_RECYCL_HI}", re.I)
+
+
+def _claims(text: str, negative: re.Pattern, positive: re.Pattern) -> set[bool]:
+    """Every claim the clauses make: False for 'not X', True for 'can be X'. Negated or hedged
+    clauses ('rarely', 'hard to') make no positive claim."""
+    claims: set[bool] = set()
     for clause in _clauses(text):
-        if _NOT_RECYCLABLE_EN.search(clause) or _NOT_RECYCLABLE_HI.search(clause):
-            return False
-        if _negated(clause) or _HARD.search(clause):
-            continue
-        if _RECYCLABLE_EN.search(clause) or _RECYCLABLE_HI.search(clause):
-            claim = True
-    return claim
+        if negative.search(clause):
+            claims.add(False)
+        elif not _negated(clause) and not _HARD.search(clause) and positive.search(clause):
+            claims.add(True)
+    return claims
+
+
+def recyclable_claims(text: str) -> set[bool]:
+    """Recyclability claims in the text. A bare leading 'No,' / 'नहीं,' or 'Yes,' / 'हाँ,'
+    counts as a claim when the text is about recycling ('No, glass can be recycled' makes
+    both claims, so it contradicts the KB either way)."""
+    claims = _claims(
+        text,
+        re.compile(f"{_NOT_RECYCLABLE_EN.pattern}|{_NOT_RECYCLABLE_HI.pattern}", re.I),
+        re.compile(f"{_RECYCLABLE_EN.pattern}|{_RECYCLABLE_HI.pattern}", re.I),
+    )
+    clauses = _clauses(text)
+    if clauses and _RECYCLE_TOPIC.search(text):
+        lead = clauses[0].strip().casefold()
+        if lead in {"no", "नहीं"}:
+            claims.add(False)
+        elif lead in {"yes", "हाँ", "हां"}:
+            claims.add(True)
+    return claims
 
 
 _NOT_COMPOSTABLE = re.compile(
@@ -237,15 +269,10 @@ def unsafe_instruction(text: str, verdict: Verdict) -> bool:
     return False
 
 
-def compostable_claim(text: str) -> bool | None:
-    """Like recyclable_claim, for compostability."""
-    claim = None
-    for clause in _clauses(text):
-        if _NOT_COMPOSTABLE.search(clause):
-            return False
-        if not _negated(clause) and not _HARD.search(clause) and _COMPOSTABLE.search(clause):
-            claim = True
-    return claim
+def compostable_claims(text: str) -> set[bool]:
+    """Compostability claims in the text (no yes/no lead rule: the yes/no question asked is
+    about recycling)."""
+    return _claims(text, _NOT_COMPOSTABLE, _COMPOSTABLE)
 
 
 _STOP = {
@@ -360,10 +387,10 @@ def verify(raw: str, verdict: Verdict) -> VerifiedOutput:
         if value and negates_verdict(value, verdict):
             contradictions.append(f"{key}_negates")
             value = None
-        if value and recyclable_claim(value) not in (None, verdict.recyclable):
+        if value and (not verdict.recyclable) in recyclable_claims(value):
             contradictions.append(f"{key}_recyclable")
             value = None
-        if value and compostable_claim(value) not in (None, verdict.compostable):
+        if value and (not verdict.compostable) in compostable_claims(value):
             contradictions.append(f"{key}_compostable")
             value = None
         if value and negates_step(value, verdict):
@@ -373,6 +400,11 @@ def verify(raw: str, verdict: Verdict) -> VerifiedOutput:
             contradictions.append(f"{key}_unsafe")
             value = None
         free[key] = value
+
+    # When one field gets the facts wrong, the other usually repeats the mistake in other
+    # words (seen in the stock-model run), so neither is shown.
+    if any(c.startswith(("why_", "tip_")) for c in contradictions):
+        free = {"why": None, "tip": None}
 
     status: Status = "corrected" if contradictions else "ok"
     return VerifiedOutput(status, kb_output(verdict, **free), tuple(contradictions))

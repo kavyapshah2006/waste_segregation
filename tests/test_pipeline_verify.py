@@ -6,11 +6,11 @@ from pipeline.assistant import explain, is_on_topic
 from pipeline.prompt import ANSWER_PREFIX, EOT, build_prompt, full_answer, prompt_prefix
 from pipeline.verify import (
     bins_mentioned,
-    compostable_claim,
+    compostable_claims,
     extract_json,
     negates_step,
     negates_verdict,
-    recyclable_claim,
+    recyclable_claims,
     unsafe_instruction,
     verify,
 )
@@ -54,6 +54,9 @@ def test_bins_mentioned_english_and_hindi():
         ("Do not put it in the green bin.", False),  # a different bin
         ("It is dry waste, not wet waste.", False),
         ("Do not burn it; put it in the blue bin.", False),
+        ("Compost them instead of using the blue bin.", True),
+        ("Put it in the blue bin instead of the road.", False),
+        ("नीले डिब्बे के बजाय इसे जला दें", True),
     ],
 )
 def test_negates_verdict(kb, text, expected):
@@ -64,33 +67,39 @@ def test_negates_verdict(kb, text, expected):
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        ("It is not recyclable.", False),
-        ("Chips packets are non-recyclable.", False),
-        ("नहीं, यह रीसायकल नहीं हो सकता है।", False),
-        ("Aluminium can be recycled endlessly.", True),
-        ("Glass can be recycled forever and quality does not drop.", True),
-        ("एल्युमिनियम को बार-बार रीसायकल किया जा सकता है और उसकी गुणवत्ता कम नहीं होती।", True),
-        ("Thermocol is rarely recycled.", None),
-        ("थर्मोकोल शायद ही रीसायकल होता है।", None),
-        ("It is hard to recycle.", None),
-        ("Keep it dry.", None),
+        ("It is not recyclable.", {False}),
+        ("Chips packets are non-recyclable.", {False}),
+        ("नहीं, यह रीसायकल नहीं हो सकता है।", {False}),
+        ("Aluminium can be recycled endlessly.", {True}),
+        ("Glass can be recycled forever and quality does not drop.", {True}),
+        ("एल्युमिनियम को बार-बार रीसायकल किया जा सकता है और उसकी गुणवत्ता कम नहीं होती।", {True}),
+        ("Thermocol is rarely recycled.", set()),
+        ("थर्मोकोल शायद ही रीसायकल होता है।", set()),
+        ("It is hard to recycle.", set()),
+        ("Keep it dry.", set()),
+        # Mixed and self-contradicting answers seen from the stock model:
+        ("Packets can be recycled if empty, but they are not recyclable if full.", {True, False}),
+        ("नहीं, काँच को अनगिनत बार रीसायकल किया जा सकता है।", {True, False}),
+        ("Yes, it can be recycled.", {True}),
+        ("No, keep it dry.", set()),  # not about recycling
     ],
 )
-def test_recyclable_claim(text, expected):
-    assert recyclable_claim(text) is expected
+def test_recyclable_claims(text, expected):
+    assert recyclable_claims(text) == expected
 
 
 @pytest.mark.parametrize(
     ("text", "expected"),
     [
-        ("Peels cannot be composted.", False),
-        ("Peels can be composted at home.", True),
-        ("तेल वाला काग़ज़ खाद बन सकता है।", True),
-        ("डायपर घर पर न खाद बन सकते हैं।", None),
+        ("Peels cannot be composted.", {False}),
+        ("Peels can be composted at home.", {True}),
+        ("तेल वाला काग़ज़ खाद बन सकता है।", {True}),
+        ("डायपर घर पर न खाद बन सकते हैं।", set()),
+        ("No, it cannot be recycled, but it can be composted.", {True}),
     ],
 )
-def test_compostable_claim(text, expected):
-    assert compostable_claim(text) is expected
+def test_compostable_claims(text, expected):
+    assert compostable_claims(text) == expected
 
 
 def test_negates_step_only_for_positive_kb_steps(kb):
@@ -119,12 +128,16 @@ def test_unsafe_instruction(kb, item, text, expected):
     assert unsafe_instruction(text, kb.resolve(item)) is expected
 
 
-def test_content_checks_drop_only_the_bad_field(kb):
-    verdict = kb.resolve("plastic_carry_bag")
-    raw = json.dumps({"why": "It is not recyclable.", "tip": "Carry a cloth bag."})
+def test_a_content_error_in_one_field_drops_both(kb):
+    verdict = kb.resolve("fruit_veg_peels")
+    raw = json.dumps(
+        {"why": "Do not remove stickers from fruit.", "tip": "Leave the stickers on the fruit."}
+    )
     result = verify(raw, verdict)
-    assert result.contradictions == ("why_recyclable",)
-    assert result.output["why"] is None and result.output["tip"] == "Carry a cloth bag."
+    assert result.status == "corrected"
+    assert result.contradictions == ("why_negates_step",)
+    assert result.output["why"] is None and result.output["tip"] is None
+    assert result.output["steps"] == list(verdict.steps)
 
 
 def test_free_text_naming_the_right_bin_is_kept(kb):

@@ -1,6 +1,6 @@
 {
   "id": "plastic_bag_unsafe_tip_hi",
-  "description": "Hindi tip says to put bags in the drain; dropped. Saying bags clog drains is fine.",
+  "description": "Hindi tip says to put bags in the drain: flagged as tip_unsafe (the why alone, 'bags clog drains', is fine), and both fields are dropped.",
   "input": {
     "detection": {
       "item_id": "plastic_carry_bag",
@@ -61,7 +61,7 @@
         ],
         "hazard": null,
         "drop_off": null,
-        "why": "प्लास्टिक की थैलियाँ नालियाँ बंद करती हैं।",
+        "why": null,
         "tip": null,
         "language": "hi"
       },
