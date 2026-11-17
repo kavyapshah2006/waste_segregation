@@ -1,0 +1,50 @@
+{
+  "id": "flowers_puja",
+  "names": {
+    "en": "Flowers and puja offerings",
+    "hi": "फूल और पूजा सामग्री"
+  },
+  "aliases": {
+    "en": [
+      "garland",
+      "marigold"
+    ],
+    "hi": [
+      "माला",
+      "गेंदा"
+    ]
+  },
+  "material": "plant",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Remove thread, plastic and foil",
+      "Do not throw them into rivers or lakes",
+      "Put flowers in the green bin or compost"
+    ],
+    "hi": [
+      "धागा, प्लास्टिक और फॉयल हटा दें",
+      "इन्हें नदी या तालाब में न फेंकें",
+      "फूल हरे डिब्बे या कम्पोस्ट में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Flowers dumped in rivers harm water life; composted flowers make good manure.",
+    "hi": "नदियों में फेंके फूल पानी के जीवों को नुकसान पहुँचाते हैं; कम्पोस्ट किए फूल अच्छी खाद बनते हैं।"
+  },
+  "typical_weight_g": 100,
+  "detector_classes": [
+    "flowers_puja"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

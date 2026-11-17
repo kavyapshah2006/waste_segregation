@@ -1,0 +1,47 @@
+{
+  "id": "used_tissue",
+  "names": {
+    "en": "Used tissue or wet wipe",
+    "hi": "इस्तेमाल किया हुआ टिश्यू या वेट वाइप"
+  },
+  "aliases": {
+    "en": [
+      "tissue",
+      "wet wipe"
+    ],
+    "hi": [
+      "टिश्यू",
+      "वाइप्स"
+    ]
+  },
+  "material": "sanitary",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Do not flush wet wipes",
+      "Put them in the red bin"
+    ],
+    "hi": [
+      "वेट वाइप्स फ़्लश न करें",
+      "लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Wet wipes contain plastic fibres and block sewers.",
+    "hi": "वेट वाइप्स में प्लास्टिक के रेशे होते हैं और ये सीवर जाम करते हैं।"
+  },
+  "typical_weight_g": 3,
+  "detector_classes": [
+    "used_tissue"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

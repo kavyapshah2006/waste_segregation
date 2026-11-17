@@ -1,0 +1,65 @@
+{
+  "id": "tetra_pak",
+  "names": {
+    "en": "Tetra Pak carton",
+    "hi": "टेट्रा पैक"
+  },
+  "aliases": {
+    "en": [
+      "juice box",
+      "milk carton"
+    ],
+    "hi": [
+      "जूस का डिब्बा"
+    ]
+  },
+  "material": "composite_carton",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty and rinse it",
+      "Flatten it",
+      "Put it in the blue bin"
+    ],
+    "hi": [
+      "खाली करके धो लें",
+      "चपटा करें",
+      "नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "extra_steps": {
+          "en": [
+            "Rinse out food or liquid first"
+          ],
+          "hi": [
+            "पहले खाना या तरल धोकर निकालें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Cartons are layers of paper, plastic and aluminium; special recyclers separate them into new products.",
+    "hi": "टेट्रा पैक में काग़ज़, प्लास्टिक और एल्युमिनियम की परतें होती हैं; ख़ास रीसायकलर इन्हें अलग करके नई चीज़ें बनाते हैं।"
+  },
+  "typical_weight_g": 25,
+  "detector_classes": [
+    "tetra_pak"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "mercury_thermometer",
+  "names": {
+    "en": "Mercury thermometer",
+    "hi": "पारे वाला थर्मामीटर"
+  },
+  "aliases": {
+    "en": [
+      "thermometer"
+    ],
+    "hi": [
+      "थर्मामीटर"
+    ]
+  },
+  "material": "mercury",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Keep it in a sealed container",
+      "If it breaks, do not touch the mercury; collect the beads with stiff paper into a sealed jar",
+      "Take it to a hazardous waste collection point"
+    ],
+    "hi": [
+      "इसे बंद डिब्बे में रखें",
+      "टूट जाए तो पारे को न छुएँ; मोटे काग़ज़ से बूँदें इकट्ठा करके बंद जार में रखें",
+      "ख़तरनाक कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Mercury is toxic.",
+    "hi": "पारा ज़हरीला होता है।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "A single thermometer's mercury can pollute a large amount of water.",
+    "hi": "एक थर्मामीटर का पारा भी बहुत सारे पानी को प्रदूषित कर सकता है।"
+  },
+  "typical_weight_g": 15,
+  "detector_classes": [
+    "mercury_thermometer"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

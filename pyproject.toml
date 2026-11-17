@@ -9,6 +9,7 @@ dependencies = [
     # (see torch_pin.py in the executorch v1.5.1 tag).
     "torch==2.14.0",
     "executorch==1.5.1",
+    "jsonschema>=4.23",
 ]
 
 [dependency-groups]
@@ -32,6 +33,7 @@ explicit = true
 
 [tool.ruff]
 line-length = 100
+src = ["."]
 target-version = "py312"
 
 [tool.ruff.lint]
@@ -39,3 +41,5 @@ select = ["E", "F", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Lets tests import kb/ and pipeline/ from the repo root.
+pythonpath = ["."]

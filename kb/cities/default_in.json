@@ -1,0 +1,28 @@
+{
+  "id": "default_in",
+  "name": {"en": "India (national default)", "hi": "भारत (राष्ट्रीय डिफ़ॉल्ट)"},
+  "bin_colours": {"wet": "green", "dry": "blue", "sanitary": "red", "special_care": "black"},
+  "overrides": {},
+  "drop_off_info": {
+    "e_waste_centre": {
+      "en": "Give it to an authorised e-waste collection centre, a brand take-back programme or your city's e-waste drive.",
+      "hi": "अधिकृत ई-कचरा संग्रह केंद्र, कंपनी के टेक-बैक कार्यक्रम या शहर के ई-कचरा अभियान में दें।"
+    },
+    "pharmacy_takeback": {
+      "en": "Return it to a pharmacy with a medicine take-back box, or to your city's special care waste collection.",
+      "hi": "दवा वापसी बॉक्स वाली फ़ार्मेसी या शहर के विशेष देखभाल कचरा संग्रह में दें।"
+    },
+    "hazardous_collection": {
+      "en": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+      "hi": "शहर के विशेष देखभाल (घरेलू ख़तरनाक) कचरा संग्रह या केंद्र पर दें।"
+    },
+    "scrap_dealer": {
+      "en": "A local scrap dealer (kabadiwala) will often buy it.",
+      "hi": "स्थानीय कबाड़ीवाला अक्सर इसे ख़रीद लेता है।"
+    },
+    "municipal_sanitary": {
+      "en": "Hand it to the municipal waste collector separately, in the red bin.",
+      "hi": "नगर निगम के कचरा संग्राहक को लाल डिब्बे में अलग से दें।"
+    }
+  }
+}

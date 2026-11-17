@@ -1,0 +1,49 @@
+{
+  "id": "fruit_veg_peels",
+  "names": {
+    "en": "Fruit and vegetable peels",
+    "hi": "फल और सब्ज़ियों के छिलके"
+  },
+  "aliases": {
+    "en": [
+      "banana peel",
+      "onion peel",
+      "peels"
+    ],
+    "hi": [
+      "केले का छिलका",
+      "छिलके"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Remove stickers from fruit",
+      "Put peels in the green bin or compost"
+    ],
+    "hi": [
+      "फलों पर लगे स्टिकर हटा दें",
+      "छिलके हरे डिब्बे या कम्पोस्ट में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Peels turn into compost in a few weeks and make the soil richer.",
+    "hi": "छिलके कुछ हफ़्तों में खाद बन जाते हैं और मिट्टी को उपजाऊ बनाते हैं।"
+  },
+  "typical_weight_g": 150,
+  "detector_classes": [
+    "fruit_veg_peels"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

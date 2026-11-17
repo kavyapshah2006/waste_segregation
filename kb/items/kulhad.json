@@ -1,0 +1,46 @@
+{
+  "id": "kulhad",
+  "names": {
+    "en": "Clay cup (kulhad)",
+    "hi": "कुल्हड़"
+  },
+  "aliases": {
+    "en": [
+      "clay cup"
+    ],
+    "hi": [
+      "मिट्टी का कप"
+    ]
+  },
+  "material": "clay",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Rinse it",
+      "Crush it and mix it into garden soil, or put it in the blue bin"
+    ],
+    "hi": [
+      "धो लें",
+      "तोड़कर बगीचे की मिट्टी में मिला दें, या नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Clay is natural and goes back into the soil when crushed.",
+    "hi": "मिट्टी प्राकृतिक है और तोड़ने पर वापस मिट्टी में मिल जाती है।"
+  },
+  "typical_weight_g": 80,
+  "detector_classes": [
+    "kulhad"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

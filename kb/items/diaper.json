@@ -1,0 +1,51 @@
+{
+  "id": "diaper",
+  "names": {
+    "en": "Used diaper",
+    "hi": "इस्तेमाल किया हुआ डायपर"
+  },
+  "aliases": {
+    "en": [
+      "nappy"
+    ],
+    "hi": [
+      "नैपी"
+    ]
+  },
+  "material": "sanitary",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Empty solid waste into the toilet",
+      "Roll it up and wrap it in paper",
+      "Put it in the red bin"
+    ],
+    "hi": [
+      "ठोस मल शौचालय में डाल दें",
+      "मोड़कर काग़ज़ में लपेटें",
+      "लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": {
+    "en": "Contains body fluids; always wrap it before binning.",
+    "hi": "इसमें शरीर के तरल होते हैं; डालने से पहले हमेशा लपेटें।"
+  },
+  "drop_off": "municipal_sanitary",
+  "impact": {
+    "en": "Diapers cannot be composted or recycled at home; wrapping keeps bins clean and workers safe.",
+    "hi": "डायपर घर पर न खाद बन सकते हैं न रीसायकल होते हैं; लपेटने से डिब्बे साफ़ और कर्मचारी सुरक्षित रहते हैं।"
+  },
+  "typical_weight_g": 150,
+  "detector_classes": [
+    "diaper"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

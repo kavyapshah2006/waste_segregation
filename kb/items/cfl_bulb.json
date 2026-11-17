@@ -1,0 +1,52 @@
+{
+  "id": "cfl_bulb",
+  "names": {
+    "en": "CFL bulb or tube light",
+    "hi": "सीएफ़एल बल्ब या ट्यूबलाइट"
+  },
+  "aliases": {
+    "en": [
+      "tube light",
+      "fluorescent lamp"
+    ],
+    "hi": [
+      "ट्यूबलाइट"
+    ]
+  },
+  "material": "lamp_mercury",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Do not break it",
+      "Wrap it in its box or in newspaper",
+      "Take it to a hazardous waste or e-waste collection point"
+    ],
+    "hi": [
+      "इसे तोड़ें नहीं",
+      "इसके डिब्बे या अख़बार में लपेटें",
+      "ख़तरनाक कचरा या ई-कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Contains mercury. If it breaks, air the room and do not vacuum the pieces.",
+    "hi": "इसमें पारा होता है। टूट जाए तो कमरे में हवा आने दें और टुकड़ों पर वैक्यूम न चलाएँ।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Collecting CFLs keeps mercury out of soil and water.",
+    "hi": "सीएफ़एल इकट्ठा करने से पारा मिट्टी और पानी में नहीं जाता।"
+  },
+  "typical_weight_g": 100,
+  "detector_classes": [
+    "cfl_bulb"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "E-Waste (Management) Rules, 2022"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

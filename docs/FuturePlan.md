@@ -120,6 +120,8 @@ Colours are a default; a city profile may override them.
 }
 ```
 
+Implemented in `kb/schema.json`. Beyond the example above, every item also has `reviewed` (per-language flag for native-speaker review) and may have `compostable`. Stream, colour and language names live in `kb/strings.json`.
+
 Rules:
 - `stream` is one of the four ids in 5.1. `drop_off` is `null` or one of `e_waste_centre`, `pharmacy_takeback`, `hazardous_collection`, `scrap_dealer`, `municipal_sanitary`.
 - `condition_rules` may change `stream`, `recyclable`, or steps based on attributes (for example greasy cardboard → `wet` or non-recyclable dry, per city).
@@ -455,7 +457,7 @@ Update this table in the same commit that completes a WP.
 |---|---|---|---|
 | 0 | Repo and tooling | Done | uv, CI, ExecuTorch smoke test |
 | 1 | Llama on the phone | Not started | Needs phone + HF access |
-| 2 | Knowledge base v1 | Not started | |
+| 2 | Knowledge base v1 | Done | 40 items, 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
 | 3 | Data, taxonomy, detector baseline | Not started | |
 | 4 | Host reference pipeline | Not started | |
 | 5 | Android app skeleton | Not started | Needs Android Studio |

@@ -1,0 +1,68 @@
+{
+  "id": "plastic_carry_bag",
+  "names": {
+    "en": "Plastic carry bag",
+    "hi": "प्लास्टिक की थैली"
+  },
+  "aliases": {
+    "en": [
+      "polythene",
+      "polybag",
+      "carry bag"
+    ],
+    "hi": [
+      "पॉलीथीन",
+      "पन्नी"
+    ]
+  },
+  "material": "plastic_film",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Reuse it as many times as you can",
+      "Shake out crumbs and keep it dry",
+      "Stuff bags into one bag and put it in the blue bin"
+    ],
+    "hi": [
+      "जितनी बार हो सके दोबारा इस्तेमाल करें",
+      "टुकड़े झाड़ लें और सूखा रखें",
+      "सारी थैलियाँ एक थैली में भरकर नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "extra_steps": {
+          "en": [
+            "Wipe off food before binning"
+          ],
+          "hi": [
+            "डालने से पहले खाना पोंछ दें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Loose bags clog drains and harm animals; carry a cloth bag.",
+    "hi": "खुली थैलियाँ नालियाँ बंद करती हैं और जानवरों को नुकसान पहुँचाती हैं; कपड़े का थैला रखें।"
+  },
+  "typical_weight_g": 5,
+  "detector_classes": [
+    "plastic_carry_bag"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Plastic Waste Management Rules, 2016 (as amended)"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

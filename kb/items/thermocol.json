@@ -1,0 +1,49 @@
+{
+  "id": "thermocol",
+  "names": {
+    "en": "Thermocol (polystyrene foam)",
+    "hi": "थर्मोकोल"
+  },
+  "aliases": {
+    "en": [
+      "styrofoam",
+      "foam packaging"
+    ],
+    "hi": [
+      "स्टायरोफ़ोम"
+    ]
+  },
+  "material": "polystyrene",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Remove tape and food",
+      "Break large pieces down",
+      "Put it in the blue bin"
+    ],
+    "hi": [
+      "टेप और खाना हटा दें",
+      "बड़े टुकड़ों को तोड़ लें",
+      "नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Thermocol is bulky and rarely recycled; avoid foam plates and cups.",
+    "hi": "थर्मोकोल बहुत जगह घेरता है और शायद ही रीसायकल होता है; फ़ोम की प्लेट और कप से बचें।"
+  },
+  "typical_weight_g": 30,
+  "detector_classes": [
+    "thermocol"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Plastic Waste Management Rules, 2016 (as amended)"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

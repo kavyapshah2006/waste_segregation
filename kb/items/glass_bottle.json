@@ -1,0 +1,69 @@
+{
+  "id": "glass_bottle",
+  "names": {
+    "en": "Glass bottle or jar",
+    "hi": "काँच की बोतल या जार"
+  },
+  "aliases": {
+    "en": [
+      "jar",
+      "beer bottle"
+    ],
+    "hi": [
+      "जार"
+    ]
+  },
+  "material": "glass",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty and rinse it",
+      "Remove the cap",
+      "Put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "खाली करके धो लें",
+      "ढक्कन हटा दें",
+      "नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "condition_rules": [
+    {
+      "if": {
+        "broken": true
+      },
+      "then": {
+        "hazard": {
+          "en": "Sharp: can cut you and waste workers.",
+          "hi": "धारदार: आपको और सफ़ाई कर्मचारियों को चोट लग सकती है।"
+        },
+        "extra_steps": {
+          "en": [
+            "Wrap the pieces in newspaper and label the bundle 'broken glass'"
+          ],
+          "hi": [
+            "टुकड़ों को अख़बार में लपेटें और ऊपर 'टूटा काँच' लिखें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Glass can be recycled endlessly; clean, whole bottles are often reused.",
+    "hi": "काँच को अनगिनत बार रीसायकल किया जा सकता है; साफ़ और साबुत बोतलें अक्सर दोबारा इस्तेमाल होती हैं।"
+  },
+  "typical_weight_g": 300,
+  "detector_classes": [
+    "glass_bottle"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

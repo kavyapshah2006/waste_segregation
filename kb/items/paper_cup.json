@@ -1,0 +1,47 @@
+{
+  "id": "paper_cup",
+  "names": {
+    "en": "Paper cup",
+    "hi": "काग़ज़ का कप"
+  },
+  "aliases": {
+    "en": [
+      "disposable cup",
+      "tea cup"
+    ],
+    "hi": [
+      "डिस्पोज़ेबल कप"
+    ]
+  },
+  "material": "paper_lined",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Empty and rinse it",
+      "Put it in the blue bin"
+    ],
+    "hi": [
+      "खाली करके धो लें",
+      "नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Paper cups have a thin plastic lining, so most cannot be recycled; carry a reusable cup.",
+    "hi": "काग़ज़ के कप में प्लास्टिक की परत होती है, इसलिए ज़्यादातर रीसायकल नहीं होते; अपना कप साथ रखें।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "paper_cup"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Plastic Waste Management Rules, 2016 (as amended)"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

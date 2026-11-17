@@ -1,0 +1,25 @@
+{
+  "streams": {
+    "wet": {"en": "Wet waste", "hi": "गीला कचरा"},
+    "dry": {"en": "Dry waste", "hi": "सूखा कचरा"},
+    "sanitary": {"en": "Sanitary waste", "hi": "सैनिटरी कचरा"},
+    "special_care": {"en": "Special care waste", "hi": "विशेष देखभाल कचरा"}
+  },
+  "colours": {
+    "green": {"en": "green", "hi": "हरा"},
+    "blue": {"en": "blue", "hi": "नीला"},
+    "red": {"en": "red", "hi": "लाल"},
+    "black": {"en": "black", "hi": "काला"},
+    "yellow": {"en": "yellow", "hi": "पीला"},
+    "white": {"en": "white", "hi": "सफ़ेद"},
+    "grey": {"en": "grey", "hi": "स्लेटी"}
+  },
+  "languages": {
+    "en": "English",
+    "hi": "Hindi",
+    "ta": "Tamil",
+    "te": "Telugu",
+    "bn": "Bengali",
+    "mr": "Marathi"
+  }
+}

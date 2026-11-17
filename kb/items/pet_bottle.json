@@ -1,0 +1,70 @@
+{
+  "id": "pet_bottle",
+  "names": {
+    "en": "PET plastic bottle",
+    "hi": "पीईटी प्लास्टिक की बोतल"
+  },
+  "aliases": {
+    "en": [
+      "water bottle",
+      "soft drink bottle",
+      "plastic bottle"
+    ],
+    "hi": [
+      "पानी की बोतल",
+      "प्लास्टिक की बोतल"
+    ]
+  },
+  "material": "plastic_pet",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty it",
+      "Rinse it",
+      "Crush it and put the cap back on",
+      "Put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "खाली करें",
+      "धो लें",
+      "दबाकर चपटा करें और ढक्कन वापस लगा दें",
+      "नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "extra_steps": {
+          "en": [
+            "Rinse out food or liquid first"
+          ],
+          "hi": [
+            "पहले खाना या तरल धोकर निकालें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Recycled PET becomes fibre for clothes and new bottles.",
+    "hi": "रीसायकल किया गया पीईटी कपड़ों के रेशे और नई बोतलों में बदलता है।"
+  },
+  "typical_weight_g": 25,
+  "detector_classes": [
+    "pet_bottle"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Plastic Waste Management Rules, 2016 (as amended)"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

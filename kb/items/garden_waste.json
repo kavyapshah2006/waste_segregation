@@ -1,0 +1,50 @@
+{
+  "id": "garden_waste",
+  "names": {
+    "en": "Garden waste (leaves, grass, twigs)",
+    "hi": "बगीचे का कचरा (पत्ते, घास, टहनियाँ)"
+  },
+  "aliases": {
+    "en": [
+      "dry leaves",
+      "grass"
+    ],
+    "hi": [
+      "सूखे पत्ते",
+      "घास"
+    ]
+  },
+  "material": "plant",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Do not burn it",
+      "Break large branches into small pieces",
+      "Compost it at home or put it in the green bin"
+    ],
+    "hi": [
+      "इसे जलाएँ नहीं",
+      "बड़ी टहनियों को छोटे टुकड़ों में तोड़ें",
+      "घर पर कम्पोस्ट करें या हरे डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Burning leaves pollutes the air; composting them makes free fertiliser.",
+    "hi": "पत्ते जलाने से हवा प्रदूषित होती है; कम्पोस्ट करने से मुफ़्त खाद मिलती है।"
+  },
+  "typical_weight_g": 500,
+  "detector_classes": [
+    "garden_waste"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

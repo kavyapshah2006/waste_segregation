@@ -1,0 +1,51 @@
+{
+  "id": "broken_glass",
+  "names": {
+    "en": "Broken glass",
+    "hi": "टूटा हुआ काँच"
+  },
+  "aliases": {
+    "en": [
+      "glass pieces",
+      "broken mirror"
+    ],
+    "hi": [
+      "काँच के टुकड़े"
+    ]
+  },
+  "material": "glass",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Pick up the pieces carefully, with gloves if possible",
+      "Wrap them in thick paper or a box",
+      "Label it 'broken glass' and put it in the blue bin"
+    ],
+    "hi": [
+      "टुकड़ों को सावधानी से उठाएँ, हो सके तो दस्ताने पहनें",
+      "मोटे काग़ज़ या डिब्बे में लपेटें",
+      "ऊपर 'टूटा काँच' लिखें और नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": {
+    "en": "Sharp: can cut you and waste workers.",
+    "hi": "धारदार: आपको और सफ़ाई कर्मचारियों को चोट लग सकती है।"
+  },
+  "drop_off": null,
+  "impact": {
+    "en": "Wrapping broken glass protects the people who collect your waste.",
+    "hi": "टूटे काँच को लपेटने से कचरा उठाने वालों की सुरक्षा होती है।"
+  },
+  "typical_weight_g": 100,
+  "detector_classes": [
+    "broken_glass"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

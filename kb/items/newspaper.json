@@ -1,0 +1,65 @@
+{
+  "id": "newspaper",
+  "names": {
+    "en": "Newspaper",
+    "hi": "अख़बार"
+  },
+  "aliases": {
+    "en": [
+      "paper",
+      "magazine"
+    ],
+    "hi": [
+      "रद्दी",
+      "पत्रिका"
+    ]
+  },
+  "material": "paper",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Keep it dry",
+      "Stack and tie it",
+      "Sell it to a scrap dealer or put it in the blue bin"
+    ],
+    "hi": [
+      "इसे सूखा रखें",
+      "इकट्ठा करके बाँध लें",
+      "कबाड़ी को बेचें या नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "stream": "wet",
+        "recyclable": false,
+        "compostable": true,
+        "note": {
+          "en": "Oily or food-soiled paper cannot be recycled, but it can be composted.",
+          "hi": "तेल या खाने से गंदा काग़ज़ रीसायकल नहीं होता, लेकिन उसकी खाद बन सकती है।"
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Recycled newspaper becomes new paper and egg trays.",
+    "hi": "रीसायकल किया गया अख़बार नए काग़ज़ और अंडे की ट्रे में बदलता है।"
+  },
+  "typical_weight_g": 200,
+  "detector_classes": [
+    "newspaper"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

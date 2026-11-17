@@ -1,0 +1,55 @@
+{
+  "id": "expired_medicine",
+  "names": {
+    "en": "Expired or unused medicines",
+    "hi": "एक्सपायर या बची हुई दवाइयाँ"
+  },
+  "aliases": {
+    "en": [
+      "tablets",
+      "syrup",
+      "medicine strip",
+      "medicines"
+    ],
+    "hi": [
+      "गोलियाँ",
+      "सिरप",
+      "दवाई"
+    ]
+  },
+  "material": "medicine",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Do not flush them or throw them in the open",
+      "Keep them in their packaging",
+      "Return them to a pharmacy take-back box or a special care collection point"
+    ],
+    "hi": [
+      "इन्हें फ़्लश न करें और खुले में न फेंकें",
+      "इनकी पैकिंग में ही रखें",
+      "फ़ार्मेसी के टेक-बैक बॉक्स या विशेष देखभाल संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Can be poisonous to children, animals and water.",
+    "hi": "बच्चों, जानवरों और पानी के लिए ज़हरीली हो सकती हैं।"
+  },
+  "drop_off": "pharmacy_takeback",
+  "impact": {
+    "en": "Medicines thrown in the open can poison children, animals and water.",
+    "hi": "खुले में फेंकी गई दवाइयाँ बच्चों, जानवरों और पानी के लिए ज़हरीली हो सकती हैं।"
+  },
+  "typical_weight_g": 20,
+  "detector_classes": [
+    "expired_medicine"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

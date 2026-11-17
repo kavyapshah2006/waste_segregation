@@ -37,3 +37,6 @@ android/.idea/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Knowledge base build output (regenerate with: uv run python kb/build_kb.py)
+kb/build/

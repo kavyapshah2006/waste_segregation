@@ -1,0 +1,66 @@
+{
+  "id": "cardboard_box",
+  "names": {
+    "en": "Cardboard box",
+    "hi": "गत्ते का डिब्बा"
+  },
+  "aliases": {
+    "en": [
+      "carton",
+      "pizza box",
+      "corrugated box"
+    ],
+    "hi": [
+      "कार्टन",
+      "पिज़्ज़ा बॉक्स"
+    ]
+  },
+  "material": "paper",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Remove tape and plastic",
+      "Flatten the box",
+      "Keep it dry and put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "टेप और प्लास्टिक हटा दें",
+      "डिब्बे को चपटा करें",
+      "सूखा रखें और नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "stream": "wet",
+        "recyclable": false,
+        "compostable": true,
+        "note": {
+          "en": "Greasy parts (like a pizza box base) cannot be recycled; tear them off for the green bin and recycle the clean parts.",
+          "hi": "चिकनाई वाला हिस्सा (जैसे पिज़्ज़ा बॉक्स का तला) रीसायकल नहीं होता; उसे फाड़कर हरे डिब्बे में डालें और साफ़ हिस्सा रीसायकल करें।"
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Cardboard is one of the most recycled materials; keeping it dry keeps it valuable.",
+    "hi": "गत्ता सबसे ज़्यादा रीसायकल होने वाली चीज़ों में से है; सूखा रखने से उसकी कीमत बनी रहती है।"
+  },
+  "typical_weight_g": 200,
+  "detector_classes": [
+    "cardboard_box"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

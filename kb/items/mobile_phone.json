@@ -1,0 +1,53 @@
+{
+  "id": "mobile_phone",
+  "names": {
+    "en": "Old mobile phone",
+    "hi": "पुराना मोबाइल फ़ोन"
+  },
+  "aliases": {
+    "en": [
+      "smartphone",
+      "phone"
+    ],
+    "hi": [
+      "स्मार्टफ़ोन",
+      "फ़ोन"
+    ]
+  },
+  "material": "electronics",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Back up your data and factory-reset it",
+      "Remove the SIM and memory card",
+      "Give it to an authorised e-waste collector or a brand take-back programme"
+    ],
+    "hi": [
+      "डेटा का बैकअप लेकर फ़ैक्टरी रीसेट करें",
+      "सिम और मेमोरी कार्ड निकाल लें",
+      "अधिकृत ई-कचरा संग्राहक या कंपनी के टेक-बैक कार्यक्रम में दें"
+    ]
+  },
+  "hazard": {
+    "en": "Swollen batteries can catch fire; do not crush or puncture it.",
+    "hi": "फूली हुई बैटरी में आग लग सकती है; इसे दबाएँ या छेदें नहीं।"
+  },
+  "drop_off": "e_waste_centre",
+  "impact": {
+    "en": "Phones contain gold, copper and rare metals that recyclers recover.",
+    "hi": "फ़ोन में सोना, ताँबा और दुर्लभ धातुएँ होती हैं जिन्हें रीसायकलर वापस निकालते हैं।"
+  },
+  "typical_weight_g": 180,
+  "detector_classes": [
+    "mobile_phone"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "E-Waste (Management) Rules, 2022"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

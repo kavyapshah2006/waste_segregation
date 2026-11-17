@@ -1,0 +1,47 @@
+{
+  "id": "led_bulb",
+  "names": {
+    "en": "LED bulb",
+    "hi": "एलईडी बल्ब"
+  },
+  "aliases": {
+    "en": [
+      "bulb",
+      "led"
+    ],
+    "hi": [
+      "बल्ब"
+    ]
+  },
+  "material": "electronics",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Wrap it so it does not break",
+      "Give it to an e-waste collector"
+    ],
+    "hi": [
+      "लपेट दें ताकि टूटे नहीं",
+      "ई-कचरा संग्राहक को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "e_waste_centre",
+  "impact": {
+    "en": "LED bulbs contain electronics and metals that can be recovered.",
+    "hi": "एलईडी बल्ब में इलेक्ट्रॉनिक पुर्ज़े और धातुएँ होती हैं जिन्हें वापस निकाला जा सकता है।"
+  },
+  "typical_weight_g": 50,
+  "detector_classes": [
+    "led_bulb"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "E-Waste (Management) Rules, 2022"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

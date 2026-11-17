@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kavyapshah2006/waste_segregation/kb/schema.json",
+  "title": "Knowledge base item",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "names",
+    "material",
+    "stream",
+    "recyclable",
+    "prep_steps",
+    "hazard",
+    "drop_off",
+    "impact",
+    "typical_weight_g",
+    "detector_classes",
+    "sources",
+    "reviewed"
+  ],
+  "properties": {
+    "id": {"$ref": "#/$defs/id"},
+    "names": {"$ref": "#/$defs/text"},
+    "aliases": {"$ref": "#/$defs/textList"},
+    "material": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "stream": {"$ref": "#/$defs/stream"},
+    "recyclable": {"type": "boolean"},
+    "compostable": {"type": "boolean"},
+    "prep_steps": {"$ref": "#/$defs/textList"},
+    "hazard": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/text"}]},
+    "drop_off": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/dropOff"}]},
+    "condition_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["if", "then"],
+        "properties": {
+          "if": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "contaminated": {"type": "boolean"},
+              "broken": {"type": "boolean"}
+            }
+          },
+          "then": {
+            "type": "object",
+            "additionalProperties": false,
+            "minProperties": 1,
+            "properties": {
+              "stream": {"$ref": "#/$defs/stream"},
+              "recyclable": {"type": "boolean"},
+              "compostable": {"type": "boolean"},
+              "hazard": {"$ref": "#/$defs/text"},
+              "extra_steps": {"$ref": "#/$defs/textList"},
+              "note": {"$ref": "#/$defs/text"}
+            }
+          }
+        }
+      }
+    },
+    "impact": {"$ref": "#/$defs/text"},
+    "typical_weight_g": {"type": "number", "exclusiveMinimum": 0},
+    "detector_classes": {"type": "array", "items": {"$ref": "#/$defs/id"}, "uniqueItems": true},
+    "sources": {"type": "array", "items": {"type": "string", "minLength": 3}, "minItems": 1},
+    "reviewed": {
+      "description": "Whether a fluent speaker has checked the text in each language.",
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/lang"},
+      "additionalProperties": {"type": "boolean"}
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
+    "lang": {"enum": ["en", "hi", "ta", "te", "bn", "mr"]},
+    "stream": {"enum": ["wet", "dry", "sanitary", "special_care"]},
+    "dropOff": {
+      "enum": [
+        "e_waste_centre",
+        "pharmacy_takeback",
+        "hazardous_collection",
+        "scrap_dealer",
+        "municipal_sanitary"
+      ]
+    },
+    "text": {
+      "description": "Text per language. English and Hindi are required.",
+      "type": "object",
+      "required": ["en", "hi"],
+      "propertyNames": {"$ref": "#/$defs/lang"},
+      "additionalProperties": {"type": "string", "minLength": 1}
+    },
+    "textList": {
+      "description": "A list of strings per language. English and Hindi are required.",
+      "type": "object",
+      "required": ["en", "hi"],
+      "propertyNames": {"$ref": "#/$defs/lang"},
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

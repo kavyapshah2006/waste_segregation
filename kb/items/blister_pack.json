@@ -1,0 +1,45 @@
+{
+  "id": "blister_pack",
+  "names": {
+    "en": "Empty medicine blister pack",
+    "hi": "दवा की खाली पत्ती"
+  },
+  "aliases": {
+    "en": [
+      "empty tablet strip"
+    ],
+    "hi": [
+      "खाली टैबलेट स्ट्रिप"
+    ]
+  },
+  "material": "multilayer_plastic",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Make sure no tablets are left; if there are, treat it as medicine (special care)",
+      "Put the empty pack in the blue bin"
+    ],
+    "hi": [
+      "देख लें कि कोई गोली बची न हो; अगर बची है तो इसे दवा (विशेष देखभाल) की तरह दें",
+      "खाली पत्ती नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Blister packs mix plastic and foil, so they are hard to recycle.",
+    "hi": "दवा की पत्ती में प्लास्टिक और फॉयल मिले होते हैं, इसलिए इन्हें रीसायकल करना मुश्किल है।"
+  },
+  "typical_weight_g": 3,
+  "detector_classes": [
+    "blister_pack"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

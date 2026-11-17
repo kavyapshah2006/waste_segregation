@@ -1,0 +1,54 @@
+{
+  "id": "syringe",
+  "names": {
+    "en": "Used syringe or needle",
+    "hi": "इस्तेमाल की हुई सिरिंज या सुई"
+  },
+  "aliases": {
+    "en": [
+      "needle",
+      "insulin needle",
+      "lancet"
+    ],
+    "hi": [
+      "सुई",
+      "इंसुलिन सुई"
+    ]
+  },
+  "material": "medical_sharp",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Never recap or bend the needle",
+      "Put it in a hard plastic bottle with a tight lid",
+      "Give it to a hospital, pharmacy or special care collection point"
+    ],
+    "hi": [
+      "सुई पर दोबारा ढक्कन न लगाएँ और न मोड़ें",
+      "मज़बूत प्लास्टिक की बोतल में डालकर ढक्कन कसकर बंद करें",
+      "अस्पताल, फ़ार्मेसी या विशेष देखभाल संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Sharp and may carry infection.",
+    "hi": "धारदार है और संक्रमण फैला सकती है।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Loose needles injure waste workers and can spread infection.",
+    "hi": "खुली सुइयाँ सफ़ाई कर्मचारियों को चोट पहुँचाती हैं और संक्रमण फैला सकती हैं।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "syringe"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Bio-Medical Waste Management Rules, 2016"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

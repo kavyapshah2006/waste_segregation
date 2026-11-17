@@ -1,0 +1,54 @@
+{
+  "id": "paint_can",
+  "names": {
+    "en": "Paint can or chemical container",
+    "hi": "पेंट का डिब्बा या रसायन का कंटेनर"
+  },
+  "aliases": {
+    "en": [
+      "thinner",
+      "pesticide bottle",
+      "paint"
+    ],
+    "hi": [
+      "थिनर",
+      "कीटनाशक की बोतल",
+      "पेंट"
+    ]
+  },
+  "material": "chemical",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Keep the lid tightly closed",
+      "Do not pour leftovers into drains",
+      "Take it to a hazardous waste collection point"
+    ],
+    "hi": [
+      "ढक्कन कसकर बंद रखें",
+      "बचा हुआ सामान नाली में न डालें",
+      "ख़तरनाक कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Toxic and flammable chemicals.",
+    "hi": "ज़हरीले और ज्वलनशील रसायन।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Paint and chemicals poured into drains reach rivers and groundwater.",
+    "hi": "नाली में डाले गए पेंट और रसायन नदियों और भूजल तक पहुँच जाते हैं।"
+  },
+  "typical_weight_g": 400,
+  "detector_classes": [
+    "paint_can"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

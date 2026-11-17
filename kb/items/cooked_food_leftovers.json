@@ -1,0 +1,52 @@
+{
+  "id": "cooked_food_leftovers",
+  "names": {
+    "en": "Leftover cooked food",
+    "hi": "बचा हुआ पका खाना"
+  },
+  "aliases": {
+    "en": [
+      "leftovers",
+      "stale food",
+      "rice",
+      "roti"
+    ],
+    "hi": [
+      "बासी खाना",
+      "बचा हुआ चावल"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "If it is still fresh, share it or give it to a food bank first",
+      "Drain gravy and liquids",
+      "Put it in the green bin"
+    ],
+    "hi": [
+      "अगर खाना अभी ताज़ा है तो पहले किसी को दें या फ़ूड बैंक में दें",
+      "ग्रेवी और तरल निकाल दें",
+      "हरे डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Not wasting food saves the water and energy used to grow and cook it.",
+    "hi": "खाना बर्बाद न करने से उसे उगाने और पकाने में लगा पानी और ऊर्जा बचती है।"
+  },
+  "typical_weight_g": 250,
+  "detector_classes": [
+    "cooked_food_leftovers"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "earphones",
+  "names": {
+    "en": "Earphones or headphones",
+    "hi": "ईयरफ़ोन या हेडफ़ोन"
+  },
+  "aliases": {
+    "en": [
+      "earbuds",
+      "headset"
+    ],
+    "hi": [
+      "ईयरबड्स"
+    ]
+  },
+  "material": "electronics",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Keep them with other small electronics",
+      "Give them to an e-waste collector"
+    ],
+    "hi": [
+      "इन्हें दूसरे छोटे इलेक्ट्रॉनिक सामान के साथ रखें",
+      "ई-कचरा संग्राहक को दें"
+    ]
+  },
+  "hazard": {
+    "en": "Wireless earbuds contain small lithium batteries.",
+    "hi": "वायरलेस ईयरबड्स में छोटी लिथियम बैटरी होती है।"
+  },
+  "drop_off": "e_waste_centre",
+  "impact": {
+    "en": "Small electronics often end up in the bin, but they hold metals that can be recovered.",
+    "hi": "छोटे इलेक्ट्रॉनिक सामान अक्सर कूड़े में चले जाते हैं, लेकिन इनमें दोबारा मिलने वाली धातुएँ होती हैं।"
+  },
+  "typical_weight_g": 20,
+  "detector_classes": [
+    "earphones"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "E-Waste (Management) Rules, 2022"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

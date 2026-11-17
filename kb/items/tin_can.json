@@ -1,0 +1,51 @@
+{
+  "id": "tin_can",
+  "names": {
+    "en": "Tin or steel food can",
+    "hi": "टिन का डिब्बा"
+  },
+  "aliases": {
+    "en": [
+      "food tin",
+      "ghee tin"
+    ],
+    "hi": [
+      "घी का डिब्बा"
+    ]
+  },
+  "material": "steel",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty and rinse it",
+      "Put the lid inside so the edge cannot cut anyone",
+      "Put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "खाली करके धो लें",
+      "ढक्कन अंदर रख दें ताकि किनारा किसी को न काटे",
+      "नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": {
+    "en": "Cut edges can be sharp.",
+    "hi": "कटे किनारे धारदार हो सकते हैं।"
+  },
+  "drop_off": "scrap_dealer",
+  "impact": {
+    "en": "Steel cans are pulled out with magnets and melted into new steel.",
+    "hi": "स्टील के डिब्बे चुंबक से अलग करके नए स्टील में पिघलाए जाते हैं।"
+  },
+  "typical_weight_g": 50,
+  "detector_classes": [
+    "tin_can"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

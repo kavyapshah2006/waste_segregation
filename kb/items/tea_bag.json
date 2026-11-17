@@ -1,0 +1,49 @@
+{
+  "id": "tea_bag",
+  "names": {
+    "en": "Used tea leaves and tea bags",
+    "hi": "इस्तेमाल की हुई चायपत्ती और टी बैग"
+  },
+  "aliases": {
+    "en": [
+      "tea leaves",
+      "chai patti"
+    ],
+    "hi": [
+      "चायपत्ती"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Remove the staple and string tag",
+      "Put tea leaves and paper tea bags in the green bin",
+      "Some tea bags contain plastic; if the bag feels slippery, compost the leaves and put the bag in dry waste"
+    ],
+    "hi": [
+      "स्टेपल और धागे वाला टैग हटा दें",
+      "चायपत्ती और काग़ज़ के टी बैग हरे डिब्बे में डालें",
+      "कुछ टी बैग में प्लास्टिक होता है; अगर बैग चिकना लगे तो पत्ती खाद में और बैग सूखे कचरे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Tea leaves break down quickly and enrich compost.",
+    "hi": "चायपत्ती जल्दी गलती है और खाद को बेहतर बनाती है।"
+  },
+  "typical_weight_g": 3,
+  "detector_classes": [
+    "tea_bag"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

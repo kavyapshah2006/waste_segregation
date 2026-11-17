@@ -1,0 +1,53 @@
+{
+  "id": "aerosol_can",
+  "names": {
+    "en": "Aerosol spray can",
+    "hi": "एयरोसोल स्प्रे कैन"
+  },
+  "aliases": {
+    "en": [
+      "spray",
+      "deodorant",
+      "insect spray"
+    ],
+    "hi": [
+      "डियोड्रेंट",
+      "मच्छर स्प्रे"
+    ]
+  },
+  "material": "pressurised_can",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Use it until it is completely empty",
+      "Do not puncture or burn it",
+      "Take it to a special care collection point"
+    ],
+    "hi": [
+      "पूरी तरह खाली होने तक इस्तेमाल करें",
+      "इसमें छेद न करें और न जलाएँ",
+      "विशेष देखभाल संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Pressurised: can explode if heated or punctured.",
+    "hi": "दबाव वाला: गर्म करने या छेदने पर फट सकता है।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Aerosol cans can explode in garbage trucks and fires if they are not empty.",
+    "hi": "खाली न होने पर एयरोसोल कैन कचरा गाड़ी या आग में फट सकते हैं।"
+  },
+  "typical_weight_g": 120,
+  "detector_classes": [
+    "aerosol_can"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

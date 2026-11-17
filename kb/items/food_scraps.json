@@ -1,0 +1,49 @@
+{
+  "id": "food_scraps",
+  "names": {
+    "en": "Food scraps",
+    "hi": "खाने का बचा हुआ कचरा"
+  },
+  "aliases": {
+    "en": [
+      "kitchen waste",
+      "vegetable scraps"
+    ],
+    "hi": [
+      "रसोई का कचरा"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Drain off extra liquid",
+      "Remove any plastic, foil or rubber bands",
+      "Put it in the green bin or a home compost pit"
+    ],
+    "hi": [
+      "अतिरिक्त पानी निकाल दें",
+      "प्लास्टिक, फॉयल या रबर बैंड हटा दें",
+      "हरे डिब्बे या घर के कम्पोस्ट गड्ढे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Composted food waste returns nutrients to the soil and keeps methane-producing waste out of landfills.",
+    "hi": "कम्पोस्ट किया गया खाने का कचरा मिट्टी को पोषक तत्व लौटाता है और लैंडफिल में मीथेन बनने से रोकता है।"
+  },
+  "typical_weight_g": 200,
+  "detector_classes": [
+    "food_scraps"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

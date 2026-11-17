@@ -1,0 +1,42 @@
+{
+  "id": "condom",
+  "names": {
+    "en": "Used condom",
+    "hi": "इस्तेमाल किया हुआ कंडोम"
+  },
+  "material": "sanitary",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Do not flush it",
+      "Wrap it in paper",
+      "Put it in the red bin"
+    ],
+    "hi": [
+      "फ़्लश न करें",
+      "काग़ज़ में लपेटें",
+      "लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": {
+    "en": "Contains body fluids; always wrap it before binning.",
+    "hi": "इसमें शरीर के तरल होते हैं; डालने से पहले हमेशा लपेटें।"
+  },
+  "drop_off": "municipal_sanitary",
+  "impact": {
+    "en": "Flushed condoms block drains; wrapping it and using the red bin is the right way.",
+    "hi": "फ़्लश किए गए कंडोम नालियाँ बंद करते हैं; लपेटकर लाल डिब्बे में डालना सही तरीका है।"
+  },
+  "typical_weight_g": 5,
+  "detector_classes": [
+    "condom"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

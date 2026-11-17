@@ -1,0 +1,46 @@
+{
+  "id": "eggshells",
+  "names": {
+    "en": "Eggshells",
+    "hi": "अंडे के छिलके"
+  },
+  "aliases": {
+    "en": [
+      "egg shell"
+    ],
+    "hi": [
+      "अंडे का छिलका"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Crush them so they compost faster",
+      "Put them in the green bin"
+    ],
+    "hi": [
+      "जल्दी खाद बनने के लिए इन्हें तोड़ लें",
+      "हरे डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Crushed eggshells add calcium to compost.",
+    "hi": "पिसे हुए अंडे के छिलके खाद में कैल्शियम जोड़ते हैं।"
+  },
+  "typical_weight_g": 30,
+  "detector_classes": [
+    "eggshells"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

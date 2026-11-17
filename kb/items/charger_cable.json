@@ -1,0 +1,49 @@
+{
+  "id": "charger_cable",
+  "names": {
+    "en": "Charger or cable",
+    "hi": "चार्जर या तार"
+  },
+  "aliases": {
+    "en": [
+      "wire",
+      "adapter",
+      "cable"
+    ],
+    "hi": [
+      "केबल",
+      "एडाप्टर"
+    ]
+  },
+  "material": "electronics",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Coil it and tie it",
+      "Give it to an e-waste collector"
+    ],
+    "hi": [
+      "लपेटकर बाँध लें",
+      "ई-कचरा संग्राहक को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "e_waste_centre",
+  "impact": {
+    "en": "Cables contain copper that can be recovered and reused.",
+    "hi": "तारों में ताँबा होता है जिसे निकालकर दोबारा इस्तेमाल किया जा सकता है।"
+  },
+  "typical_weight_g": 60,
+  "detector_classes": [
+    "charger_cable"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "E-Waste (Management) Rules, 2022"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

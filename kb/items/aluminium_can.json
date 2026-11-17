@@ -1,0 +1,50 @@
+{
+  "id": "aluminium_can",
+  "names": {
+    "en": "Aluminium drink can",
+    "hi": "एल्युमिनियम का कैन"
+  },
+  "aliases": {
+    "en": [
+      "soda can",
+      "cold drink can"
+    ],
+    "hi": [
+      "कोल्ड ड्रिंक का कैन"
+    ]
+  },
+  "material": "aluminium",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty it",
+      "Rinse it",
+      "Crush it",
+      "Put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "खाली करें",
+      "धो लें",
+      "दबाकर चपटा करें",
+      "नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "impact": {
+    "en": "Aluminium can be recycled again and again without losing quality.",
+    "hi": "एल्युमिनियम को बार-बार रीसायकल किया जा सकता है और उसकी गुणवत्ता कम नहीं होती।"
+  },
+  "typical_weight_g": 15,
+  "detector_classes": [
+    "aluminium_can"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

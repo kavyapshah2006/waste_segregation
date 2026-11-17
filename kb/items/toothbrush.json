@@ -1,0 +1,37 @@
+{
+  "id": "toothbrush",
+  "names": {
+    "en": "Toothbrush",
+    "hi": "टूथब्रश"
+  },
+  "material": "mixed_plastic",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Reuse it to clean small spaces",
+      "Put it in the blue bin"
+    ],
+    "hi": [
+      "छोटी जगह साफ़ करने में दोबारा इस्तेमाल करें",
+      "नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Plastic toothbrushes are made of mixed plastics; a bamboo brush creates less waste.",
+    "hi": "प्लास्टिक के टूथब्रश कई तरह के प्लास्टिक से बने होते हैं; बाँस का ब्रश कम कचरा बनाता है।"
+  },
+  "typical_weight_g": 18,
+  "detector_classes": [
+    "toothbrush"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

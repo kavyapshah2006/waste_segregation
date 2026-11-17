@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kavyapshah2006/waste_segregation/kb/city_schema.json",
+  "title": "City profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "bin_colours", "overrides", "drop_off_info"],
+  "properties": {
+    "id": {"$ref": "schema.json#/$defs/id"},
+    "name": {"$ref": "schema.json#/$defs/text"},
+    "bin_colours": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wet", "dry", "sanitary", "special_care"],
+      "properties": {
+        "wet": {"$ref": "#/$defs/colour"},
+        "dry": {"$ref": "#/$defs/colour"},
+        "sanitary": {"$ref": "#/$defs/colour"},
+        "special_care": {"$ref": "#/$defs/colour"}
+      }
+    },
+    "overrides": {
+      "description": "Per-item changes this city makes to the national default.",
+      "type": "object",
+      "propertyNames": {"$ref": "schema.json#/$defs/id"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "stream": {"$ref": "schema.json#/$defs/stream"},
+          "recyclable": {"type": "boolean"},
+          "drop_off": {"oneOf": [{"type": "null"}, {"$ref": "schema.json#/$defs/dropOff"}]},
+          "note": {"$ref": "schema.json#/$defs/text"}
+        }
+      }
+    },
+    "drop_off_info": {
+      "type": "object",
+      "propertyNames": {"$ref": "schema.json#/$defs/dropOff"},
+      "additionalProperties": {"$ref": "schema.json#/$defs/text"}
+    }
+  },
+  "$defs": {
+    "colour": {"enum": ["green", "blue", "red", "black", "yellow", "white", "grey"]}
+  }
+}

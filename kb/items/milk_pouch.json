@@ -1,0 +1,65 @@
+{
+  "id": "milk_pouch",
+  "names": {
+    "en": "Milk pouch",
+    "hi": "दूध की थैली"
+  },
+  "aliases": {
+    "en": [
+      "milk packet"
+    ],
+    "hi": [
+      "दूध का पैकेट"
+    ]
+  },
+  "material": "plastic_film",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Cut only a small corner when opening",
+      "Rinse and dry it",
+      "Collect pouches and give them to a scrap dealer or put them in the blue bin"
+    ],
+    "hi": [
+      "खोलते समय सिर्फ़ छोटा कोना काटें",
+      "धोकर सुखा लें",
+      "थैलियाँ इकट्ठा करके कबाड़ी को दें या नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": "scrap_dealer",
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "extra_steps": {
+          "en": [
+            "Rinse out food or liquid first"
+          ],
+          "hi": [
+            "पहले खाना या तरल धोकर निकालें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Clean milk pouches are good-quality plastic that recyclers buy.",
+    "hi": "साफ़ दूध की थैलियाँ अच्छी गुणवत्ता का प्लास्टिक हैं जिसे रीसायकलर ख़रीदते हैं।"
+  },
+  "typical_weight_g": 5,
+  "detector_classes": [
+    "milk_pouch"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "Plastic Waste Management Rules, 2016 (as amended)"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

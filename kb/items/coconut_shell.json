@@ -1,0 +1,46 @@
+{
+  "id": "coconut_shell",
+  "names": {
+    "en": "Coconut shell and husk",
+    "hi": "नारियल का खोल और जटा"
+  },
+  "aliases": {
+    "en": [
+      "coconut"
+    ],
+    "hi": [
+      "नारियल"
+    ]
+  },
+  "material": "plant",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Break the shell into smaller pieces",
+      "Put it in the green bin; give large amounts to coir or biomass collectors"
+    ],
+    "hi": [
+      "खोल को छोटे टुकड़ों में तोड़ें",
+      "हरे डिब्बे में डालें; ज़्यादा मात्रा हो तो नारियल-रेशा या बायोमास संग्राहकों को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Coconut husk becomes coir rope and mats; shells take months to compost, so break them up.",
+    "hi": "नारियल की जटा से रस्सी और चटाई बनती है; खोल को खाद बनने में महीनों लगते हैं, इसलिए उसे तोड़ लें।"
+  },
+  "typical_weight_g": 150,
+  "detector_classes": [
+    "coconut_shell"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

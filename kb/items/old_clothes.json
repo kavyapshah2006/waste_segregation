@@ -1,0 +1,49 @@
+{
+  "id": "old_clothes",
+  "names": {
+    "en": "Old clothes and textiles",
+    "hi": "पुराने कपड़े"
+  },
+  "aliases": {
+    "en": [
+      "rags",
+      "fabric"
+    ],
+    "hi": [
+      "कपड़ा",
+      "चिथड़े"
+    ]
+  },
+  "material": "textile",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Donate clothes that can still be worn",
+      "Use worn-out cloth as cleaning rags",
+      "Put clean, dry textiles in the blue bin"
+    ],
+    "hi": [
+      "पहनने लायक कपड़े दान करें",
+      "फटे कपड़े पोंछे के रूप में इस्तेमाल करें",
+      "साफ़ और सूखे कपड़े नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Reusing clothes saves the large amount of water used to make new fabric.",
+    "hi": "कपड़ों को दोबारा इस्तेमाल करने से नया कपड़ा बनाने में लगने वाला ढेर सारा पानी बचता है।"
+  },
+  "typical_weight_g": 300,
+  "detector_classes": [
+    "old_clothes"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

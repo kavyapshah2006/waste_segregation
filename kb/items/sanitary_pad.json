@@ -1,0 +1,53 @@
+{
+  "id": "sanitary_pad",
+  "names": {
+    "en": "Used sanitary pad",
+    "hi": "इस्तेमाल किया हुआ सैनिटरी पैड"
+  },
+  "aliases": {
+    "en": [
+      "napkin",
+      "tampon"
+    ],
+    "hi": [
+      "नैपकिन",
+      "टैम्पॉन"
+    ]
+  },
+  "material": "sanitary",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Wrap it in paper or the pad's wrapper",
+      "Mark the wrap with a red dot if your area asks for it",
+      "Put it in the red bin, separate from other waste"
+    ],
+    "hi": [
+      "काग़ज़ या पैड के रैपर में लपेटें",
+      "अगर आपके क्षेत्र में कहा जाता है तो लपेटे पर लाल निशान लगाएँ",
+      "बाकी कचरे से अलग लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": {
+    "en": "Contains body fluids; always wrap it before binning.",
+    "hi": "इसमें शरीर के तरल होते हैं; डालने से पहले हमेशा लपेटें।"
+  },
+  "drop_off": "municipal_sanitary",
+  "impact": {
+    "en": "Wrapping sanitary waste protects waste workers from infection.",
+    "hi": "सैनिटरी कचरे को लपेटने से सफ़ाई कर्मचारी संक्रमण से बचते हैं।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "sanitary_pad"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}
