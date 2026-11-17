@@ -32,6 +32,37 @@
     "hi": "पारा ज़हरीला होता है।"
   },
   "drop_off": "hazardous_collection",
+  "condition_rules": [
+    {
+      "if": {
+        "broken": true
+      },
+      "then": {
+        "hazard": {
+          "en": "Spilled mercury gives off toxic vapour. If anyone feels unwell, see a doctor.",
+          "hi": "बिखरा पारा ज़हरीली भाप छोड़ता है। किसी की तबीयत बिगड़े तो डॉक्टर को दिखाएँ।"
+        },
+        "steps": {
+          "en": [
+            "Get everyone out, keep children and pets away, and open the windows",
+            "Never vacuum, sweep with a broom or pour the mercury down a drain",
+            "Wear gloves; put the glass pieces on a paper towel and seal it in a zip-lock bag",
+            "Push the mercury beads together with cardboard; pick them up with an eyedropper or sticky tape",
+            "Seal everything, gloves too, in bags marked 'mercury' and keep them outside",
+            "Take the bags to a hazardous waste collection point; keep the room aired for 24 hours"
+          ],
+          "hi": [
+            "सबको बाहर भेजें, बच्चों और पालतू जानवरों को दूर रखें और खिड़कियाँ खोलें",
+            "कभी वैक्यूम या झाड़ू न लगाएँ और पारे को नाली में न बहाएँ",
+            "दस्ताने पहनें; काँच के टुकड़े काग़ज़ी तौलिये पर रखकर ज़िप-लॉक थैली में बंद करें",
+            "पारे की बूँदों को गत्ते से इकट्ठा करें और ड्रॉपर या चिपकने वाले टेप से उठाएँ",
+            "दस्तानों समेत सब कुछ 'पारा' लिखी थैलियों में बंद करें और घर के बाहर रखें",
+            "थैलियाँ ख़तरनाक कचरा संग्रह केंद्र पर दें और कमरे में 24 घंटे हवा आने दें"
+          ]
+        }
+      }
+    }
+  ],
   "impact": {
     "en": "A single thermometer's mercury can pollute a large amount of water.",
     "hi": "एक थर्मामीटर का पारा भी बहुत सारे पानी को प्रदूषित कर सकता है।"
@@ -41,7 +72,8 @@
     "mercury_thermometer"
   ],
   "sources": [
-    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676"
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "US EPA, What to Do if a Mercury Thermometer Breaks, https://www.epa.gov/mercury/what-do-if-mercury-thermometer-breaks"
   ],
   "reviewed": {
     "en": true,

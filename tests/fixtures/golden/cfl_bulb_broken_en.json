@@ -1,0 +1,77 @@
+{
+  "id": "cfl_bulb_broken_en",
+  "description": "Broken CFL swaps 'do not break it' for the EPA clean-up steps and keeps the black bin.",
+  "input": {
+    "detection": {
+      "item_id": "cfl_bulb",
+      "confidence": 0.88,
+      "bbox": [
+        0.3,
+        0.25,
+        0.7,
+        0.75
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": true
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "{\"item\": \"CFL bulb or tube light\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"steps\": [\"Air the room\"], \"why\": \"The bulb holds mercury, which poisons soil and water if it reaches a dump.\", \"tip\": \"Use stiff paper, never a vacuum.\", \"language\": \"English\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "cfl_bulb",
+      "name": "CFL bulb or tube light",
+      "stream": "special_care",
+      "stream_name": "Special care waste",
+      "bin_colour": "black",
+      "bin_colour_name": "black",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Get people and pets out of the room and open a window for 5 to 10 minutes",
+        "Do not vacuum or sweep; scoop up the glass and powder with stiff paper",
+        "Pick up small bits with sticky tape and wipe the spot with a damp paper towel",
+        "Seal everything in a glass jar with a lid or a sealable bag and keep it outside",
+        "Wash your hands, then take it to a hazardous waste collection point"
+      ],
+      "hazard": "A broken bulb releases mercury vapour. Keep children and pets away.",
+      "drop_off": "hazardous_collection",
+      "drop_off_text": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+      "notes": [],
+      "impact": "Collecting CFLs keeps mercury out of soil and water.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [
+        "rule:broken=true"
+      ],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given. Never change the stream, bin, hazard or drop-off. Keep the answer under 80 words. Reply with one JSON object with exactly these keys: \"item\", \"stream\", \"bin\", \"steps\", \"why\", \"tip\", \"language\". Write why and tip in the requested LANGUAGE. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"CFL bulb or tube light\", \"stream\": \"Special care waste\", \"bin\": \"black\", \"recyclable\": true, \"steps\": [\"Get people and pets out of the room and open a window for 5 to 10 minutes\", \"Do not vacuum or sweep; scoop up the glass and powder with stiff paper\", \"Pick up small bits with sticky tape and wipe the spot with a damp paper towel\", \"Seal everything in a glass jar with a lid or a sealable bag and keep it outside\", \"Wash your hands, then take it to a hazardous waste collection point\"], \"hazard\": \"A broken bulb releases mercury vapour. Keep children and pets away.\", \"drop_off\": \"Hand it to your city's special care (household hazardous) waste collection or drop-off centre.\", \"notes\": [], \"impact\": \"Collecting CFLs keeps mercury out of soil and water.\"}\nCONDITION: {\"broken\": true, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n",
+    "verified": {
+      "status": "ok",
+      "output": {
+        "item": "CFL bulb or tube light",
+        "stream": "special_care",
+        "bin": "black",
+        "steps": [
+          "Get people and pets out of the room and open a window for 5 to 10 minutes",
+          "Do not vacuum or sweep; scoop up the glass and powder with stiff paper",
+          "Pick up small bits with sticky tape and wipe the spot with a damp paper towel",
+          "Seal everything in a glass jar with a lid or a sealable bag and keep it outside",
+          "Wash your hands, then take it to a hazardous waste collection point"
+        ],
+        "hazard": "A broken bulb releases mercury vapour. Keep children and pets away.",
+        "drop_off": "Hand it to your city's special care (household hazardous) waste collection or drop-off centre.",
+        "why": "The bulb holds mercury, which poisons soil and water if it reaches a dump.",
+        "tip": "Use stiff paper, never a vacuum.",
+        "language": "en"
+      },
+      "contradictions": []
+    }
+  }
+}

@@ -33,6 +33,35 @@
     "hi": "इसमें पारा होता है। टूट जाए तो कमरे में हवा आने दें और टुकड़ों पर वैक्यूम न चलाएँ।"
   },
   "drop_off": "hazardous_collection",
+  "condition_rules": [
+    {
+      "if": {
+        "broken": true
+      },
+      "then": {
+        "hazard": {
+          "en": "A broken bulb releases mercury vapour. Keep children and pets away.",
+          "hi": "टूटा बल्ब पारे की भाप छोड़ता है। बच्चों और पालतू जानवरों को दूर रखें।"
+        },
+        "steps": {
+          "en": [
+            "Get people and pets out of the room and open a window for 5 to 10 minutes",
+            "Do not vacuum or sweep; scoop up the glass and powder with stiff paper",
+            "Pick up small bits with sticky tape and wipe the spot with a damp paper towel",
+            "Seal everything in a glass jar with a lid or a sealable bag and keep it outside",
+            "Wash your hands, then take it to a hazardous waste collection point"
+          ],
+          "hi": [
+            "लोगों और पालतू जानवरों को कमरे से बाहर करें और 5 से 10 मिनट खिड़की खोलें",
+            "वैक्यूम या झाड़ू न लगाएँ; काँच और पाउडर को मोटे काग़ज़ से उठाएँ",
+            "छोटे टुकड़े चिपकने वाले टेप से उठाएँ और जगह को गीले काग़ज़ी तौलिये से पोंछें",
+            "सब कुछ ढक्कन वाले काँच के जार या बंद होने वाली थैली में रखकर घर के बाहर रखें",
+            "हाथ धोएँ, फिर इसे ख़तरनाक कचरा संग्रह केंद्र पर दें"
+          ]
+        }
+      }
+    }
+  ],
   "impact": {
     "en": "Collecting CFLs keeps mercury out of soil and water.",
     "hi": "सीएफ़एल इकट्ठा करने से पारा मिट्टी और पानी में नहीं जाता।"
@@ -43,7 +72,8 @@
   ],
   "sources": [
     "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
-    "E-Waste (Management) Rules, 2022"
+    "E-Waste (Management) Rules, 2022",
+    "US EPA, Cleaning Up a Broken CFL, https://www.epa.gov/mercury/cleaning-broken-cfl"
   ],
   "reviewed": {
     "en": true,

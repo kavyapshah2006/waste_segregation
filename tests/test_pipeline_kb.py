@@ -46,6 +46,19 @@ def test_rule_can_clear_drop_off_without_changing_stream(kb):
     assert broken.stream == "dry" and broken.drop_off is None and broken.hazard
 
 
+def test_broken_mercury_items_get_clean_up_steps(kb):
+    for item_id in ("cfl_bulb", "mercury_thermometer"):
+        whole = kb.resolve(item_id)
+        broken = kb.resolve(item_id, {"broken": True})
+        assert (broken.stream, broken.bin_colour) == (whole.stream, whole.bin_colour)
+        assert broken.drop_off == "hazardous_collection"
+        assert broken.steps != whole.steps
+        assert any("vacuum" in step for step in broken.steps)
+        assert broken.applied == ("rule:broken=true",)
+        hi = kb.resolve(item_id, {"broken": True}, language="hi")
+        assert len(hi.steps) == len(broken.steps) and not hi.missing_translation
+
+
 def test_extra_steps_are_prepended(kb):
     v = kb.resolve("pet_bottle", {"contaminated": True})
     assert v.steps[0] == "Rinse out food or liquid first"
