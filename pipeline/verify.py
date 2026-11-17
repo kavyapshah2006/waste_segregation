@@ -156,16 +156,23 @@ def verify(raw: str, verdict: Verdict) -> VerifiedOutput:
     if "bin" in data and not _matches_bin(data["bin"], verdict):
         contradictions.append("bin")
 
+    # Bins Llama may name in its text: the verdict's bin, plus any bin the KB entry itself
+    # mentions (greasy cardboard: green for the soiled part, blue for the clean part).
+    # Once Llama has the stream or bin wrong, only the verdict's bin is allowed.
+    allowed = {verdict.bin_colour}
+    if not contradictions:
+        allowed |= bins_mentioned(" ".join((*verdict.steps, *verdict.notes)))
+
     steps = data.get("steps")
     if isinstance(steps, list):
         step_text = " ".join(s for s in steps if isinstance(s, str))
-        if bins_mentioned(step_text) - {verdict.bin_colour}:
+        if bins_mentioned(step_text) - allowed:
             contradictions.append("steps_bin")
 
     free: dict[str, str | None] = {}
     for key in ("why", "tip"):
         value = _clean_text(data.get(key))
-        if value and bins_mentioned(value) - {verdict.bin_colour}:
+        if value and bins_mentioned(value) - allowed:
             contradictions.append(f"{key}_bin")
             value = None
         free[key] = value

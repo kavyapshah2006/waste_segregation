@@ -38,6 +38,29 @@ def test_free_text_naming_the_right_bin_is_kept(kb):
     assert result.output["why"] == "The blue bin is right."
 
 
+def test_bins_named_by_the_kb_entry_are_allowed_when_llama_agrees(kb):
+    verdict = kb.resolve("cardboard_box", {"contaminated": True})  # green, steps mention blue
+    raw = json.dumps(
+        {
+            "stream": "wet",
+            "bin": "green",
+            "steps": ["Put clean parts in the blue bin"],
+            "why": "Soiled parts go in the green bin, clean parts in the blue bin.",
+        }
+    )
+    result = verify(raw, verdict)
+    assert result.status == "ok"
+    assert result.output["why"].startswith("Soiled parts")
+
+
+def test_after_a_wrong_bin_only_the_verdict_bin_may_be_named(kb):
+    verdict = kb.resolve("cardboard_box", {"contaminated": True})
+    raw = json.dumps({"stream": "dry", "bin": "blue", "why": "Clean parts: blue bin."})
+    result = verify(raw, verdict)
+    assert result.contradictions == ("stream", "bin", "why_bin")
+    assert result.output["why"] is None
+
+
 def test_long_free_text_is_truncated(kb):
     verdict = kb.resolve("pet_bottle")
     result = verify(json.dumps({"why": "word " * 200}), verdict)

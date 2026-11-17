@@ -96,11 +96,11 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     output = args.output or DEFAULT_OUT / f"llama3_2_{args.mode}.pte"
-    output.parent.mkdir(parents=True, exist_ok=True)
     cmd = build_command(args.mode, args.checkpoint, args.params, output, args.max_seq_len)
     print(shlex.join(cmd))
     if args.dry_run:
         return 0
+    output.parent.mkdir(parents=True, exist_ok=True)
     if args.checkpoint is None:
         print("warning: no --checkpoint, exporting RANDOM weights (pipeline test only)")
     subprocess.run(cmd, check=True, cwd=output.parent)

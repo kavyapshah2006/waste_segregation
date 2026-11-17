@@ -343,7 +343,7 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 - **Goal:** fewer contradictions, valid JSON, shorter answers.
 - **Depends on:** WP2, WP4. **Human:** Colab.
 - **Create:** `models/llm/synth_data/generate.py`, `models/llm/lora/train.ipynb`, `eval/llm_quality/run.py`, results JSON.
-- **Steps:** generate Q&A from KB entries (en + hi), auto-check each answer with `verify.py`; LoRA fine-tune 1B; re-export through the same INT4 path; evaluate contradiction rate, JSON validity, length, and a Hindi spot check. Ship the fine-tune only if it beats base + prompt after quantisation.
+- **Steps:** generate Q&A from KB entries (en + hi), auto-check each answer with `verify.py` (done: `models/llm/synth_data/generate.py`); score base Llama on the held-out cases with `eval/llm_quality/run.py` (phone answers or host `--llm-model`); LoRA fine-tune 1B on `train.jsonl` (completion-only loss); merge, re-export with `models/llm/export.py --mode int4`; re-score. Ship the fine-tune only if its **useful rate** beats base + prompt after quantisation, with a Hindi spot check.
 - **Acceptance:** evaluation table committed with a clear ship / do-not-ship decision.
 
 ### WP9: Languages and voice
@@ -470,7 +470,7 @@ Update this table in the same commit that completes a WP.
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |
 | 7 | Accuracy and robustness | Not started | |
-| 8 | Llama specialisation | Not started | |
+| 8 | Llama specialisation | Data + eval done | `generate.py`: 470 KB-verified examples (en/hi, 5 question kinds, 6 held-out items); `eval/llm_quality/run.py` (headline: useful rate). **Needs a human:** gated checkpoint + Colab GPU for the LoRA run; no base-model scores yet |
 | 9 | Languages and voice | Not started | |
 | 10 | Impact and education | Not started | |
 | 11 | Evaluation | Not started | |

@@ -47,3 +47,6 @@ models/vision/out/
 
 # Llama model files and export outputs (never committed)
 models/llm/out/
+
+# Generated fine-tuning data
+models/llm/synth_data/out/
