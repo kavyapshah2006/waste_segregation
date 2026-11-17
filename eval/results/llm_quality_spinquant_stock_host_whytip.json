@@ -1,0 +1,18 @@
+{
+  "kb_version": "373e61ef130defd0",
+  "split": "val",
+  "cases": 80,
+  "answered": 80,
+  "json_valid_rate": 0.975,
+  "clean_rate": 0.975,
+  "useful_rate": 0.975,
+  "status": {
+    "ok": 78,
+    "fallback": 2
+  },
+  "contradictions": {
+    "unparseable": 2
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 16.5
+}

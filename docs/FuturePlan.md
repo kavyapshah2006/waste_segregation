@@ -467,7 +467,7 @@ Update this table in the same commit that completes a WP.
 | 5 | Android app skeleton | Not started | Needs Android Studio |
 | 6 | End-to-end MVP | Not started | |
 | 7 | Accuracy and robustness | Not started | |
-| 8 | Llama specialisation | Data + eval done | `generate.py`: 470 KB-verified examples (en/hi, 5 question kinds, 6 held-out items); `eval/llm_quality/run.py` (headline: useful rate). **Needs a human:** gated checkpoint + Colab GPU for the LoRA run; no base-model scores yet |
+| 8 | Llama specialisation | Data + eval done; base scored | `generate.py`: KB-verified examples (en/hi, 5 question kinds, 6 held-out items); `eval/llm_quality/run.py`. Stock SpinQuant 1B on the host, 80 held-out cases: useful rate 10% with the 7-key answer, 97.5% with why + tip (`eval/results/llm_quality_spinquant_stock_host*.json`). **The useful rate only checks format and bin names, not content.** Reading the why + tip answers by hand: about 2 in 3 on-topic English answers and about half the Hindi ones are factually right; the model often negates the facts ("do not put plastic bags in the blue bin"), gets "is it recyclable?" wrong against the KB flag, and answers off-topic questions instead of declining. Next: content checks in the eval/verifier, then the LoRA run. **Needs a human:** gated checkpoint + Colab GPU for the LoRA run |
 | 9 | Languages and voice | Not started | |
 | 10 | Impact and education | Not started | |
 | 11 | Evaluation | Not started | |
