@@ -4,6 +4,9 @@ The knowledge base always wins on facts: item, stream, bin, steps, hazard and dr
 taken from the Verdict. Llama is asked only for `why` and `tip` (pipeline/prompt.py), and
 they are dropped if they name a different bin. If Llama adds `stream`, `bin` or `steps` keys
 anyway, they are checked too; a wrong stream or bin also tightens the free-text check.
+`why` / `tip` are also dropped if a clause negates the verdict's own bin or stream or one
+of its steps, if a recyclable or compostable claim disagrees with the KB flag, or if a
+clause tells the user to put waste in a drain, toilet, road or river, or to burn it.
 Every disagreement is recorded as a contradiction so the raw contradiction rate can be
 measured.
 
@@ -21,7 +24,8 @@ from pipeline.kb import Verdict
 
 MAX_FREE_TEXT = 400
 
-Status = Literal["ok", "corrected", "fallback"]
+# "declined": the question was off-topic, so Llama was not asked (pipeline/assistant.py).
+Status = Literal["ok", "corrected", "fallback", "declined"]
 
 # Bin mentions in free text, mapped to colour ids. Hindi uses both direct and oblique forms.
 _COLOUR_WORDS = {
@@ -122,6 +126,160 @@ def bins_mentioned(text: str) -> set[str]:
     return found
 
 
+# Content checks on why/tip, clause by clause. Deliberately strict: a dropped sentence only
+# costs the explanation (the KB facts are still shown), a wrong one misleads the user.
+_CLAUSE = re.compile(
+    r"[.;:!?,।\n]+|\s+(?:and|but|or|so\s+that|because|और|लेकिन|या|ताकि|क्योंकि|जिससे)\s+", re.I
+)
+_NEG_EN = re.compile(
+    r"\b(?:not|never|no|don['’]t|doesn['’]t|shouldn['’]t|cannot|can['’]t|won['’]t|isn['’]t|"
+    r"aren['’]t|avoid)\b",
+    re.I,
+)
+_NEG_HI = re.compile(r"नहीं|मत|(?<!\S)न(?!\S)")
+_STREAM_WORDS = {
+    "wet": (r"\bwet\s+waste\b", r"गील[ाे]\s+कचर[ाे]"),
+    "dry": (r"\bdry\s+waste\b", r"सूख[ाे]\s+कचर[ाे]"),
+    "sanitary": (r"\bsanitary\s+waste\b", r"सैनिटरी\s+कचर[ाे]"),
+    "special_care": (r"\bspecial[\s-]+care\s+waste\b", r"विशेष\s+देखभाल\s+(?:वाले\s+)?कचर[ाे]"),
+}
+_RECYCL_HI = r"रीसा[यइ]कल"
+_NOT_RECYCLABLE_HI = re.compile(rf"{_RECYCL_HI}\s+(?:\S+\s+){{0,3}}?(?:नहीं|न)(?!\S)")
+_HARD = re.compile(
+    r"मुश्किल|कठिन|शायद\s+ही|\bdifficult\b|\bhard\s+to\b|\brarely\b|\bseldom\b|\bhardly\b", re.I
+)
+_NOT_RECYCLABLE_EN = re.compile(
+    r"\b(?:not|non-?|never|cannot|can['’]t|isn['’]t|aren['’]t)\s*(?:be\s+|being\s+)?recycl", re.I
+)
+_RECYCLABLE_EN = re.compile(
+    r"\b(?:is|are|it['’]s)\s+recyclable\b|\bcan\s+be\s+recycled\b|\b(?:is|are|gets?)\s+recycled\b",
+    re.I,
+)
+_RECYCLABLE_HI = re.compile(rf"{_RECYCL_HI}.*(?:हो\s+सकत|किया\s+जा\s+सकत|होत[ाीे]|हो\s+जात)")
+
+
+def _clauses(text: str) -> list[str]:
+    return [c for c in _CLAUSE.split(text) if c.strip()]
+
+
+def _negated(clause: str) -> bool:
+    return bool(_NEG_EN.search(clause) or _NEG_HI.search(clause))
+
+
+def negates_verdict(text: str, verdict: Verdict) -> bool:
+    """True if a clause says not to use the verdict's own bin or stream ('do not put it in the
+    blue bin' when blue is right). Bins are matched as in bins_mentioned; streams by name."""
+    en, hi = _STREAM_WORDS[verdict.stream]
+    for clause in _clauses(text):
+        if not _negated(clause):
+            continue
+        if verdict.bin_colour in bins_mentioned(clause):
+            return True
+        if re.search(en, clause, re.I) or re.search(hi, clause):
+            return True
+    return False
+
+
+def recyclable_claim(text: str) -> bool | None:
+    """The text's claim about recyclability: False ('not recyclable'), True ('can be
+    recycled'), or None when it makes no clear claim. A negative claim wins."""
+    claim = None
+    for clause in _clauses(text):
+        if _NOT_RECYCLABLE_EN.search(clause) or _NOT_RECYCLABLE_HI.search(clause):
+            return False
+        if _negated(clause) or _HARD.search(clause):
+            continue
+        if _RECYCLABLE_EN.search(clause) or _RECYCLABLE_HI.search(clause):
+            claim = True
+    return claim
+
+
+_NOT_COMPOSTABLE = re.compile(
+    r"\b(?:not|non-?|never|cannot|can['’]t|isn['’]t|aren['’]t)\s*(?:be\s+)?compost"
+    r"|(?:खाद|कम्पोस्ट|कंपोस्ट)\s+(?:\S+\s+){0,3}?(?:नहीं|न)(?!\S)",
+    re.I,
+)
+_COMPOSTABLE = re.compile(
+    r"\b(?:is|are|it['’]s)\s+compostable\b|\bcan\s+be\s+composted\b"
+    r"|(?:खाद|कम्पोस्ट|कंपोस्ट)\s+(?:बन\s+सकत|बनाई\s+जा\s+सकत|बनत)",
+    re.I,
+)
+
+# Telling the user to put waste in a drain, toilet, road or river, or to burn it.
+_UNSAFE_PLACE = re.compile(
+    r"\b(?:drains?|sewers?|toilets?|nalas?|rivers?|lakes?|roadside|on\s+the\s+road|open\s+ground)\b"
+    r"|नाल[ाीियोंे]*|सीवर|शौचालय|सड़क|नदी|तालाब",
+    re.I,
+)
+_PUT = re.compile(
+    r"\b(?:put|pour|flush|throw|dump|tip|empty|drop|leave)\b"
+    r"|डालें|डाल\s+दें|बहाएँ|बहा\s+दें|फेंकें|फेंक\s+दें|छोड़ें|छोड़\s+दें",
+    re.I,
+)
+_BURN = re.compile(
+    r"(?:^|\byou\s+(?:can|should|may)\s+|\bplease\s+)burn\b|जलाएँ|जलाइए|जला\s+दें", re.I
+)
+
+
+def unsafe_instruction(text: str, verdict: Verdict) -> bool:
+    """True if a clause tells the user to put waste somewhere unsafe or to burn it. Clauses
+    that repeat the KB's own text are allowed (diapers: empty solid waste into the toilet)."""
+    kb_clauses = [
+        _content_words(c)
+        for t in (*verdict.steps, *verdict.notes, verdict.hazard or "")
+        for c in _clauses(t)
+    ]
+    for clause in _clauses(text):
+        if _negated(clause) or _repeats(clause, kb_clauses):
+            continue
+        if (_UNSAFE_PLACE.search(clause) and _PUT.search(clause)) or _BURN.search(clause.strip()):
+            return True
+    return False
+
+
+def compostable_claim(text: str) -> bool | None:
+    """Like recyclable_claim, for compostability."""
+    claim = None
+    for clause in _clauses(text):
+        if _NOT_COMPOSTABLE.search(clause):
+            return False
+        if not _negated(clause) and not _HARD.search(clause) and _COMPOSTABLE.search(clause):
+            claim = True
+    return claim
+
+
+_STOP = {
+    "the", "and", "or", "a", "an", "it", "its", "them", "they", "this", "that", "with",
+    "from", "into", "onto", "before", "after", "your", "you", "out", "off", "for", "of",
+    "to", "in", "on", "at", "be", "is", "are", "if", "can", "then", "so", "do", "not",
+    "को", "से", "में", "और", "के", "की", "का", "है", "हैं", "यह", "इसे", "इस", "पहले",
+    "दें", "करें", "कर", "या", "पर", "ही", "भी", "न", "नहीं", "मत",
+}  # fmt: skip
+
+
+def _content_words(text: str) -> set[str]:
+    words = re.findall(r"[\wऀ-ॿ]+", text.casefold())
+    return {w for w in words if w not in _STOP and len(w) >= 3}
+
+
+def _repeats(clause: str, kb_clauses: list[set[str]], share: float = 0.8) -> bool:
+    """True if the clause carries at least `share` of some KB clause's content words."""
+    said = _content_words(clause)
+    return any(len(words) >= 2 and len(words & said) >= share * len(words) for words in kb_clauses)
+
+
+def negates_step(text: str, verdict: Verdict) -> bool:
+    """True if a negated clause matches a KB step ('Do not remove stickers' when a step says
+    'Remove stickers from fruit'). Steps that are themselves negative are skipped."""
+    step_words = [
+        _content_words(clause)
+        for step in verdict.steps
+        for clause in _clauses(step)
+        if not _negated(clause)
+    ]
+    return any(_negated(c) and _repeats(c, step_words) for c in _clauses(text))
+
+
 def _norm(value: str) -> str:
     return re.sub(r"[\s\-]+", "_", value.strip().casefold())
 
@@ -198,6 +356,21 @@ def verify(raw: str, verdict: Verdict) -> VerifiedOutput:
         value = _clean_text(data.get(key))
         if value and bins_mentioned(value) - allowed:
             contradictions.append(f"{key}_bin")
+            value = None
+        if value and negates_verdict(value, verdict):
+            contradictions.append(f"{key}_negates")
+            value = None
+        if value and recyclable_claim(value) not in (None, verdict.recyclable):
+            contradictions.append(f"{key}_recyclable")
+            value = None
+        if value and compostable_claim(value) not in (None, verdict.compostable):
+            contradictions.append(f"{key}_compostable")
+            value = None
+        if value and negates_step(value, verdict):
+            contradictions.append(f"{key}_negates_step")
+            value = None
+        if value and unsafe_instruction(value, verdict):
+            contradictions.append(f"{key}_unsafe")
             value = None
         free[key] = value
 

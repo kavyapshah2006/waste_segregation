@@ -1,0 +1,73 @@
+{
+  "id": "old_clothes_not_recyclable_hi",
+  "description": "Hindi why says clothes cannot be recycled; the KB says they can.",
+  "input": {
+    "detection": {
+      "item_id": "old_clothes",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "hi",
+    "question": "क्या यह रीसायकल हो सकता है?",
+    "raw_llm_output": "नहीं, यह रीसायकल नहीं हो सकता है।\", \"tip\": \"पुराने कपड़े दान करें।\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "old_clothes",
+      "name": "पुराने कपड़े",
+      "stream": "dry",
+      "stream_name": "सूखा कचरा",
+      "bin_colour": "blue",
+      "bin_colour_name": "नीला",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "पहनने लायक कपड़े दान करें",
+        "फटे कपड़े पोंछे के रूप में इस्तेमाल करें",
+        "साफ़ और सूखे कपड़े नीले डिब्बे में डालें"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [],
+      "impact": "कपड़ों को दोबारा इस्तेमाल करने से नया कपड़ा बनाने में लगने वाला ढेर सारा पानी बचता है।",
+      "language": "hi",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why that you can only help with waste. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"पुराने कपड़े\", \"stream\": \"सूखा कचरा\", \"bin\": \"नीला\", \"recyclable\": true, \"steps\": [\"पहनने लायक कपड़े दान करें\", \"फटे कपड़े पोंछे के रूप में इस्तेमाल करें\", \"साफ़ और सूखे कपड़े नीले डिब्बे में डालें\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"कपड़ों को दोबारा इस्तेमाल करने से नया कपड़ा बनाने में लगने वाला ढेर सारा पानी बचता है।\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Hindi\nQUESTION: क्या यह रीसायकल हो सकता है?<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "पुराने कपड़े",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "पहनने लायक कपड़े दान करें",
+          "फटे कपड़े पोंछे के रूप में इस्तेमाल करें",
+          "साफ़ और सूखे कपड़े नीले डिब्बे में डालें"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": null,
+        "tip": "पुराने कपड़े दान करें।",
+        "language": "hi"
+      },
+      "contradictions": [
+        "why_recyclable"
+      ]
+    }
+  }
+}

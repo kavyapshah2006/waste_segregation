@@ -198,3 +198,16 @@ class KnowledgeBase:
 
     def language_name(self, language: str) -> str:
         return self.strings["languages"].get(language, language)
+
+    def message(self, key: str, language: str) -> str:
+        """A fixed app message (strings.json "messages"), falling back to English."""
+        by_lang = self.strings["messages"][key]
+        return by_lang.get(language, by_lang[FALLBACK_LANG])
+
+    def names_of(self, item_id: str) -> list[str]:
+        """Every name and alias of an item, in every language."""
+        item = self._items[item_id]
+        names = list(item["names"].values())
+        for aliases in item.get("aliases", {}).values():
+            names.extend(aliases)
+        return names

@@ -18,6 +18,7 @@ REPO = GOLDEN_DIR.parents[2]
 sys.path.insert(0, str(REPO))
 
 from kb.build_kb import build  # noqa: E402
+from pipeline.assistant import declined, is_on_topic  # noqa: E402
 from pipeline.kb import KnowledgeBase  # noqa: E402
 from pipeline.prompt import build_prompt, full_answer  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
@@ -32,9 +33,15 @@ def expected_for(kb: KnowledgeBase, case_input: dict) -> dict:
     verdict = kb.resolve(
         detection["item_id"], attributes, language, case_input.get("city", "default_in")
     )
-    prompt = build_prompt(
-        verdict, attributes, kb.language_name(language), case_input.get("question")
-    )
+    question = case_input.get("question")
+    if not is_on_topic(question, kb.names_of(verdict.item_id)):
+        # Off-topic question: Llama is never asked, so there is no prompt.
+        return {
+            "verdict": verdict.to_dict(),
+            "prompt": None,
+            "verified": declined(kb, verdict).to_dict(),
+        }
+    prompt = build_prompt(verdict, attributes, kb.language_name(language), question)
     raw = case_input.get("raw_llm_output")
     return {
         "verdict": verdict.to_dict(),

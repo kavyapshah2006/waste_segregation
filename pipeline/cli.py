@@ -18,6 +18,7 @@ import json
 import sys
 from pathlib import Path
 
+from pipeline.assistant import declined, is_on_topic
 from pipeline.kb import DEFAULT_CITY, KnowledgeBase
 from pipeline.prompt import build_prompt, full_answer
 from pipeline.verify import verify
@@ -91,13 +92,18 @@ def main(argv: list[str] | None = None) -> int:
 
     verdict = kb.resolve(item_id, attributes, args.lang, args.city)
     result["verdict"] = verdict.to_dict()
+    if not is_on_topic(args.question, kb.names_of(item_id)):
+        result["prompt"] = None
+        result["verified"] = declined(kb, verdict).to_dict()
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return 0
     result["prompt"] = build_prompt(verdict, attributes, kb.language_name(args.lang), args.question)
     if args.llm_model:
         if args.tokenizer is None:
             print("--llm-model needs --tokenizer", file=sys.stderr)
             return 2
         from pipeline.assistant import explain
-        from pipeline.llm import ExecuTorchGenerator
+        from pipeline.llm import ExecuTorchGenerator  # imports ExecuTorch, so only when needed
 
         generator = ExecuTorchGenerator(args.llm_model, args.tokenizer)
         explanation = explain(kb, verdict, attributes, generator, args.question)

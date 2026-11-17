@@ -1,4 +1,10 @@
 {
+  "messages": {
+    "off_topic": {
+      "en": "I can only help with sorting and disposing of waste.",
+      "hi": "मैं सिर्फ़ कचरे को अलग करने और सही तरीके से फेंकने में मदद कर सकता हूँ।"
+    }
+  },
   "streams": {
     "wet": {"en": "Wet waste", "hi": "गीला कचरा"},
     "dry": {"en": "Dry waste", "hi": "सूखा कचरा"},

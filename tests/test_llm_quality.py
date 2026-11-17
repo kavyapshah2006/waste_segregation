@@ -39,7 +39,9 @@ def test_perfect_answers_score_clean(kb):
     cases = load_cases(kb)
     answers = {c.id: c.completion for c in cases}
     report = score(kb, cases, answers)
-    assert report["answered"] == len(cases)
+    on_topic = [c for c in cases if c.question_kind != "off_topic"]
+    assert report["answered"] == report["sent_to_llm"] == len(on_topic)
+    assert report["off_topic_declined_rate"] == 1.0 and report["false_declines"] == 0
     assert report["clean_rate"] == 1.0 and report["json_valid_rate"] == 1.0
     assert report["useful_rate"] == 1.0
     assert report["language_match_rate"] == 1.0

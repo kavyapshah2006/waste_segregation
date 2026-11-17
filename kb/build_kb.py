@@ -103,7 +103,9 @@ def validate(src: KbSource, kb_dir: Path = KB_DIR) -> list[str]:
                 errors.append(f"detector class {cls!r} used by both {owner[cls]} and {item_id}")
             owner[cls] = item_id
 
-    for section in ("streams", "colours"):
+    if "off_topic" not in src.strings.get("messages", {}):
+        errors.append("strings.json: missing messages.off_topic")
+    for section in ("streams", "colours", "messages"):
         for key, text in src.strings.get(section, {}).items():
             for lang in REQUIRED_LANGS:
                 if not text.get(lang):

@@ -1,0 +1,73 @@
+{
+  "id": "plastic_bag_negates_bin_en",
+  "description": "Llama says not to use the blue bin, which is the right bin; why is dropped.",
+  "input": {
+    "detection": {
+      "item_id": "plastic_carry_bag",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": null,
+    "raw_llm_output": "Do not put plastic carry bags in the blue bin as they clog drains.\", \"tip\": \"Carry a cloth bag.\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "plastic_carry_bag",
+      "name": "Plastic carry bag",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Reuse it as many times as you can",
+        "Shake out crumbs and keep it dry",
+        "Stuff bags into one bag and put it in the blue bin"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [],
+      "impact": "Loose bags clog drains and harm animals; carry a cloth bag.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why that you can only help with waste. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"Plastic carry bag\", \"stream\": \"Dry waste\", \"bin\": \"blue\", \"recyclable\": true, \"steps\": [\"Reuse it as many times as you can\", \"Shake out crumbs and keep it dry\", \"Stuff bags into one bag and put it in the blue bin\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"Loose bags clog drains and harm animals; carry a cloth bag.\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: English\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "Plastic carry bag",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "Reuse it as many times as you can",
+          "Shake out crumbs and keep it dry",
+          "Stuff bags into one bag and put it in the blue bin"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": null,
+        "tip": "Carry a cloth bag.",
+        "language": "en"
+      },
+      "contradictions": [
+        "why_negates"
+      ]
+    }
+  }
+}

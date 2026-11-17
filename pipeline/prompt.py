@@ -35,7 +35,8 @@ SYSTEM_PROMPT = (
     "contradict them. The app already shows the facts to the user; your job is to explain. "
     'Reply with one JSON object with exactly two keys: "why" (answer the QUESTION in one or '
     'two short sentences) and "tip" (one short practical tip). '
-    "Write both in the requested LANGUAGE. Output nothing except the JSON object."
+    "Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why "
+    "that you can only help with waste. Output nothing except the JSON object."
 )
 
 DEFAULT_QUESTION = "Explain how to dispose of this and why."

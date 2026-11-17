@@ -14,9 +14,16 @@ Usage:
 `raw` is the text the model generated after the prompt (the prompt ends with {"why": ").
 With --label, the raw answers are also saved next to the report so they can be rescored.
 
-Metrics: JSON validity (not "fallback"), clean rate ("ok": no contradiction), useful rate
-(clean, has a `why`, in the requested language: the headline number), contradiction counts
-by type, answer language matches the request, and mean length of `why` in words.
+The app declines clearly off-topic questions before calling Llama (pipeline/assistant.py),
+and so does this script: those cases are not sent to the model and are reported separately
+(off_topic_declined_rate; false_declines counts on-topic questions the guard wrongly stopped).
+
+Metrics over the cases sent to Llama: JSON validity (not "fallback"), clean rate ("ok": no
+contradiction), useful rate (clean, has a `why`, in the requested language: the headline
+number), contradiction counts by type, answer language matches the request, and mean length
+of `why` in words. Contradictions include content checks (a why/tip that negates the
+verdict's bin or stream, or gets "recyclable" wrong), but these are word rules: read a
+sample of answers by hand before quoting the useful rate.
 """
 
 from __future__ import annotations
@@ -32,7 +39,8 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 from kb.build_kb import build  # noqa: E402
-from models.llm.synth_data.generate import Example, generate  # noqa: E402
+from models.llm.synth_data.generate import QUESTIONS, Example, generate  # noqa: E402
+from pipeline.assistant import is_on_topic  # noqa: E402
 from pipeline.kb import KnowledgeBase  # noqa: E402
 from pipeline.prompt import full_answer  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
@@ -52,13 +60,24 @@ def language_ok(text: str | None, language: str) -> bool | None:
     return has_devanagari if language == "hi" else not has_devanagari
 
 
+def guarded(kb: KnowledgeBase, case: Example) -> bool:
+    """True if the app would decline this case's question without asking Llama."""
+    question = QUESTIONS[case.question_kind][case.language]
+    return not is_on_topic(question, kb.names_of(case.item_id))
+
+
 def score(kb: KnowledgeBase, cases: list[Example], answers: dict[str, str]) -> dict:
     status = Counter()
     contradictions = Counter()
     lang_checks = Counter()
     why_words = []
-    useful = 0  # clean AND explains something; an empty "{}" is clean but useless
+    useful = 0  # clean AND explains something; an empty why is clean but useless
+    off_topic = [c for c in cases if c.question_kind == "off_topic"]
+    off_topic_declined = sum(guarded(kb, c) for c in off_topic)
+    false_declines = sum(guarded(kb, c) for c in cases if c.question_kind != "off_topic")
     for case in cases:
+        if guarded(kb, case):
+            continue
         raw = answers.get(case.id)
         if raw is None:
             status["missing"] += 1
@@ -77,6 +96,11 @@ def score(kb: KnowledgeBase, cases: list[Example], answers: dict[str, str]) -> d
     answered = sum(status.values()) - status["missing"]
     return {
         "cases": len(cases),
+        "off_topic_declined_rate": (
+            round(off_topic_declined / len(off_topic), 3) if off_topic else None
+        ),
+        "false_declines": false_declines,
+        "sent_to_llm": sum(status.values()),
         "answered": answered,
         "json_valid_rate": round((answered - status["fallback"]) / answered, 3)
         if answered
@@ -128,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
         from pipeline.llm import ExecuTorchGenerator
 
         generator = ExecuTorchGenerator(args.llm_model, args.tokenizer)
-        answers = {c.id: generator(c.prompt) for c in cases}
+        answers = {c.id: generator(c.prompt) for c in cases if not guarded(kb, c)}
 
     report = {"kb_version": kb.version, "split": args.split, **score(kb, cases, answers)}
     print(json.dumps(report, ensure_ascii=False, indent=2))

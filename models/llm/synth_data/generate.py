@@ -58,8 +58,9 @@ TIPS = {
         "hi": "गीले कचरे के लिए रसोई में ढक्कन वाला छोटा डिब्बा रखें।",
     },
     "dry": {
-        "en": "Keep dry waste clean and dry so it can be recycled.",
-        "hi": "सूखे कचरे को साफ़ और सूखा रखें ताकि वह रीसायकल हो सके।",
+        # No "can be recycled" here: dry waste is not always recyclable (chips packets).
+        "en": "Keep dry waste clean and dry so it is easy to sort.",
+        "hi": "सूखे कचरे को साफ़ और सूखा रखें ताकि उसे छाँटना आसान हो।",
     },
     "sanitary": {
         "en": "Always wrap sanitary waste before putting it in the bin.",
@@ -98,14 +99,11 @@ def _bin_phrase(v: Verdict) -> str:
     return f"{v.bin_colour_name} bin"
 
 
-def why_for(kind: str, v: Verdict) -> str:
+def why_for(kind: str, v: Verdict, kb: KnowledgeBase) -> str:
     hi = v.language == "hi"
     if kind == "off_topic":
-        return (
-            "मैं सिर्फ़ कचरे को अलग करने और सही तरीके से फेंकने में मदद कर सकता हूँ।"
-            if hi
-            else "I can only help with sorting and disposing of waste."
-        )
+        # The app declines these before asking Llama; training on them is a second line.
+        return kb.message("off_topic", v.language)
     if kind == "which_bin":
         lead = (
             f"यह {_bin_phrase(v)} ({v.stream_name}) में जाएगा।"
@@ -129,10 +127,10 @@ def why_for(kind: str, v: Verdict) -> str:
     return " ".join(p for p in parts if p).strip()
 
 
-def completion_for(kind: str, v: Verdict) -> str:
+def completion_for(kind: str, v: Verdict, kb: KnowledgeBase) -> str:
     """The text the model should generate after the prompt (which ends with ANSWER_PREFIX)."""
     tip = TIPS[v.stream][v.language] if v.hazard is None else v.hazard
-    answer = json.dumps({"why": why_for(kind, v), "tip": tip}, ensure_ascii=False)
+    answer = json.dumps({"why": why_for(kind, v, kb), "tip": tip}, ensure_ascii=False)
     assert answer.startswith(ANSWER_PREFIX)
     return answer[len(ANSWER_PREFIX) :] + EOT
 
@@ -154,7 +152,7 @@ def generate(kb: KnowledgeBase) -> list[Example]:
                     prompt = build_prompt(
                         verdict, attributes, kb.language_name(lang), questions[lang]
                     )
-                    completion = completion_for(kind, verdict)
+                    completion = completion_for(kind, verdict, kb)
                     check = verify(full_answer(completion), verdict)
                     if check.status != "ok":
                         raise AssertionError(f"{item_id}/{lang}/{kind}: {check.contradictions}")

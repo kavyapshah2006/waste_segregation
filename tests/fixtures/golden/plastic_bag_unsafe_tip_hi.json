@@ -1,0 +1,73 @@
+{
+  "id": "plastic_bag_unsafe_tip_hi",
+  "description": "Hindi tip says to put bags in the drain; dropped. Saying bags clog drains is fine.",
+  "input": {
+    "detection": {
+      "item_id": "plastic_carry_bag",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "hi",
+    "question": null,
+    "raw_llm_output": "प्लास्टिक की थैलियाँ नालियाँ बंद करती हैं।\", \"tip\": \"थैलियों को नाली में डाल दें।\"}"
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "plastic_carry_bag",
+      "name": "प्लास्टिक की थैली",
+      "stream": "dry",
+      "stream_name": "सूखा कचरा",
+      "bin_colour": "blue",
+      "bin_colour_name": "नीला",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "जितनी बार हो सके दोबारा इस्तेमाल करें",
+        "टुकड़े झाड़ लें और सूखा रखें",
+        "सारी थैलियाँ एक थैली में भरकर नीले डिब्बे में डालें"
+      ],
+      "hazard": null,
+      "drop_off": null,
+      "drop_off_text": null,
+      "notes": [],
+      "impact": "खुली थैलियाँ नालियाँ बंद करती हैं और जानवरों को नुकसान पहुँचाती हैं; कपड़े का थैला रखें।",
+      "language": "hi",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": "<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n\nYou are a waste disposal guide for India. Use only the FACTS given and never contradict them. The app already shows the facts to the user; your job is to explain. Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or two short sentences) and \"tip\" (one short practical tip). Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why that you can only help with waste. Output nothing except the JSON object.<|eot_id|><|start_header_id|>user<|end_header_id|>\n\nFACTS: {\"item\": \"प्लास्टिक की थैली\", \"stream\": \"सूखा कचरा\", \"bin\": \"नीला\", \"recyclable\": true, \"steps\": [\"जितनी बार हो सके दोबारा इस्तेमाल करें\", \"टुकड़े झाड़ लें और सूखा रखें\", \"सारी थैलियाँ एक थैली में भरकर नीले डिब्बे में डालें\"], \"hazard\": null, \"drop_off\": null, \"notes\": [], \"impact\": \"खुली थैलियाँ नालियाँ बंद करती हैं और जानवरों को नुकसान पहुँचाती हैं; कपड़े का थैला रखें।\"}\nCONDITION: {\"broken\": false, \"contaminated\": false}\nLANGUAGE: Hindi\nQUESTION: Explain how to dispose of this and why.<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n{\"why\": \"",
+    "verified": {
+      "status": "corrected",
+      "output": {
+        "item": "प्लास्टिक की थैली",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "जितनी बार हो सके दोबारा इस्तेमाल करें",
+          "टुकड़े झाड़ लें और सूखा रखें",
+          "सारी थैलियाँ एक थैली में भरकर नीले डिब्बे में डालें"
+        ],
+        "hazard": null,
+        "drop_off": null,
+        "why": "प्लास्टिक की थैलियाँ नालियाँ बंद करती हैं।",
+        "tip": null,
+        "language": "hi"
+      },
+      "contradictions": [
+        "tip_unsafe"
+      ]
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "id": "off_topic_declined_en",
+  "description": "Off-topic English question: declined without asking Llama.",
+  "input": {
+    "detection": {
+      "item_id": "pet_bottle",
+      "confidence": 0.9,
+      "bbox": [
+        0.2,
+        0.2,
+        0.8,
+        0.8
+      ],
+      "attributes": {
+        "contaminated": false,
+        "broken": false
+      },
+      "source": "detector"
+    },
+    "city": "default_in",
+    "language": "en",
+    "question": "What is the capital of France?",
+    "raw_llm_output": null
+  },
+  "expected": {
+    "verdict": {
+      "item_id": "pet_bottle",
+      "name": "PET plastic bottle",
+      "stream": "dry",
+      "stream_name": "Dry waste",
+      "bin_colour": "blue",
+      "bin_colour_name": "blue",
+      "recyclable": true,
+      "compostable": false,
+      "steps": [
+        "Empty it",
+        "Rinse it",
+        "Crush it and put the cap back on",
+        "Put it in the blue bin or give it to a scrap dealer"
+      ],
+      "hazard": null,
+      "drop_off": "scrap_dealer",
+      "drop_off_text": "A local scrap dealer (kabadiwala) will often buy it.",
+      "notes": [],
+      "impact": "Recycled PET becomes fibre for clothes and new bottles.",
+      "language": "en",
+      "city": "default_in",
+      "applied": [],
+      "missing_translation": false
+    },
+    "prompt": null,
+    "verified": {
+      "status": "declined",
+      "output": {
+        "item": "PET plastic bottle",
+        "stream": "dry",
+        "bin": "blue",
+        "steps": [
+          "Empty it",
+          "Rinse it",
+          "Crush it and put the cap back on",
+          "Put it in the blue bin or give it to a scrap dealer"
+        ],
+        "hazard": null,
+        "drop_off": "A local scrap dealer (kabadiwala) will often buy it.",
+        "why": "I can only help with sorting and disposing of waste.",
+        "tip": null,
+        "language": "en"
+      },
+      "contradictions": []
+    }
+  }
+}
