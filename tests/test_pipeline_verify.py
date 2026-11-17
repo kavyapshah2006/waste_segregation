@@ -1,131 +1,11 @@
+"""Verifier, prompt and assistant behaviour. Per-function cases live in
+tests/fixtures/check_cases.json (tests/test_check_cases.py), shared with the Kotlin core."""
+
 import json
 
-import pytest
-
-from pipeline.assistant import explain, is_on_topic
+from pipeline.assistant import explain
 from pipeline.prompt import ANSWER_PREFIX, EOT, build_prompt, full_answer, prompt_prefix
-from pipeline.verify import (
-    bins_mentioned,
-    compostable_claims,
-    extract_json,
-    negates_step,
-    negates_verdict,
-    recyclable_claims,
-    unsafe_instruction,
-    verify,
-)
-
-
-@pytest.mark.parametrize(
-    ("text", "expected"),
-    [
-        ('{"a": 1}', {"a": 1}),
-        ('noise {"a": "}"} more', {"a": "}"}),
-        ('{"a": "say \\"hi\\" {x}"}', {"a": 'say "hi" {x}'}),
-        ('[1, 2] then {"b": 2}', {"b": 2}),
-        ('{broken} {"c": 3}', {"c": 3}),
-        ('{"a": 1', {"a": 1}),  # missing final brace is repaired
-        ('{"a": "x", "b": "y"<|eot_id|>', {"a": "x", "b": "y"}),
-        ('{"a": "cut off mid-sen', None),  # never repaired: would show a cut-off sentence
-        ('{"a": {"b": 1}', {"a": {"b": 1}}),
-        ('{"a": 1,', None),
-        ("no json here", None),
-        ("", None),
-    ],
-)
-def test_extract_json(text, expected):
-    assert extract_json(text) == expected
-
-
-def test_bins_mentioned_english_and_hindi():
-    assert bins_mentioned("Put it in the Blue bin, not the green dustbin.") == {"blue", "green"}
-    assert bins_mentioned("इसे नीले डिब्बे में डालें") == {"blue"}
-    assert bins_mentioned("Keep it dry and blue skies") == set()
-
-
-@pytest.mark.parametrize(
-    ("text", "expected"),
-    [
-        ("Do not put plastic bags in the blue bin.", True),
-        ("Never mix it with dry waste.", True),
-        ("इसे सूखे कचरे में न डालें।", True),
-        ("थैली को नीले डिब्बे में मत डालें", True),
-        ("Put it in the blue bin.", False),
-        ("Do not put it in the green bin.", False),  # a different bin
-        ("It is dry waste, not wet waste.", False),
-        ("Do not burn it; put it in the blue bin.", False),
-        ("Compost them instead of using the blue bin.", True),
-        ("Put it in the blue bin instead of the road.", False),
-        ("नीले डिब्बे के बजाय इसे जला दें", True),
-    ],
-)
-def test_negates_verdict(kb, text, expected):
-    verdict = kb.resolve("plastic_carry_bag")  # dry, blue
-    assert negates_verdict(text, verdict) is expected
-
-
-@pytest.mark.parametrize(
-    ("text", "expected"),
-    [
-        ("It is not recyclable.", {False}),
-        ("Chips packets are non-recyclable.", {False}),
-        ("नहीं, यह रीसायकल नहीं हो सकता है।", {False}),
-        ("Aluminium can be recycled endlessly.", {True}),
-        ("Glass can be recycled forever and quality does not drop.", {True}),
-        ("एल्युमिनियम को बार-बार रीसायकल किया जा सकता है और उसकी गुणवत्ता कम नहीं होती।", {True}),
-        ("Thermocol is rarely recycled.", set()),
-        ("थर्मोकोल शायद ही रीसायकल होता है।", set()),
-        ("It is hard to recycle.", set()),
-        ("Keep it dry.", set()),
-        # Mixed and self-contradicting answers seen from the stock model:
-        ("Packets can be recycled if empty, but they are not recyclable if full.", {True, False}),
-        ("नहीं, काँच को अनगिनत बार रीसायकल किया जा सकता है।", {True, False}),
-        ("Yes, it can be recycled.", {True}),
-        ("No, keep it dry.", set()),  # not about recycling
-    ],
-)
-def test_recyclable_claims(text, expected):
-    assert recyclable_claims(text) == expected
-
-
-@pytest.mark.parametrize(
-    ("text", "expected"),
-    [
-        ("Peels cannot be composted.", {False}),
-        ("Peels can be composted at home.", {True}),
-        ("तेल वाला काग़ज़ खाद बन सकता है।", {True}),
-        ("डायपर घर पर न खाद बन सकते हैं।", set()),
-        ("No, it cannot be recycled, but it can be composted.", {True}),
-    ],
-)
-def test_compostable_claims(text, expected):
-    assert compostable_claims(text) == expected
-
-
-def test_negates_step_only_for_positive_kb_steps(kb):
-    peels = kb.resolve("fruit_veg_peels")
-    assert negates_step("Do not remove stickers from fruit.", peels)
-    assert not negates_step("Remove stickers from fruit.", peels)
-    cfl = kb.resolve("cfl_bulb", {"broken": True})  # step: "Do not vacuum or sweep; ..."
-    assert not negates_step("Do not vacuum or sweep.", cfl)
-    glass = kb.resolve("broken_glass", language="hi")
-    assert not negates_step("मोटे काग़ज़ या डिब्बे में लपेटें ताकि यह न किसी चोट का कारण बने।", glass)
-
-
-@pytest.mark.parametrize(
-    ("item", "text", "expected"),
-    [
-        ("plastic_carry_bag", "थैलियों को नाली में डाल दें।", True),
-        ("plastic_carry_bag", "Just throw them in the drain.", True),
-        ("plastic_carry_bag", "You can burn them.", True),
-        ("plastic_carry_bag", "Plastic bags clog drains and harm animals.", False),
-        ("plastic_carry_bag", "Never burn plastic.", False),
-        ("paint_can", "नाली में डाले गए पेंट और रसायन नदियों तक पहुँच जाते हैं।", False),
-        ("diaper", "Empty solid waste into the toilet.", False),  # the KB's own step
-    ],
-)
-def test_unsafe_instruction(kb, item, text, expected):
-    assert unsafe_instruction(text, kb.resolve(item)) is expected
+from pipeline.verify import verify
 
 
 def test_a_content_error_in_one_field_drops_both(kb):
@@ -209,25 +89,6 @@ def test_full_answer_joins_the_prefix_and_the_generated_text(kb):
         "Tape the ends.",
     )
     assert result.output["bin"] == "black"
-
-
-@pytest.mark.parametrize(
-    ("question", "expected"),
-    [
-        (None, True),
-        ("Which bin does this go in?", True),
-        ("Is it recyclable?", True),
-        ("Can I throw this in the kitchen bin?", True),
-        ("What about the PET plastic bottle cap?", True),  # names the item
-        ("यह किस डिब्बे में जाएगा?", True),
-        ("इसे फेंकने से पहले कैसे तैयार करूँ?", True),
-        ("What is the capital of France?", False),
-        ("Tell me a joke", False),
-        ("आज मौसम कैसा रहेगा?", False),
-    ],
-)
-def test_is_on_topic(kb, question, expected):
-    assert is_on_topic(question, kb.names_of("pet_bottle")) is expected
 
 
 def test_off_topic_question_is_declined_without_calling_llama(kb):

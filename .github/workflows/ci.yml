@@ -25,3 +25,23 @@ jobs:
 
       - name: Tests
         run: uv run pytest -q
+
+  kotlin-core:
+    # The Kotlin port must reproduce the Python pipeline on every golden fixture.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Kotlin core tests (builds kb.sqlite with uv first)
+        working-directory: android
+        run: ./gradlew --console=plain :core:test

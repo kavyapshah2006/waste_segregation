@@ -27,6 +27,8 @@ eval/tmp/
 android/.gradle/
 android/build/
 android/app/build/
+android/core/build/
+android/.kotlin/
 android/local.properties
 android/.idea/
 *.apk

@@ -1,0 +1,415 @@
+{
+  "_doc": "Unit cases for the answer checker and off-topic guard, shared by the Python tests (tests/test_check_cases.py) and the Kotlin tests (android/core). Each case may carry a 'why' note. Item-based cases resolve the item with the given attributes and language in the default city.",
+  "extract_json": [
+    {
+      "text": "{\"a\": 1}",
+      "expected": {
+        "a": 1
+      }
+    },
+    {
+      "text": "noise {\"a\": \"}\"} more",
+      "expected": {
+        "a": "}"
+      }
+    },
+    {
+      "text": "{\"a\": \"say \\\"hi\\\" {x}\"}",
+      "expected": {
+        "a": "say \"hi\" {x}"
+      }
+    },
+    {
+      "text": "[1, 2] then {\"b\": 2}",
+      "expected": {
+        "b": 2
+      }
+    },
+    {
+      "text": "{broken} {\"c\": 3}",
+      "expected": {
+        "c": 3
+      }
+    },
+    {
+      "text": "{\"a\": 1",
+      "expected": {
+        "a": 1
+      },
+      "why": "missing final brace is repaired"
+    },
+    {
+      "text": "{\"a\": \"x\", \"b\": \"y\"<|eot_id|>",
+      "expected": {
+        "a": "x",
+        "b": "y"
+      }
+    },
+    {
+      "text": "{\"a\": \"cut off mid-sen",
+      "expected": null,
+      "why": "never repaired: would show a cut-off sentence"
+    },
+    {
+      "text": "{\"a\": {\"b\": 1}",
+      "expected": {
+        "a": {
+          "b": 1
+        }
+      }
+    },
+    {
+      "text": "{\"a\": 1,",
+      "expected": null
+    },
+    {
+      "text": "no json here",
+      "expected": null
+    },
+    {
+      "text": "",
+      "expected": null
+    },
+    {
+      "text": "{\"a\": \"line\nbreak\"}",
+      "expected": null,
+      "why": "raw control character inside a string is invalid JSON (Python strict mode)"
+    },
+    {
+      "text": "{\"a\": 1, \"a\": 2}",
+      "expected": {
+        "a": 2
+      },
+      "why": "duplicate key: last wins"
+    },
+    {
+      "text": "{\"a\": \"\\u0928\\u0940\"}",
+      "expected": {
+        "a": "नी"
+      }
+    },
+    {
+      "text": "{\"a\": 01}",
+      "expected": null,
+      "why": "leading zero is invalid"
+    },
+    {
+      "text": "{\"a\": [1, 2,]}",
+      "expected": null,
+      "why": "trailing comma is invalid"
+    }
+  ],
+  "bins_mentioned": [
+    {
+      "text": "Put it in the Blue bin, not the green dustbin.",
+      "expected": [
+        "blue",
+        "green"
+      ]
+    },
+    {
+      "text": "इसे नीले डिब्बे में डालें",
+      "expected": [
+        "blue"
+      ]
+    },
+    {
+      "text": "Keep it dry and blue skies",
+      "expected": []
+    }
+  ],
+  "negates_verdict": [
+    {
+      "item": "plastic_carry_bag",
+      "text": "Do not put plastic bags in the blue bin.",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Never mix it with dry waste.",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "इसे सूखे कचरे में न डालें।",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "थैली को नीले डिब्बे में मत डालें",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Put it in the blue bin.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Do not put it in the green bin.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "It is dry waste, not wet waste.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Do not burn it; put it in the blue bin.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Compost them instead of using the blue bin.",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Put it in the blue bin instead of the road.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "नीले डिब्बे के बजाय इसे जला दें",
+      "expected": true
+    }
+  ],
+  "recyclable_claims": [
+    {
+      "text": "It is not recyclable.",
+      "expected": [
+        false
+      ]
+    },
+    {
+      "text": "Chips packets are non-recyclable.",
+      "expected": [
+        false
+      ]
+    },
+    {
+      "text": "नहीं, यह रीसायकल नहीं हो सकता है।",
+      "expected": [
+        false
+      ]
+    },
+    {
+      "text": "Aluminium can be recycled endlessly.",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "Glass can be recycled forever and quality does not drop.",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "एल्युमिनियम को बार-बार रीसायकल किया जा सकता है और उसकी गुणवत्ता कम नहीं होती।",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "Thermocol is rarely recycled.",
+      "expected": []
+    },
+    {
+      "text": "थर्मोकोल शायद ही रीसायकल होता है।",
+      "expected": []
+    },
+    {
+      "text": "It is hard to recycle.",
+      "expected": []
+    },
+    {
+      "text": "Keep it dry.",
+      "expected": []
+    },
+    {
+      "text": "Packets can be recycled if empty, but they are not recyclable if full.",
+      "expected": [
+        false,
+        true
+      ]
+    },
+    {
+      "text": "नहीं, काँच को अनगिनत बार रीसायकल किया जा सकता है।",
+      "expected": [
+        false,
+        true
+      ]
+    },
+    {
+      "text": "Yes, it can be recycled.",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "No, keep it dry.",
+      "expected": []
+    }
+  ],
+  "compostable_claims": [
+    {
+      "text": "Peels cannot be composted.",
+      "expected": [
+        false
+      ]
+    },
+    {
+      "text": "Peels can be composted at home.",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "तेल वाला काग़ज़ खाद बन सकता है।",
+      "expected": [
+        true
+      ]
+    },
+    {
+      "text": "डायपर घर पर न खाद बन सकते हैं।",
+      "expected": []
+    },
+    {
+      "text": "No, it cannot be recycled, but it can be composted.",
+      "expected": [
+        true
+      ]
+    }
+  ],
+  "negates_step": [
+    {
+      "item": "fruit_veg_peels",
+      "text": "Do not remove stickers from fruit.",
+      "expected": true
+    },
+    {
+      "item": "fruit_veg_peels",
+      "text": "Remove stickers from fruit.",
+      "expected": false
+    },
+    {
+      "item": "cfl_bulb",
+      "attributes": {
+        "broken": true
+      },
+      "text": "Do not vacuum or sweep.",
+      "expected": false,
+      "why": "the KB step is itself negative"
+    },
+    {
+      "item": "broken_glass",
+      "language": "hi",
+      "text": "मोटे काग़ज़ या डिब्बे में लपेटें ताकि यह न किसी चोट का कारण बने।",
+      "expected": false,
+      "why": "the negation belongs to the purpose clause"
+    }
+  ],
+  "unsafe_instruction": [
+    {
+      "item": "plastic_carry_bag",
+      "text": "थैलियों को नाली में डाल दें।",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Just throw them in the drain.",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "You can burn them.",
+      "expected": true
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Plastic bags clog drains and harm animals.",
+      "expected": false
+    },
+    {
+      "item": "plastic_carry_bag",
+      "text": "Never burn plastic.",
+      "expected": false
+    },
+    {
+      "item": "paint_can",
+      "text": "नाली में डाले गए पेंट और रसायन नदियों तक पहुँच जाते हैं।",
+      "expected": false
+    },
+    {
+      "item": "diaper",
+      "text": "Empty solid waste into the toilet.",
+      "expected": false
+    }
+  ],
+  "is_on_topic": [
+    {
+      "item": "pet_bottle",
+      "question": null,
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Which bin does this go in?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Is it recyclable?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Can I throw this in the kitchen bin?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "What about the PET plastic bottle cap?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "यह किस डिब्बे में जाएगा?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "इसे फेंकने से पहले कैसे तैयार करूँ?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "What is the capital of France?",
+      "expected": false
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Tell me a joke",
+      "expected": false
+    },
+    {
+      "item": "pet_bottle",
+      "question": "आज मौसम कैसा रहेगा?",
+      "expected": false
+    }
+  ],
+  "search": [
+    {
+      "text": "पानी की बोतल",
+      "expected": [
+        "pet_bottle"
+      ]
+    },
+    {
+      "text": "  ",
+      "expected": []
+    }
+  ]
+}
