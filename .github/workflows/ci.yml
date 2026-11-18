@@ -6,12 +6,14 @@ on:
   pull_request:
 
 jobs:
+  # Action versions run on Node 24 (GitHub is retiring Node 20 for actions). setup-uv has no
+  # floating major tag from v10 on, so it is pinned to a release.
   python:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
@@ -31,13 +33,13 @@ jobs:
     # The Kotlin port must reproduce the Python pipeline on every golden fixture.
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"

@@ -38,19 +38,20 @@ Needs a human: access to the gated `meta-llama/Llama-3.2-1B-Instruct` on Hugging
        --out models/llm/lora/out/run1/meta --check
    ```
 
-5. Export:
+5. Export. The Llama 3.2 licence requires a fine-tuned model's name to start with "Llama", so name the file accordingly:
 
    ```bash
    uv run python models/llm/export.py --mode int4 \
        --checkpoint models/llm/lora/out/run1/meta/consolidated.00.pth \
        --params models/llm/lora/out/run1/meta/params.json \
-       --output models/llm/out/llama3_2_1b_lora_run1_int4.pte
+       --output models/llm/out/Llama-3.2-1B-Instruct-WasteGuide-LoRA-run1-int4.pte
    ```
 
 6. Score against the stock model (`eval/results/llm_quality_spinquant_stock_host_checked.json`):
 
    ```bash
-   uv run python -m eval.llm_quality.run --llm-model models/llm/out/llama3_2_1b_lora_run1_int4.pte \
+   uv run python -m eval.llm_quality.run \
+       --llm-model models/llm/out/Llama-3.2-1B-Instruct-WasteGuide-LoRA-run1-int4.pte \
        --tokenizer models/llm/out/hf/original/tokenizer.model --label lora_run1_host
    ```
 
