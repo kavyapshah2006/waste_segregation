@@ -39,3 +39,7 @@ Synthetic speech from one voice on the laptop: an upper bound until native speak
 ## Llama speed on the phone
 
 No phone results yet (run list: `eval/latency/llm_bench.md`; laptop speed is never reported).
+
+## Per-stage latency on the phone
+
+No phone timing exports yet (the app's `LatencyLog`; summary code: `eval/latency/stages.py`).

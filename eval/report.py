@@ -15,6 +15,10 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO))
+
+from eval.latency.stages import summarise  # noqa: E402
+
 RESULTS = REPO / "eval" / "results"
 REPORT = REPO / "eval" / "REPORT.md"
 
@@ -193,6 +197,29 @@ def latency_section() -> list[str]:
     return lines + [""]
 
 
+def stage_latency_section() -> list[str]:
+    """In-app per-stage timings (schema: eval/results/latency_TEMPLATE.json)."""
+    lines = ["## Per-stage latency on the phone", ""]
+    rows = []
+    for stem, r in _load("latency_*.json"):
+        if r.get("kind") != "stage_latency":
+            continue
+        device = r.get("device", {}).get("model") or "–"
+        for stage, s in summarise(r.get("samples", {})).items():
+            rows.append([
+                f"`{stem.removeprefix('latency_')}`", device, stage, str(s["n"]),
+                _num(s["p50"], 1), _num(s["p95"], 1), _num(s["max"], 1),
+            ])  # fmt: skip
+    if not rows:
+        return lines + [
+            "No phone timing exports yet (the app's `LatencyLog`; summary code: "
+            "`eval/latency/stages.py`).",
+            "",
+        ]
+    header = ["Session", "Device", "Stage", "Samples", "p50 (ms)", "p95 (ms)", "Max (ms)"]
+    return lines + _table(header, rows) + [""]
+
+
 def build() -> str:
     lines = [
         "# Evaluation report",
@@ -201,7 +228,8 @@ def build() -> str:
         "",
     ]
     sections = (
-        accuracy_section, fallback_section, llm_quality_section, speech_section, latency_section
+        accuracy_section, fallback_section, llm_quality_section, speech_section,
+        latency_section, stage_latency_section,
     )  # fmt: skip
     for section in sections:
         lines += section()

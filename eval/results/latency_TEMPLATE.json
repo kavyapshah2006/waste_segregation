@@ -1,0 +1,15 @@
+{
+  "kind": "stage_latency",
+  "date": "YYYY-MM-DD",
+  "commit": "git rev-parse --short HEAD",
+  "device": {"model": "", "soc": "", "ram_gb": 0, "android": ""},
+  "models": {"detector": "", "llm": "", "asr": ""},
+  "conditions": {"airplane_mode": true, "session": "cold|sustained_15min", "battery_start_pct": 0, "notes": ""},
+  "samples": {
+    "capture": [],
+    "preprocess": [],
+    "detect": [],
+    "frame_to_card": [],
+    "llm_first_token": []
+  }
+}

@@ -1,0 +1,28 @@
+[
+  {
+    "id": "four_samples",
+    "samples": {"detect": [4.0, 1.0, 3.0, 2.0]},
+    "expected": {"detect": {"n": 4, "p50": 2.0, "p95": 4.0, "max": 4.0}}
+  },
+  {
+    "id": "single_sample",
+    "samples": {"kb": [0.5]},
+    "expected": {"kb": {"n": 1, "p50": 0.5, "p95": 0.5, "max": 0.5}}
+  },
+  {
+    "id": "twenty_samples_p95_is_19th",
+    "samples": {"frame_to_card": [20.0, 19.0, 18.0, 17.0, 16.0, 15.0, 14.0, 13.0, 12.0, 11.0, 10.0, 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0]},
+    "expected": {"frame_to_card": {"n": 20, "p50": 10.0, "p95": 19.0, "max": 20.0}}
+  },
+  {
+    "id": "pipeline_order_then_unknown_stages_sorted",
+    "samples": {"zz_custom": [1.0], "kb": [2.0], "detect": [3.0], "aa_custom": [4.0], "empty": []},
+    "expected": {
+      "detect": {"n": 1, "p50": 3.0, "p95": 3.0, "max": 3.0},
+      "kb": {"n": 1, "p50": 2.0, "p95": 2.0, "max": 2.0},
+      "aa_custom": {"n": 1, "p50": 4.0, "p95": 4.0, "max": 4.0},
+      "zz_custom": {"n": 1, "p50": 1.0, "p95": 1.0, "max": 1.0}
+    },
+    "expected_order": ["detect", "kb", "aa_custom", "zz_custom"]
+  }
+]
