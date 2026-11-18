@@ -76,6 +76,34 @@ def llm_quality_section() -> list[str]:
     ]
 
 
+def llm_experiments_section() -> list[str]:
+    """Prompt and decoding variants (eval/llm_quality/experiments.py), best first."""
+    rows = []
+    for path in sorted((RESULTS / "llm_experiments" / "val").glob("*.json")):
+        r = json.loads(path.read_text(encoding="utf-8"))
+        rows.append(r)
+    lines = ["## Llama prompt experiments (88 held-out questions, laptop)", ""]
+    if not rows:
+        return lines + ["No results yet (`eval/llm_quality/experiments.py`).", ""]
+    rows.sort(key=lambda r: (-(r["useful_rate"] or 0), r["model"], r["variant"]["name"]))
+    table = [
+        [r["model"], f"`{r['variant']['name']}`", _pct(r["useful_rate"]), _pct(r["useful_rate_en"]),
+         _pct(r["useful_rate_hi"]), _pct(r["json_valid_rate"]), _num(r["mean_generated_tokens"], 0),
+         _num(r["mean_attempts"], 2)]
+        for r in rows
+    ]  # fmt: skip
+    lines += _table(
+        ["Model", "Variant", "Useful", "Useful en", "Useful hi", "Valid JSON", "Tokens", "Tries"],
+        table,
+    )
+    return lines + [
+        "",
+        "Shipped: SpinQuant, `shots_kind+rules+retry_greedy_sample` "
+        "(see eval/results/llm_experiments/README.md).",
+        "",
+    ]
+
+
 def accuracy_section() -> list[str]:
     rows = []
     for stem, r in _load("accuracy_*.json"):
@@ -228,7 +256,8 @@ def build() -> str:
         "",
     ]
     sections = (
-        accuracy_section, fallback_section, llm_quality_section, speech_section,
+        accuracy_section, fallback_section, llm_quality_section, llm_experiments_section,
+        speech_section,
         latency_section, stage_latency_section,
     )  # fmt: skip
     for section in sections:

@@ -25,6 +25,31 @@ Labelled object crops, laptop. The fallback only offers suggestions for the user
 
 Useful = valid, passes every verifier check (bins, negations, recyclable/compostable claims, KB steps, unsafe instructions) and has a `why` in the requested language. Earlier runs were scored with fewer checks; rescore saved answers with `run.py --answers` to compare like with like.
 
+## Llama prompt experiments (88 held-out questions, laptop)
+
+| Model | Variant | Useful | Useful en | Useful hi | Valid JSON | Tokens | Tries |
+|---|---|---|---|---|---|---|---|
+| spinquant | `shots_kind+retry_greedy_sample` | 97.7% | 95.5% | 100.0% | 100.0% | 66 | 1.12 |
+| spinquant | `retry_sample3` | 96.6% | 100.0% | 93.2% | 100.0% | 108 | 1.40 |
+| spinquant | `shots_kind+rules+retry_greedy_sample` | 96.6% | 93.2% | 100.0% | 100.0% | 66 | 1.09 |
+| qlora | `shots_kind+retry_greedy_sample` | 95.5% | 90.9% | 100.0% | 100.0% | 71 | 1.16 |
+| spinquant | `shots_kind+rules` | 95.5% | 90.9% | 100.0% | 100.0% | 63 | 1.00 |
+| spinquant | `shots_kind` | 92.0% | 88.6% | 95.5% | 100.0% | 61 | 1.00 |
+| qlora | `shots_kind` | 89.8% | 88.6% | 90.9% | 100.0% | 62 | 1.00 |
+| spinquant | `retry_greedy_sample` | 88.6% | 90.9% | 86.4% | 98.9% | 110 | 1.48 |
+| qlora | `rules` | 87.5% | 88.6% | 86.4% | 96.6% | 74 | 1.00 |
+| qlora | `facts_lines` | 83.0% | 86.4% | 79.5% | 95.5% | 77 | 1.00 |
+| qlora | `base` | 81.8% | 88.6% | 75.0% | 95.5% | 77 | 1.00 |
+| spinquant | `rules` | 76.1% | 68.2% | 84.1% | 100.0% | 65 | 1.00 |
+| qlora | `facts_minimal` | 75.0% | 81.8% | 68.2% | 92.0% | 77 | 1.00 |
+| spinquant | `facts_lines` | 75.0% | 70.5% | 79.5% | 97.7% | 82 | 1.00 |
+| spinquant | `temp03` | 72.7% | 70.5% | 75.0% | 95.5% | 72 | 1.00 |
+| spinquant | `shots_fixed` | 71.6% | 50.0% | 93.2% | 95.5% | 79 | 1.00 |
+| spinquant | `facts_minimal` | 70.5% | 70.5% | 70.5% | 97.7% | 69 | 1.00 |
+| spinquant | `base` | 69.3% | 65.9% | 72.7% | 96.6% | 76 | 1.00 |
+
+Shipped: SpinQuant, `shots_kind+rules+retry_greedy_sample` (see eval/results/llm_experiments/README.md).
+
 ## Hindi voice input
 
 | Run | Recogniser | MB | Median CER | Name top-1 | Sentence top-1 | Sentence top-3 |
