@@ -48,3 +48,31 @@ jobs:
       - name: Kotlin core tests (builds kb.sqlite with uv first)
         working-directory: android
         run: ./gradlew --console=plain :core:test
+
+  android-app:
+    # Builds the APK (debug) and uploads it. The runner image has the Android SDK; AGP fetches
+    # the platform it needs. Model files are not in git, so this APK has the KB but no detector:
+    # release APKs are built locally after export (scripts/build_release.sh).
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew --console=plain :app:assembleDebug
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14

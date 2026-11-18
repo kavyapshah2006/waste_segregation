@@ -14,12 +14,21 @@ if [[ $# -eq 0 ]]; then
     exit 2
 fi
 
-if command -v adb >/dev/null 2>&1; then
-    ADB=adb
-    to_adb_path() { printf '%s' "$1"; }
+# Windows platform-tools in the default SDK folder, if adb.exe is not on PATH.
+WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe 2>/dev/null | head -1 || true)
+
+if [[ -n "${ADB:-}" ]]; then
+    case "$ADB" in *.exe) to_adb_path() { wslpath -w "$1"; } ;; *) to_adb_path() { printf '%s' "$1"; } ;; esac
 elif command -v adb.exe >/dev/null 2>&1; then
+    # From WSL the phone is only visible to Windows adb (USB is not passed to Linux).
     ADB=adb.exe
     to_adb_path() { wslpath -w "$1"; }
+elif [[ -n "$WIN_ADB" ]]; then
+    ADB="$WIN_ADB"
+    to_adb_path() { wslpath -w "$1"; }
+elif command -v adb >/dev/null 2>&1; then
+    ADB=adb
+    to_adb_path() { printf '%s' "$1"; }
 else
     echo "adb not found. Install Android platform-tools (see docs/DEV_SETUP.md)." >&2
     exit 1
