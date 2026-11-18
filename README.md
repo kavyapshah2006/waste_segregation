@@ -2,7 +2,7 @@
 
 On-device AI assistant that identifies waste, decides the correct bin under India's SWM Rules 2026, and explains disposal and recycling options. Vision and Llama run fully offline on an Arm Android phone through **ExecuTorch**.
 
-> Status: the decision pipeline (knowledge base, Llama prompt and verifier, frame voting, voice matching, unknown-item fallback, impact) runs and is tested in Python and in the Kotlin core; models are chosen and exported. Waiting on: detector training, LoRA fine-tune, phone sessions, the Android app screens. Per-work-package status: [docs/FuturePlan.md](docs/FuturePlan.md#12-status); measured results: [eval/REPORT.md](eval/REPORT.md).
+> Status: the Android app builds (CI produces the APK) with camera scan, instant KB verdict, streamed Llama explanation, photo upload, unknown-item suggestions, dirty/broken questions, Hindi/English voice, corrections and an impact screen. Llama answers: 96.6% useful on held-out questions with the shipped prompt (69.3% baseline). Waiting on: the trained detector, the phone session (speed, memory, battery, demo video). Per-work-package status: [docs/FuturePlan.md](docs/FuturePlan.md#12-status); measured results: [eval/REPORT.md](eval/REPORT.md).
 
 **Built with Llama.** Licensed under the GNU AGPL-3.0 ([LICENSE](LICENSE)); third-party licences in [THIRD_PARTY.md](THIRD_PARTY.md) and [NOTICE](NOTICE).
 
@@ -30,18 +30,42 @@ uv run ruff check .
 
 Python dependencies are managed only with uv (`uv add <pkg>`, `uv run <cmd>`). `torch` and `executorch` are pinned together in `pyproject.toml`.
 
+## How it works
+
+Point the camera at one item. The detector names it, frame voting makes sure it is stable, and the
+knowledge base decides the bin (SWM Rules 2026: green wet, blue dry, red sanitary, black special
+care) with the steps and any hazard. The card shows at once; Llama 3.2 1B then streams a short
+explanation and tip, checked against the knowledge base before it is shown. Not sure what it is?
+The app offers three suggestions instead of guessing. Ask by typing or by voice, in English or
+Hindi. Everything runs on the phone, with no internet permission at all.
+
+Pipelines and models: [docs/PIPELINES.md](docs/PIPELINES.md). Design and results:
+[docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md).
+
+## Run it on a phone
+
+```bash
+cd android && ./gradlew :app:assembleDebug && cd ..   # or download the APK from a release
+./scripts/download_models.sh llama-spinquant --accept-llama-license   # Llama 3.2 1B .pte
+uv run --group finetune python models/fallback/build.py   # SigLIP 2 image encoder .pte
+./models/speech/download.sh                               # Omnilingual ASR (voice)
+./scripts/install_app.sh                                  # APK + models over USB (adb)
+```
+
+Full checklist for measuring and recording the demo: [docs/PHONE_SESSION.md](docs/PHONE_SESSION.md).
+
 ## Repository layout
 
 | Path | Purpose | Roadmap phase |
 |---|---|---|
-| `docs/` | Design, hardware, roadmap, later the technical report | All |
+| `docs/` | Design, pipelines, technical report, phone runbook, demo script | All |
 | `kb/` | Knowledge base: disposal rules per item and city | 2 |
 | `data/` | Taxonomy, dataset scripts, small fixtures | 3, 5 |
 | `pipeline/` | Python reference of the app's logic (KB, prompt, verifier, voting, voice, impact) | 2+ |
 | `models/` | Export and training code for Llama (+ LoRA), vision, SigLIP fallback, speech | 1, 3, 5–7 |
-| `android/` | Kotlin: `core/` (tested port of `pipeline/`), later the app | 1, 4+ |
+| `android/` | Kotlin: `core/` (tested port of `pipeline/`) and `app/` (the Android app) | 1, 4+ |
 | `eval/` | Accuracy, latency and offline evaluation | 9 |
-| `scripts/` | Dev setup, device info, model download | 0+ |
+| `scripts/` | Dev setup, model download, install on the phone, phone measurements, release | 0+ |
 | `tests/` | `uv run pytest` | 0+ |
 
 Model binaries and raw datasets are not committed.
