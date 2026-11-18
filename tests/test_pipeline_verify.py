@@ -128,3 +128,44 @@ def test_explain_stops_after_first_good_answer(kb):
     assert result.attempts == 1
     assert result.verified.status == "corrected"
     assert result.verified.contradictions == ("why_bin",)
+
+
+def test_explain_samples_after_a_contradiction(kb):
+    verdict = kb.resolve("aa_battery")
+    sampled = iter(
+        ['Use the green bin.", "tip": "x"}', 'Batteries leak metals.", "tip": "Tape them."}']
+    )
+    result = explain(
+        kb,
+        verdict,
+        {},
+        lambda prompt: 'Use the green bin.", "tip": "x"}',
+        sample=lambda p: next(sampled),
+    )
+    assert result.attempts == 3  # greedy, then two sampled tries; the second passes
+    assert result.verified.status == "ok"
+    assert result.raw_outputs[-1].startswith("Batteries")
+
+
+def test_explain_keeps_checked_text_over_fallback(kb):
+    verdict = kb.resolve("aa_battery")
+    result = explain(
+        kb,
+        verdict,
+        {},
+        lambda prompt: "not json",
+        sample=lambda p: 'Use the green bin.", "tip": "x"}',
+    )
+    assert result.attempts == 4  # greedy, short greedy, two sampled
+    assert result.verified.status == "corrected"
+
+
+def test_explain_does_not_sample_after_a_good_answer(kb):
+    verdict = kb.resolve("aa_battery")
+
+    def never(prompt):
+        raise AssertionError("no sampling after an ok answer")
+
+    ok = 'Batteries leak metals.", "tip": "Tape the ends."}'
+    result = explain(kb, verdict, {}, lambda prompt: ok, sample=never)
+    assert result.attempts == 1 and result.verified.status == "ok"

@@ -97,6 +97,22 @@ class CheckCasesTest {
     }
 
     @Test
+    fun `explain samples after a contradiction, as in Python`() {
+        val verdict = kb.resolve("aa_battery")
+        val wrong = "Use the green bin.\", \"tip\": \"x\"}"
+        val good = "Batteries leak metals.\", \"tip\": \"Tape them.\"}"
+        val sampled = ArrayDeque(listOf(wrong, good))
+        val result = Assistant.explain(kb, verdict, emptyMap(), { wrong }, sample = { sampled.removeFirst() })
+        assertEquals(3, result.attempts)
+        assertEquals("ok", result.verified.status)
+        val kept = Assistant.explain(kb, verdict, emptyMap(), { "not json" }, sample = { wrong })
+        assertEquals(4, kept.attempts)
+        assertEquals("corrected", kept.verified.status)
+        val once = Assistant.explain(kb, verdict, emptyMap(), { good }, sample = { error("no sampling after ok") })
+        assertEquals(1, once.attempts)
+    }
+
+    @Test
     fun `off topic question never calls llama`() {
         val verdict = kb.resolve("pet_bottle", language = "hi")
         val result = Assistant.explain(kb, verdict, emptyMap(), { error("Llama must not be called") }, "आज मौसम कैसा रहेगा?")

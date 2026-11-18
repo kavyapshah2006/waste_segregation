@@ -61,6 +61,12 @@ class Explanation:
         return len(self.prompts)
 
 
+# Extra tries with sampling when the greedy answer fails the checks. In the experiments
+# (variant shots_kind+rules+retry_greedy_sample) this took SpinQuant 1B from 95.5% to 96.6%
+# useful answers for 1.09 generations per question on average.
+SAMPLED_RETRIES = 2
+
+
 def explain(
     kb: KnowledgeBase,
     verdict: Verdict,
@@ -68,12 +74,16 @@ def explain(
     generate: Generator,
     question: str | None = None,
     include_bos: bool = True,
+    sample: Generator | None = None,
 ) -> Explanation:
+    """Greedy answer first; unparseable -> one short-prompt retry; still not "ok" and a
+    sampling generator given -> up to SAMPLED_RETRIES sampled tries, first "ok" wins."""
     if not is_on_topic(question, kb.names_of(verdict.item_id)):
         return Explanation(verified=declined(kb, verdict))
     language_name = kb.language_name(verdict.language)
     result = Explanation(verified=None)  # type: ignore[arg-type]
-    for short in (False, True):
+
+    def attempt(gen: Generator, short: bool) -> VerifiedOutput:
         prompt = build_prompt(
             verdict,
             attributes,
@@ -83,10 +93,23 @@ def explain(
             include_bos=include_bos,
             kb=kb,
         )
-        raw = generate(prompt)
+        raw = gen(prompt)
         result.prompts.append(prompt)
         result.raw_outputs.append(raw)
-        result.verified = verify(full_answer(raw), verdict)
-        if result.verified.status != "fallback":
-            break
+        return verify(full_answer(raw), verdict)
+
+    best = attempt(generate, False)
+    if best.status == "fallback":
+        second = attempt(generate, True)
+        if second.status != "fallback":
+            best = second
+    if best.status != "ok" and sample is not None:
+        for _ in range(SAMPLED_RETRIES):
+            tried = attempt(sample, False)
+            if tried.status == "ok":
+                best = tried
+                break
+            if best.status == "fallback" and tried.status == "corrected":
+                best = tried  # some checked Llama text beats none
+    result.verified = best
     return result

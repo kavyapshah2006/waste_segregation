@@ -46,7 +46,14 @@ object Assistant {
         emptyList(),
     )
 
-    /** [generate] takes the full prompt and returns the text the model generated after it. */
+    /** Extra sampled tries when the greedy answer fails the checks (as pipeline/assistant.py). */
+    const val SAMPLED_RETRIES = 2
+
+    /**
+     * [generate] takes the full prompt and returns the text the model generated after it
+     * (greedy). Unparseable -> one short-prompt retry; still not "ok" and [sample] given -> up
+     * to [SAMPLED_RETRIES] sampled tries, the first "ok" wins.
+     */
     fun explain(
         kb: KnowledgeBase,
         verdict: Verdict,
@@ -54,20 +61,33 @@ object Assistant {
         generate: (String) -> String,
         question: String? = null,
         includeBos: Boolean = true,
+        sample: ((String) -> String)? = null,
     ): Explanation {
         if (!isOnTopic(question, kb.namesOf(verdict.itemId))) return Explanation(declined(kb, verdict))
         val languageName = kb.languageName(verdict.language)
         val prompts = mutableListOf<String>()
         val raws = mutableListOf<String>()
-        var verified: VerifiedOutput? = null
-        for (short in listOf(false, true)) {
+
+        fun attempt(gen: (String) -> String, short: Boolean): VerifiedOutput {
             val prompt = Prompt.build(verdict, attributes, languageName, question, short, includeBos, kb)
-            val raw = generate(prompt)
+            val raw = gen(prompt)
             prompts.add(prompt)
             raws.add(raw)
-            verified = Verifier.verify(Prompt.fullAnswer(raw), verdict)
-            if (verified.status != "fallback") break
+            return Verifier.verify(Prompt.fullAnswer(raw), verdict)
         }
-        return Explanation(verified!!, prompts, raws)
+
+        var best = attempt(generate, false)
+        if (best.status == "fallback") {
+            val second = attempt(generate, true)
+            if (second.status != "fallback") best = second
+        }
+        if (best.status != "ok" && sample != null) {
+            repeat(SAMPLED_RETRIES) {
+                if (best.status == "ok") return@repeat
+                val tried = attempt(sample, false)
+                if (tried.status == "ok" || (best.status == "fallback" && tried.status == "corrected")) best = tried
+            }
+        }
+        return Explanation(best, prompts, raws)
     }
 }
