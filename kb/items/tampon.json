@@ -1,0 +1,38 @@
+{
+  "id": "tampon",
+  "names": {
+    "en": "Used tampon",
+    "hi": "इस्तेमाल किया हुआ टैम्पोन"
+  },
+  "material": "cotton",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Wrap it in paper or its wrapper",
+      "Put it in the red bin"
+    ],
+    "hi": [
+      "काग़ज़ या उसके रैपर में लपेटें",
+      "लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Wrapped sanitary waste keeps waste workers safe; never flush tampons.",
+    "hi": "लपेटा हुआ सैनिटरी कचरा कर्मचारियों को सुरक्षित रखता है; टैम्पोन को कभी फ़्लश न करें।"
+  },
+  "typical_weight_g": 5,
+  "detector_classes": [
+    "tampon"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

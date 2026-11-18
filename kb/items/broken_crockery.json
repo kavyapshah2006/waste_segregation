@@ -1,0 +1,55 @@
+{
+  "id": "broken_crockery",
+  "names": {
+    "en": "Broken mirror or crockery",
+    "hi": "टूटा शीशा या क्रॉकरी"
+  },
+  "aliases": {
+    "en": [
+      "broken plate",
+      "broken cup",
+      "broken mirror"
+    ],
+    "hi": [
+      "टूटी प्लेट",
+      "टूटा कप",
+      "टूटा शीशा"
+    ]
+  },
+  "material": "ceramic",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Pick up the pieces carefully, with gloves if possible",
+      "Wrap them in thick paper and write 'sharp' on it",
+      "Put the bundle in the blue bin"
+    ],
+    "hi": [
+      "टुकड़ों को सावधानी से उठाएँ, हो सके तो दस्ताने पहनें",
+      "मोटे काग़ज़ में लपेटें और ऊपर 'धारदार' लिखें",
+      "बंडल नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": {
+    "en": "Sharp: can cut you and waste workers.",
+    "hi": "धारदार: आपको और सफ़ाई कर्मचारियों को चोट लग सकती है।"
+  },
+  "drop_off": null,
+  "impact": {
+    "en": "Wrapping sharp pieces protects the people who collect and sort your waste.",
+    "hi": "धारदार टुकड़ों को लपेटने से कचरा उठाने और छाँटने वाले सुरक्षित रहते हैं।"
+  },
+  "typical_weight_g": 250,
+  "detector_classes": [
+    "broken_crockery"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

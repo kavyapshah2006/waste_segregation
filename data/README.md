@@ -16,7 +16,7 @@ uv run python data/scripts/prepare.py --coco india=data/raw/india/annotations.js
 
 ### Image licences
 
-TACO images carry mixed licences (ODbL, plain "CC", or none). `prepare.py --licences all|known|odbl` chooses which to keep; `uv run python data/scripts/licence_report.py` writes [taco_licences.md](taco_licences.md), which shows what each choice costs. With every image TACO trains only 13 of the 40 KB items (`known`: 9, `odbl`: 7), so the India photo set and other datasets are needed in any case.
+TACO images carry mixed licences (ODbL, plain "CC", or none). `prepare.py --licences all|known|odbl` chooses which to keep; `uv run python data/scripts/licence_report.py` writes [taco_licences.md](taco_licences.md), which shows what each choice costs. With every image TACO trains only 14 of the 53 KB items (`known`: 9, `odbl`: 7), so the India photo set and other datasets are needed in any case.
 
 `prepare.py` applies EXIF orientation and skips any image whose oriented size disagrees with its annotation. It also leaves out classes with fewer than `min_instances` boxes (listed in `report.json`). The split is a hash of dataset and file name, so adding images never moves existing ones between splits.
 

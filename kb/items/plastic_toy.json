@@ -1,0 +1,50 @@
+{
+  "id": "plastic_toy",
+  "names": {
+    "en": "Broken plastic toy or household item",
+    "hi": "टूटा प्लास्टिक का खिलौना या घरेलू सामान"
+  },
+  "aliases": {
+    "en": [
+      "plastic toy",
+      "broken bucket",
+      "plastic hanger"
+    ],
+    "hi": [
+      "खिलौना",
+      "प्लास्टिक की बाल्टी",
+      "हैंगर"
+    ]
+  },
+  "material": "plastic",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Remove batteries first: they go to e-waste",
+      "Put it in the blue bin or give it to a scrap dealer"
+    ],
+    "hi": [
+      "पहले बैटरी निकालें: वह ई-कचरे में जाती है",
+      "नीले डिब्बे में डालें या कबाड़ी को दें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Hard plastic is often bought by scrap dealers and recycled into new products.",
+    "hi": "सख़्त प्लास्टिक अक्सर कबाड़ी ख़रीदते हैं और उससे नया सामान बनता है।"
+  },
+  "typical_weight_g": 200,
+  "detector_classes": [
+    "plastic_toy"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

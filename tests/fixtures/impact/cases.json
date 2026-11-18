@@ -228,10 +228,10 @@
       "language": "hi"
     },
     "expected": {
-      "item_id": "eggshells",
+      "item_id": "toothbrush",
       "heading": "क्या आप जानते हैं?",
-      "title": "अंडे के छिलके",
-      "text": "पिसे हुए अंडे के छिलके खाद में कैल्शियम जोड़ते हैं।"
+      "title": "टूथब्रश",
+      "text": "प्लास्टिक के टूथब्रश कई तरह के प्लास्टिक से बने होते हैं; बाँस का ब्रश कम कचरा बनाता है।"
     }
   },
   {
@@ -243,8 +243,8 @@
       "language": "en"
     },
     "expected": {
-      "item_id": "blister_pack",
-      "question": "Which bin does Empty medicine blister pack go in?",
+      "item_id": "aluminium_foil",
+      "question": "Which bin does Aluminium foil go in?",
       "options": [
         {
           "stream": "wet",
@@ -268,7 +268,7 @@
         }
       ],
       "answer": "dry",
-      "explanation": "Blister packs mix plastic and foil, so they are hard to recycle."
+      "explanation": "Clean foil is aluminium, which can be recycled again and again."
     }
   },
   {
@@ -280,8 +280,8 @@
       "language": "hi"
     },
     "expected": {
-      "item_id": "kulhad",
-      "question": "कुल्हड़ किस डिब्बे में जाएगा?",
+      "item_id": "shoes_footwear",
+      "question": "जूते-चप्पल किस डिब्बे में जाएगा?",
       "options": [
         {
           "stream": "wet",
@@ -305,7 +305,7 @@
         }
       ],
       "answer": "dry",
-      "explanation": "मिट्टी प्राकृतिक है और तोड़ने पर वापस मिट्टी में मिल जाती है।"
+      "explanation": "जूतों में रबर, चमड़ा और गोंद मिले होते हैं, इसलिए दोबारा इस्तेमाल फेंकने से कहीं बेहतर है।"
     }
   },
   {

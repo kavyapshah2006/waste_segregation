@@ -1,0 +1,58 @@
+{
+  "id": "small_electronics",
+  "names": {
+    "en": "Small electronic device",
+    "hi": "छोटा इलेक्ट्रॉनिक उपकरण"
+  },
+  "aliases": {
+    "en": [
+      "router",
+      "keyboard",
+      "computer mouse",
+      "remote control",
+      "electric kettle"
+    ],
+    "hi": [
+      "राउटर",
+      "कीबोर्ड",
+      "रिमोट",
+      "माउस"
+    ]
+  },
+  "material": "electronics",
+  "stream": "special_care",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Remove batteries if you can",
+      "Delete personal data from devices that store it",
+      "Take it to an e-waste collection centre"
+    ],
+    "hi": [
+      "हो सके तो बैटरी निकाल लें",
+      "जिन उपकरणों में डेटा है उनसे निजी डेटा मिटा दें",
+      "ई-कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Contains materials that are toxic if burnt or broken open.",
+    "hi": "जलाने या तोड़ने पर ज़हरीले पदार्थ निकलते हैं।"
+  },
+  "drop_off": "e_waste_centre",
+  "impact": {
+    "en": "Electronics contain valuable metals and toxic parts; authorised recyclers recover both safely.",
+    "hi": "इलेक्ट्रॉनिक्स में कीमती धातुएँ और ज़हरीले हिस्से होते हैं; अधिकृत रिसाइकलर दोनों को सुरक्षित निकालते हैं।"
+  },
+  "typical_weight_g": 400,
+  "detector_classes": [
+    "small_electronics"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

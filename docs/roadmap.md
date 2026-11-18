@@ -2,7 +2,9 @@
 
 Step-by-step path from an empty repo to the full solution in [DESIGN.md](DESIGN.md), using the minimal hardware in [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md): **an Arm Android phone + the dev laptop**, with an optional Raspberry Pi 5 kiosk at the end.
 
-For step-by-step implementation (interfaces, files, tests, acceptance checks), use [FuturePlan.md](FuturePlan.md); it wins where it differs from this file (detector is now YOLO26n; repo licence is AGPL-3.0).
+For step-by-step implementation (interfaces, files, tests, acceptance checks), use [FuturePlan.md](FuturePlan.md); it wins where it differs from this file.
+
+> **Changed since this roadmap was written:** detector is YOLO26n (not YOLO11), with NMS in app code; the fallback is SigLIP 2 (not MobileCLIP) under `models/fallback/`; speech recognition is Omnilingual ASR (not IndicConformer) and text-to-speech is Android's own; the repo is AGPL-3.0. The repository layout below is the original sketch: the real tree adds `pipeline/` (Python reference of the app logic) and `android/core/` (its tested Kotlin port). Progress per work package: [FuturePlan.md, section 12](FuturePlan.md#12-status).
 
 Each phase lists its goal, tasks, exit criteria, edge cases, advantages, disadvantages and alternatives. Phases 0–4 produce a working MVP; everything after improves it. Follow the brief's advice: **get something working on the real phone early, then iterate.**
 

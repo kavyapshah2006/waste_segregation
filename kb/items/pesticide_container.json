@@ -1,0 +1,54 @@
+{
+  "id": "pesticide_container",
+  "names": {
+    "en": "Empty pesticide or insecticide container",
+    "hi": "कीटनाशक का खाली डिब्बा"
+  },
+  "aliases": {
+    "en": [
+      "mosquito spray can",
+      "insecticide bottle",
+      "rat poison packet"
+    ],
+    "hi": [
+      "कीटनाशक की बोतल",
+      "मच्छर मारने की दवा"
+    ]
+  },
+  "material": "mixed",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Keep the cap tightly closed",
+      "Do not rinse it out into a drain",
+      "Take it to a hazardous waste collection point"
+    ],
+    "hi": [
+      "ढक्कन कसकर बंद रखें",
+      "इसे धोकर नाली में न बहाएँ",
+      "ख़तरनाक कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Toxic. Keep away from children and food.",
+    "hi": "ज़हरीला। बच्चों और खाने से दूर रखें।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Pesticide residue poisons soil and water even in small amounts.",
+    "hi": "कीटनाशक के थोड़े अवशेष भी मिट्टी और पानी को ज़हरीला बना देते हैं।"
+  },
+  "typical_weight_g": 150,
+  "detector_classes": [
+    "pesticide_container"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

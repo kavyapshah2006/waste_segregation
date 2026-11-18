@@ -25,6 +25,7 @@ classes:
   - garden_waste
   - flowers_puja
   - coconut_shell
+  - meat_fish_bones
   # dry
   - newspaper
   - cardboard_box
@@ -43,11 +44,19 @@ classes:
   - old_clothes
   - toothbrush
   - kulhad
+  - aluminium_foil
+  - shoes_footwear
+  - plastic_toy
+  - shampoo_bottle
+  - paper_plate
+  - broken_crockery
   # sanitary
   - sanitary_pad
   - diaper
   - used_tissue
   - condom
+  - tampon
+  - soiled_cotton_bandage
   # special care
   - aa_battery
   - mobile_phone
@@ -60,15 +69,19 @@ classes:
   - paint_can
   - syringe
   - aerosol_can
+  - pesticide_container
+  - nail_polish
+  - razor_blade
+  - small_electronics
 
 datasets:
   taco:
     description: Trash Annotations in Context, 1,500 images of litter in the wild (COCO format)
     url: http://tacodataset.org
     annotations: https://raw.githubusercontent.com/pedropro/TACO/70479ad9adc3da971a8ae75ac97eb1026910eec7/data/annotations.json
-    # Repo code is MIT. TODO(verify): the data licence on tacodataset.org before shipping the
-    # trained model; per-image `license` fields in the annotations are mostly empty.
-    licence: MIT (repository code); data licence to verify
+    # Repo code is MIT. Image licences are per image and mixed: 466 ODbL (OpenLitterMap),
+    # 319 "CC", 715 none. prepare.py --licences chooses; see data/taco_licences.md.
+    licence: MIT (repository code); images mixed, per-image `license` field
     map:
       Battery: aa_battery
       Aluminium blister pack: blister_pack
@@ -102,8 +115,10 @@ datasets:
       Polypropylene bag: plastic_carry_bag
       Crisp packet: chips_packet
       Other plastic wrapper: chips_packet
+      Tupperware: plastic_toy
+      Shoe: shoes_footwear
+      Aluminium foil: aluminium_foil
     drop:
-      - Aluminium foil
       - Plastic bottle cap
       - Metal bottle cap
       - Disposable plastic cup
@@ -117,7 +132,6 @@ datasets:
       - Plastified paper bag
       - Six pack rings
       - Spread tub
-      - Tupperware
       - Disposable food container
       - Other plastic container
       - Plastic glooves
@@ -125,7 +139,6 @@ datasets:
       - Pop tab
       - Rope & strings
       - Scrap metal
-      - Shoe
       - Squeezable tube
       - Plastic straw
       - Paper straw

@@ -39,8 +39,9 @@ tasks.test {
     useJUnitPlatform()
     dependsOn(buildKb)
     systemProperty("repo.root", repoRoot.absolutePath)
-    inputs.dir(repoRoot.resolve("tests/fixtures/golden"))
-    inputs.file(repoRoot.resolve("tests/fixtures/check_cases.json"))
+    // Everything the tests read, so Gradle reruns them when the KB or any fixture changes.
+    inputs.dir(repoRoot.resolve("tests/fixtures"))
+    inputs.file(repoRoot.resolve("kb/build/kb.sqlite"))
     testLogging {
         events("failed")
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL

@@ -9,7 +9,7 @@ Bharat AI-SoC Challenge, PS2. **Draft outline**: sections marked *pending* need 
 
 ## 2. Design principle: vision perceives, the knowledge base decides, Llama explains
 
-- The bin and the steps never come from a neural network's guess: a curated knowledge base (40 items, condition rules for dirty/broken items, city overrides, sourced from the SWM Rules and US EPA guidance) decides.
+- The bin and the steps never come from a neural network's guess: a curated knowledge base (53 items, condition rules for dirty/broken items, city overrides, sourced from the SWM Rules and US EPA guidance) decides.
 - Llama 3.2 1B writes only the explanation (`why`) and a `tip`. A verifier checks every answer against the KB and drops wrong text: wrong bin, negated bin or stream ("do not put it in the blue bin" when blue is right), wrong recyclable/compostable claim, a KB step turned into "don't", or an unsafe instruction (drain, burning). Off-topic questions are declined before Llama is called.
 - Figure: pipeline diagram (camera → detector → frame voting → KB → prompt → Llama → verifier → answer card; voice and unknown-item fallback as side paths).
 

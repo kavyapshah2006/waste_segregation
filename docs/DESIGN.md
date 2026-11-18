@@ -2,8 +2,15 @@
 
 **Problem statement:** Bharat AI-SoC Challenge, PS2: Edge AI for waste classification and disposal
 **Required stack:** Llama (reasoning/advice) deployed on-device with ExecuTorch, on Arm hardware
-**Status:** Proposal, nothing built yet. All performance figures below are targets to validate on hardware.
-**Superseded in part:** [FuturePlan.md](FuturePlan.md) is the implementation guide and wins where it differs (detector is now YOLO26n; repo licence is AGPL-3.0).
+**Status:** The original proposal, kept for its reasoning. All performance figures below are targets to validate on hardware; measured results are in [eval/REPORT.md](../eval/REPORT.md).
+**Superseded in part:** [FuturePlan.md](FuturePlan.md) is the implementation guide and wins where it differs.
+
+> **Decisions changed since this proposal** (details in FuturePlan.md):
+> - Detector: **YOLO26n**, not YOLO11n. Its ExecuTorch export drops the NMS-free head, so NMS runs in app code (`pipeline/detect.py`, Kotlin `Detect.kt`).
+> - Open-set fallback: **SigLIP 2 base** (Apache-2.0), not MobileCLIP, whose weights are research-only.
+> - Speech recognition: **Omnilingual ASR 300M CTC** (Apache-2.0) via sherpa-onnx, plus a pronunciation-key item matcher; IndicConformer was not used. Text-to-speech: Android's own voice.
+> - Llama writes only `why` and `tip`; the KB supplies every fact, and a verifier drops contradicting text.
+> - Licence: the repo is **AGPL-3.0** (Ultralytics). Knowledge base: 53 items.
 **Primary platform:** Arm Android smartphone (minimal hardware, see [HARDWARE_REQUIREMENTS.md](HARDWARE_REQUIREMENTS.md)). The Raspberry Pi 5 kiosk is an optional extension using the same models.
 
 ---

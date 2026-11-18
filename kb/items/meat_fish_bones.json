@@ -1,0 +1,52 @@
+{
+  "id": "meat_fish_bones",
+  "names": {
+    "en": "Meat, fish and bones",
+    "hi": "मांस, मछली और हड्डियाँ"
+  },
+  "aliases": {
+    "en": [
+      "chicken bones",
+      "fish waste",
+      "mutton bones"
+    ],
+    "hi": [
+      "हड्डी",
+      "मछली का कचरा"
+    ]
+  },
+  "material": "food",
+  "stream": "wet",
+  "recyclable": false,
+  "compostable": true,
+  "prep_steps": {
+    "en": [
+      "Drain any liquid",
+      "Wrap in newspaper so it does not smell",
+      "Put it in the green bin"
+    ],
+    "hi": [
+      "तरल निकाल दें",
+      "बदबू न आए इसलिए अख़बार में लपेटें",
+      "हरे डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Bones and shells rot slowly, so city composting handles them better than a home pit.",
+    "hi": "हड्डियाँ और खोल धीरे सड़ते हैं, इसलिए घर के गड्ढे से बेहतर शहर की खाद इकाई इन्हें सँभालती है।"
+  },
+  "typical_weight_g": 150,
+  "detector_classes": [
+    "meat_fish_bones"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "id": "shoes_footwear",
+  "names": {
+    "en": "Shoes and footwear",
+    "hi": "जूते-चप्पल"
+  },
+  "aliases": {
+    "en": [
+      "slippers",
+      "chappal",
+      "sandals"
+    ],
+    "hi": [
+      "चप्पल",
+      "जूते",
+      "सैंडल"
+    ]
+  },
+  "material": "mixed",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "If they can still be worn, give them away",
+      "Tie pairs together",
+      "Put worn-out pairs in the blue bin"
+    ],
+    "hi": [
+      "अगर पहनने लायक हैं तो किसी को दे दें",
+      "जोड़ी को साथ बाँध दें",
+      "पूरी तरह घिसे हुए जूते नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Shoes mix rubber, leather and glue, so reuse saves far more than disposal.",
+    "hi": "जूतों में रबर, चमड़ा और गोंद मिले होते हैं, इसलिए दोबारा इस्तेमाल फेंकने से कहीं बेहतर है।"
+  },
+  "typical_weight_g": 600,
+  "detector_classes": [
+    "shoes_footwear"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "paper_plate",
+  "names": {
+    "en": "Used paper plate",
+    "hi": "इस्तेमाल की हुई काग़ज़ की प्लेट"
+  },
+  "aliases": {
+    "en": [
+      "disposable plate",
+      "paper bowl"
+    ],
+    "hi": [
+      "डिस्पोज़ेबल प्लेट",
+      "काग़ज़ की कटोरी"
+    ]
+  },
+  "material": "paper",
+  "stream": "dry",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Scrape leftover food into the green bin",
+      "Put the plate in the blue bin"
+    ],
+    "hi": [
+      "बचा खाना हरे डिब्बे में डालें",
+      "प्लेट नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Food-stained paper plates have a plastic lining and are rarely recycled; leaf plates are better.",
+    "hi": "काग़ज़ की प्लेटों पर प्लास्टिक की परत होती है और ये शायद ही रीसायकल होती हैं; पत्तल बेहतर हैं।"
+  },
+  "typical_weight_g": 15,
+  "detector_classes": [
+    "paper_plate"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

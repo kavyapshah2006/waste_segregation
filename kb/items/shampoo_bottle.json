@@ -1,0 +1,51 @@
+{
+  "id": "shampoo_bottle",
+  "names": {
+    "en": "Empty shampoo, soap or detergent bottle",
+    "hi": "शैम्पू, साबुन या डिटर्जेंट की खाली बोतल"
+  },
+  "aliases": {
+    "en": [
+      "detergent bottle",
+      "handwash bottle",
+      "lotion bottle"
+    ],
+    "hi": [
+      "डिटर्जेंट की बोतल",
+      "हैंडवॉश की बोतल"
+    ]
+  },
+  "material": "plastic",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Empty it completely",
+      "Rinse with a little water",
+      "Put it in the blue bin with the cap on"
+    ],
+    "hi": [
+      "पूरी तरह खाली करें",
+      "थोड़े पानी से धो लें",
+      "ढक्कन लगाकर नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Rinsed bottles are easy to recycle; leftover soap spoils other recyclables.",
+    "hi": "धुली बोतलें आसानी से रीसायकल होती हैं; बचा साबुन दूसरी चीज़ें ख़राब करता है।"
+  },
+  "typical_weight_g": 60,
+  "detector_classes": [
+    "shampoo_bottle"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

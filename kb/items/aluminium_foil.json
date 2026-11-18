@@ -1,0 +1,68 @@
+{
+  "id": "aluminium_foil",
+  "names": {
+    "en": "Aluminium foil",
+    "hi": "एल्युमिनियम फ़ॉइल"
+  },
+  "aliases": {
+    "en": [
+      "foil",
+      "silver foil",
+      "food wrap foil"
+    ],
+    "hi": [
+      "फ़ॉइल",
+      "सिल्वर पेपर"
+    ]
+  },
+  "material": "aluminium",
+  "stream": "dry",
+  "recyclable": true,
+  "prep_steps": {
+    "en": [
+      "Scrape off food",
+      "Scrunch it into a ball",
+      "Put it in the blue bin"
+    ],
+    "hi": [
+      "खाना हटा दें",
+      "गोला बना लें",
+      "नीले डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "condition_rules": [
+    {
+      "if": {
+        "contaminated": true
+      },
+      "then": {
+        "extra_steps": {
+          "en": [
+            "Wipe off grease and food first"
+          ],
+          "hi": [
+            "पहले चिकनाई और खाना पोंछ दें"
+          ]
+        }
+      }
+    }
+  ],
+  "impact": {
+    "en": "Clean foil is aluminium, which can be recycled again and again.",
+    "hi": "साफ़ फ़ॉइल एल्युमिनियम है, जिसे बार-बार रीसायकल किया जा सकता है।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "aluminium_foil"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "id": "razor_blade",
+  "names": {
+    "en": "Used razor or blade",
+    "hi": "इस्तेमाल किया हुआ रेज़र या ब्लेड"
+  },
+  "aliases": {
+    "en": [
+      "blade",
+      "shaving razor"
+    ],
+    "hi": [
+      "ब्लेड",
+      "रेज़र"
+    ]
+  },
+  "material": "metal",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Put the blade in a small box or tape the edge",
+      "Write 'sharp' on it",
+      "Hand it in with special care waste"
+    ],
+    "hi": [
+      "ब्लेड को छोटे डिब्बे में रखें या धार पर टेप लगाएँ",
+      "ऊपर 'धारदार' लिखें",
+      "विशेष देखभाल कचरे के साथ दें"
+    ]
+  },
+  "hazard": {
+    "en": "Sharp: can cut waste workers.",
+    "hi": "धारदार: सफ़ाई कर्मचारियों को चोट लग सकती है।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Covered blades protect waste pickers from deep cuts.",
+    "hi": "ढके हुए ब्लेड कचरा बीनने वालों को गहरे घाव से बचाते हैं।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "razor_blade"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

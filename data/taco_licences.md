@@ -6,9 +6,9 @@ Image licence field in TACO: None: 715, ODBL (c) OpenLitterMap & Contributors: 4
 
 | Policy | Images with KB objects | Instances | Classes with >= 30 instances (trained) |
 |---|---|---|---|
-| `all` | 1129 | 2312 | 13 |
-| `known` | 598 | 1308 | 9 |
-| `odbl` | 333 | 722 | 7 |
+| `all` | 1155 | 2385 | 14 |
+| `known` | 607 | 1324 | 9 |
+| `odbl` | 336 | 728 | 7 |
 
 Instances per class (classes below the threshold are not trained):
 
@@ -24,10 +24,13 @@ Instances per class (classes below the threshold are not trained):
 | glass_bottle | 110 | 63 | 17 (left out) |
 | newspaper | 94 | 42 | 21 (left out) |
 | paper_cup | 67 | 26 (left out) | 22 (left out) |
+| aluminium_foil | 62 | 13 (left out) | 4 (left out) |
 | tetra_pak | 45 | 19 (left out) | 10 (left out) |
 | used_tissue | 42 | 28 (left out) | 10 (left out) |
 | tin_can | 34 | 2 (left out) | 1 (left out) |
 | aerosol_can | 10 (left out) | 0 (left out) | 0 (left out) |
 | food_scraps | 8 (left out) | 0 (left out) | 0 (left out) |
 | blister_pack | 7 (left out) | 4 (left out) | 3 (left out) |
+| shoes_footwear | 7 (left out) | 2 (left out) | 1 (left out) |
+| plastic_toy | 4 (left out) | 1 (left out) | 1 (left out) |
 | aa_battery | 2 (left out) | 1 (left out) | 1 (left out) |

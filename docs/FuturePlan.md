@@ -216,7 +216,7 @@ JSON files of `{id, description, input: {detection, city, language, question, ra
 | Package | Responsibility | Depends on |
 |---|---|---|
 | `camera` | CameraX preview, frame capture, resize/normalise | – |
-| `vision` | Detector + attribute head via ExecuTorch `Module`; temporal voting; confidence gate; CLIP fallback | `camera` |
+| `vision` | Detector + attribute head via ExecuTorch `Module`; temporal voting; confidence gate; SigLIP 2 fallback | `camera` |
 | `kb` | Read `kb.sqlite` from assets; item + city lookup; condition rules | – |
 | `llm` | `LlmModule` wrapper, prompt builder, streaming, verifier | `kb` |
 | `speech` | sherpa-onnx ASR and TTS | – |
@@ -272,7 +272,7 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 
 ### WP2: Knowledge base v1
 
-- **Goal:** validated KB with 40 items, default city, English + Hindi.
+- **Goal:** validated KB with 40 items (now 53), default city, English + Hindi.
 - **Depends on:** none. **Human:** Hindi review.
 - **Create:** `kb/schema.json`, `kb/city_schema.json`, `kb/items/*.json` (40), `kb/cities/default_in.json`, `kb/build_kb.py`, `tests/test_kb.py`.
 - **Steps:**
@@ -321,8 +321,8 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 - **Depends on:** WP2, WP3, WP4, WP5. **Human:** phone session.
 - **Create:** Kotlin `vision`, `kb`, `llm` packages; Scan, Verdict and Chat screens; photo-upload path; Kotlin golden-fixture test runner.
 - **Steps:**
-  1. Detector: bitmap → float tensor (match Ultralytics preprocessing: letterbox, RGB, 0–1) → `Module.forward` → decode the NMS-free output → Detection records.
-  2. KB: bundle `kb.sqlite` as an asset; port `kb.py` logic.
+  1. Detector: bitmap → letterbox (geometry from `Detect.letterboxGeometry`, pad 114, RGB, 0–1) → `Module.forward` → `Detect.decode` (raw output + NMS, already in `android/core`) → `FrameVoter` → Detection records.
+  2. KB: bundle `kb.sqlite` as an asset; load it with `android.database` into `KbData` (the logic is already in `android/core`).
   3. Verdict card appears as soon as detection + KB finish: item name, bin colour (full-width colour band), steps.
   4. Llama: port `prompt.py` and `verify.py`; stream tokens into the card; "Ask a question" opens Chat with the same facts.
   5. Memory: pause camera analysis while Llama generates; keep one heavy model active at a time on 6 GB phones.
@@ -339,7 +339,7 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
   2. Label, merge, retrain YOLO26n; compare against the WP3 baseline on a held-out India test set that is never trained on.
   3. Attribute head: small classifier (MobileNetV4-class) on crops → `contaminated`, `broken`; export to `.pte`.
   4. Temporal voting over 5–10 frames; pick the confidence threshold on the validation set (report the precision/coverage trade-off).
-  5. Fallback: MobileCLIP image embedding vs precomputed text embeddings of KB item names, only when the detector is below threshold.
+  5. Fallback (done, `models/fallback/`): SigLIP 2 image embedding vs precomputed text embeddings of KB item names, only when the detector is below threshold; top 3 offered to the user. (MobileCLIP rejected: research-only weights.)
   6. "This is wrong" button stores the crop and the corrected label locally.
 - **Acceptance:** per-class precision/recall and confusion matrix committed; documented change on clear plastic/glass; gate behaviour shown on unknown objects.
 
@@ -358,8 +358,8 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 - **Create:** `kb/i18n/` or per-item strings for ta/te/bn/mr, Kotlin `speech` package, `models/speech/README.md`, `docs/PIPELINES.md`.
 - **Steps:**
   1. Extend KB strings; mark machine-translated text as unreviewed until checked.
-  2. ASR: sherpa-onnx Android with a multi-Indic IndicConformer INT8 model (about 188 MB) or the Dolphin models; push-to-talk; show the transcript for confirmation. *Verify model licences.*
-  3. TTS: sherpa-onnx with Piper/VITS voices where available; fall back to Android's built-in TTS per language. Pre-rendered voice lines for the instant verdict.
+  2. ASR (chosen, `models/speech/`): sherpa-onnx Android with Omnilingual ASR 300M CTC v2 int8 (Apache-2.0, 366 MB); push-to-talk; match the transcript to items with `Voice.match` and show the top items for confirmation when it is not confident. Dolphin and Whisper base were measured and lost.
+  3. TTS: Android's built-in TTS (Hindi offline voice). Piper Hindi voices are non-commercial or have an unverified licence, so they are not shipped. Pre-rendered voice lines for the instant verdict.
   4. Llama 3.2 officially supports English and Hindi among these. For ta/te/bn/mr, show KB text directly and use Llama only where quality is acceptable; optional translation model is a stretch goal.
   5. Load speech models on demand and release them after use.
   6. `docs/PIPELINES.md`: document vision, Llama and speech as separate pipelines (which runtime, which processor, model, quantisation).
@@ -440,8 +440,8 @@ If a goal is missed, report the real number and the reason; do not tune the test
 | AAR and export versions drift | Keep `executorch` (Python) and `executorch-android` (Gradle) on the same version; bump together |
 | YOLO26 ExecuTorch export fails on an op | Export works (checked 2026-11-17, raw head + NMS in post-processing). If a later version breaks: pin Ultralytics, try another `imgsz`, fall back to YOLO11n; last resort a classification-only model |
 | AGPL-3.0 is unacceptable later | Swap the detector for an Apache-licensed one (for example an RT-DETR-family model outside Ultralytics) and retrain |
-| TACO image licences are mixed (466 ODbL, 319 "CC" without a variant, 715 with no licence field) | Images are never redistributed. Before publishing trained weights, decide whether training on the unlabelled-licence images is acceptable: `prepare.py --licences all|known|odbl` (and `LICENCES` in the Colab notebook). Cost, from `data/taco_licences.md`: `all` trains 13 of 40 items, `known` 9, `odbl` 7 (see THIRD_PARTY.md) |
-| Not enough India-specific data | Prioritise the 15 most common items; lean on the confidence gate and CLIP fallback |
+| TACO image licences are mixed (466 ODbL, 319 "CC" without a variant, 715 with no licence field) | Images are never redistributed. Before publishing trained weights, decide whether training on the unlabelled-licence images is acceptable: `prepare.py --licences all|known|odbl` (and `LICENCES` in the Colab notebook). Cost, from `data/taco_licences.md`: `all` trains 14 of 53 items, `known` 9, `odbl` 7 (see THIRD_PARTY.md) |
+| Not enough India-specific data | Prioritise the 15 most common items; lean on the confidence gate and the SigLIP 2 fallback (83.5% top-3 zero-shot on TACO crops) |
 | Phone unavailable near the deadline | Keep a recorded benchmark set and demo footage from every session |
 | Indic ASR/TTS quality or licence problems | Android built-in recognition/TTS for that language; text-only mode |
 | Memory pressure with all models | Load on demand; one heavy model at a time; smaller input size |
@@ -470,7 +470,7 @@ Update this table in the same commit that completes a WP.
 |---|---|---|---|
 | 0 | Repo and tooling | Done | uv, CI, ExecuTorch smoke test |
 | 1 | Llama on the phone | Code done | `models/llm/export.py` (verified on a tiny random-weight model), download/push scripts, host runner (`pipeline/llm.py`), phone run-list `eval/latency/llm_bench.md`. Licence accepted; prebuilt SpinQuant 1B downloaded and answering on the host. **Needs a human:** phone session |
-| 2 | Knowledge base v1 | Done | 40 items, 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
+| 2 | Knowledge base v1 | Done | 53 items (13 added from the SBM-Urban source-segregation guideline's household list), 4 streams; Hindi written but **unreviewed** (needs a native speaker) |
 | 3 | Data, taxonomy, detector baseline | Code done | Scripts, notebook, `pipeline/detect.py`, export + host check all work (COCO yolo26n: same detections as PyTorch, IoU ≥ 0.94). **Needs a human:** Colab training run, Roboflow download; baseline mAP table still empty |
 | 4 | Host reference pipeline | Done | `pipeline/` kb, prompt (why + tip answer format with prefilled `{"why": "`), verify, assistant (retry), cli, detect, llm; 23 golden fixtures |
 | 5 | Android app skeleton | Core done | `android/core`: the KB, prompt, verifier, off-topic guard and detector post-processing (letterbox geometry, decode, NMS; `tests/fixtures/detect_cases.json`) in plain Kotlin (Gradle 9.9.1, Kotlin 2.4.21, JVM 17 bytecode). It passes every golden fixture and the shared `tests/fixtures/check_cases.json` on the JVM, in CI (`kotlin-core` job). **Needs a human:** Android SDK licence for the `app` module (Compose, CameraX, ExecuTorch AAR); the app reads `kb.sqlite` with `android.database` into `KbData` |

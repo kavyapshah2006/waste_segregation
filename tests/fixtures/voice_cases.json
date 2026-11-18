@@ -76,13 +76,13 @@
           "confirm": false
         },
         {
-          "item_id": "charger_cable",
-          "score": 0.6,
+          "item_id": "aluminium_foil",
+          "score": 0.714,
           "confirm": true
         },
         {
-          "item_id": "kulhad",
-          "score": 0.556,
+          "item_id": "charger_cable",
+          "score": 0.6,
           "confirm": true
         }
       ]
@@ -118,13 +118,13 @@
           "confirm": true
         },
         {
-          "item_id": "toothbrush",
+          "item_id": "broken_crockery",
           "score": 0.625,
           "confirm": true
         },
         {
-          "item_id": "newspaper",
-          "score": 0.6,
+          "item_id": "toothbrush",
+          "score": 0.625,
           "confirm": true
         }
       ]
@@ -186,8 +186,8 @@
           "confirm": true
         },
         {
-          "item_id": "cardboard_box",
-          "score": 0.667,
+          "item_id": "shoes_footwear",
+          "score": 0.714,
           "confirm": true
         }
       ]
@@ -228,7 +228,7 @@
           "confirm": true
         },
         {
-          "item_id": "sanitary_pad",
+          "item_id": "plastic_toy",
           "score": 0.5,
           "confirm": true
         }

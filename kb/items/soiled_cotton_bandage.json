@@ -1,0 +1,51 @@
+{
+  "id": "soiled_cotton_bandage",
+  "names": {
+    "en": "Used cotton or bandage",
+    "hi": "इस्तेमाल की हुई रुई या पट्टी"
+  },
+  "aliases": {
+    "en": [
+      "bandage",
+      "band-aid",
+      "cotton swab",
+      "gauze"
+    ],
+    "hi": [
+      "पट्टी",
+      "रुई",
+      "बैंडेज"
+    ]
+  },
+  "material": "cotton",
+  "stream": "sanitary",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Wrap it in paper",
+      "Put it in the red bin"
+    ],
+    "hi": [
+      "काग़ज़ में लपेटें",
+      "लाल डिब्बे में डालें"
+    ]
+  },
+  "hazard": null,
+  "drop_off": null,
+  "impact": {
+    "en": "Cotton and bandages soiled with blood or body fluids can spread infection.",
+    "hi": "ख़ून या शरीर के तरल से सनी रुई और पट्टियाँ संक्रमण फैला सकती हैं।"
+  },
+  "typical_weight_g": 10,
+  "detector_classes": [
+    "soiled_cotton_bandage"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}

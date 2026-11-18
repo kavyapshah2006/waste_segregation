@@ -1,0 +1,54 @@
+{
+  "id": "nail_polish",
+  "names": {
+    "en": "Nail polish or remover bottle",
+    "hi": "नेल पॉलिश या रिमूवर की बोतल"
+  },
+  "aliases": {
+    "en": [
+      "nail paint",
+      "nail polish remover",
+      "acetone bottle"
+    ],
+    "hi": [
+      "नेल पेंट",
+      "रिमूवर"
+    ]
+  },
+  "material": "glass",
+  "stream": "special_care",
+  "recyclable": false,
+  "prep_steps": {
+    "en": [
+      "Close the cap tightly",
+      "Keep it away from heat",
+      "Take it to a hazardous waste collection point"
+    ],
+    "hi": [
+      "ढक्कन कसकर बंद करें",
+      "गर्मी से दूर रखें",
+      "ख़तरनाक कचरा संग्रह केंद्र पर दें"
+    ]
+  },
+  "hazard": {
+    "en": "Flammable.",
+    "hi": "ज्वलनशील।"
+  },
+  "drop_off": "hazardous_collection",
+  "impact": {
+    "en": "Nail polish and remover are flammable solvents that should not reach landfills or drains.",
+    "hi": "नेल पॉलिश और रिमूवर ज्वलनशील घोल हैं जो लैंडफ़िल या नाली में नहीं जाने चाहिए।"
+  },
+  "typical_weight_g": 40,
+  "detector_classes": [
+    "nail_polish"
+  ],
+  "sources": [
+    "Solid Waste Management Rules, 2026 (MoEFCC): four-stream segregation, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2219676",
+    "SBM-Urban, Guidelines for Source Segregation of Municipal Solid Waste, https://sbmurban.org/storage/app/media/pdf/Guidelines%20for%20Source%20Segregation%20of%20Municipal%20Solid%20Waste.pdf"
+  ],
+  "reviewed": {
+    "en": true,
+    "hi": false
+  }
+}
