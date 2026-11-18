@@ -41,7 +41,7 @@ def expected_for(kb: KnowledgeBase, case_input: dict) -> dict:
             "prompt": None,
             "verified": declined(kb, verdict).to_dict(),
         }
-    prompt = build_prompt(verdict, attributes, kb.language_name(language), question)
+    prompt = build_prompt(verdict, attributes, kb.language_name(language), question, kb=kb)
     raw = case_input.get("raw_llm_output")
     return {
         "verdict": verdict.to_dict(),

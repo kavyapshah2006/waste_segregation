@@ -33,7 +33,7 @@ class GoldenTest {
                 "verified" to Assistant.declined(kb, verdict).toMap(),
             )
         }
-        val prompt = Prompt.build(verdict, attributes, kb.languageName(language), question)
+        val prompt = Prompt.build(verdict, attributes, kb.languageName(language), question, kb = kb)
         val raw = input["raw_llm_output"] as String?
         return linkedMapOf(
             "verdict" to verdict.toMap(),

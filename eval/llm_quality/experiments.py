@@ -39,13 +39,23 @@ from pipeline.prompt import (  # noqa: E402
     BOS,
     DEFAULT_QUESTION,
     EOT,
-    SYSTEM_PROMPT,
     user_message,
 )
 from pipeline.prompt import _header as header  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
 
 OUT = REPO / "eval" / "results" / "llm_experiments"
+
+# The system prompt as it was when these experiments ran (before "shots_kind+rules" was
+# adopted into pipeline/prompt.py), so every variant here stays reproducible.
+SYSTEM_PROMPT = (
+    "You are a waste disposal guide for India. Use only the FACTS given and never "
+    "contradict them. The app already shows the facts to the user; your job is to explain. "
+    'Reply with one JSON object with exactly two keys: "why" (answer the QUESTION in one or '
+    'two short sentences) and "tip" (one short practical tip). '
+    "Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why "
+    "that you can only help with waste. Output nothing except the JSON object."
+)
 MODELS = {
     "spinquant": "models/llm/out/spinquant/Llama-3.2-1B-Instruct-SpinQuant_INT4_EO8.pte",
     "qlora": "models/llm/out/qlora/Llama-3.2-1B-Instruct-QLORA_INT4_EO8.pte",

@@ -75,7 +75,13 @@ def explain(
     result = Explanation(verified=None)  # type: ignore[arg-type]
     for short in (False, True):
         prompt = build_prompt(
-            verdict, attributes, language_name, question, short=short, include_bos=include_bos
+            verdict,
+            attributes,
+            language_name,
+            question,
+            short=short,
+            include_bos=include_bos,
+            kb=kb,
         )
         raw = generate(prompt)
         result.prompts.append(prompt)

@@ -15,7 +15,10 @@ object Prompt {
             "Reply with one JSON object with exactly two keys: \"why\" (answer the QUESTION in one or " +
             "two short sentences) and \"tip\" (one short practical tip). " +
             "Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why " +
-            "that you can only help with waste. Output nothing except the JSON object."
+            "that you can only help with waste. Output nothing except the JSON object." +
+            " Rules: the bin and stream in FACTS are always right, so name only that bin. Say the " +
+            "item can be recycled only if FACTS has recyclable: true. Do not add disposal steps that " +
+            "are not in FACTS. Never suggest burning, drains, toilets, rivers or open dumping."
 
     const val DEFAULT_QUESTION = "Explain how to dispose of this and why."
 
@@ -50,7 +53,10 @@ object Prompt {
         return lines.joinToString("\n")
     }
 
-    /** Full prompt text, ending with the assistant header and ANSWER_PREFIX. */
+    /**
+     * Full prompt text, ending with the assistant header and ANSWER_PREFIX. With [kb], two worked
+     * examples for the question's kind come first (Shots; not in short mode).
+     */
     fun build(
         verdict: Verdict,
         attributes: Map<String, Any?>,
@@ -58,9 +64,19 @@ object Prompt {
         question: String? = null,
         short: Boolean = false,
         includeBos: Boolean = true,
-    ): String = prefix(includeBos) + header("user") +
-        userMessage(verdict, attributes, languageName, question, short) + EOT +
-        header("assistant") + ANSWER_PREFIX
+        kb: KnowledgeBase? = null,
+    ): String {
+        val examples = StringBuilder()
+        if (kb != null && !short) {
+            for ((user, answer) in Shots.shotTurns(kb, question, verdict.language)) {
+                examples.append(header("user")).append(user).append(EOT)
+                    .append(header("assistant")).append(answer).append(EOT)
+            }
+        }
+        return prefix(includeBos) + examples + header("user") +
+            userMessage(verdict, attributes, languageName, question, short) + EOT +
+            header("assistant") + ANSWER_PREFIX
+    }
 
     /** The complete answer text: ANSWER_PREFIX plus what the model generated after it. */
     fun fullAnswer(generated: String): String = ANSWER_PREFIX + generated

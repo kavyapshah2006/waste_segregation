@@ -1,0 +1,16 @@
+[
+  {"question": null, "kind": "explain", "shots": "explain"},
+  {"question": "   ", "kind": "explain", "shots": "explain"},
+  {"question": "Which bin does this go in?", "kind": "which_bin", "shots": "which_bin"},
+  {"question": "which DUSTBIN for this?", "kind": "which_bin", "shots": "which_bin"},
+  {"question": "Is this recyclable?", "kind": "recyclable", "shots": "recyclable"},
+  {"question": "Can I recycle it or does it go in the bin?", "kind": "recyclable", "shots": "recyclable"},
+  {"question": "How should I prepare this before throwing it away?", "kind": "prepare", "shots": "prepare"},
+  {"question": "Do I need to rinse it?", "kind": "prepare", "shots": "prepare"},
+  {"question": "यह किस डिब्बे में जाएगा?", "kind": "which_bin", "shots": "which_bin"},
+  {"question": "क्या यह रीसायकल हो सकता है?", "kind": "recyclable", "shots": "recyclable"},
+  {"question": "इसे फेंकने से पहले कैसे तैयार करूँ?", "kind": "prepare", "shots": "prepare"},
+  {"question": "Why is this harmful?", "kind": "other", "shots": "explain"},
+  {"question": "Can I sell this to the kabadiwala?", "kind": "other", "shots": "explain"},
+  {"question": "cabinet", "kind": "other", "shots": "explain"}
+]

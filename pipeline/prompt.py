@@ -9,9 +9,13 @@ Chat format, from the Llama 3.2 Instruct tokenizer chat template:
 Generation stops at <|eot_id|> (128009) or <|end_of_text|> (128001).
 
 BOS handling: the prompt text includes <|begin_of_text|>, so the runner must add none
-(GenerationConfig.num_bos=0, which is the Python runner's default; see pipeline/llm.py).
-TODO(verify): the Android LlmModule's BOS behaviour on the phone (WP1). If it adds one,
-call build_prompt(..., include_bos=False) there so the BOS token is not doubled.
+(GenerationConfig.num_bos=0 in Python, LlmGenerationConfig.numBos(0) in the Android app).
+
+Worked examples: with a KB passed to build_prompt, two finished exchanges about fixed items
+(pipeline/shots.py) come before the real question, matched to its kind and language. With
+the stricter rules in SYSTEM_PROMPT this took the stock SpinQuant 1B from 69% to 95.5% useful
+answers on held-out items (eval/results/llm_experiments/). The system part plus the examples
+depend only on (question kind, language), so the app can still cache that prefix.
 
 Answer format: Llama writes only {"why": ..., "tip": ...}. Item, stream, bin, steps, hazard
 and drop-off are already in the KB verdict, so having Llama copy them back only cost tokens
@@ -25,7 +29,7 @@ from __future__ import annotations
 
 import json
 
-from pipeline.kb import Verdict
+from pipeline.kb import KnowledgeBase, Verdict
 
 BOS = "<|begin_of_text|>"
 EOT = "<|eot_id|>"
@@ -37,6 +41,9 @@ SYSTEM_PROMPT = (
     'two short sentences) and "tip" (one short practical tip). '
     "Write both in the requested LANGUAGE. If the QUESTION is not about waste, say in why "
     "that you can only help with waste. Output nothing except the JSON object."
+    " Rules: the bin and stream in FACTS are always right, so name only that bin. Say the "
+    "item can be recycled only if FACTS has recyclable: true. Do not add disposal steps that "
+    "are not in FACTS. Never suggest burning, drains, toilets, rivers or open dumping."
 )
 
 DEFAULT_QUESTION = "Explain how to dispose of this and why."
@@ -85,10 +92,21 @@ def build_prompt(
     *,
     short: bool = False,
     include_bos: bool = True,
+    kb: KnowledgeBase | None = None,
 ) -> str:
-    """Full prompt text, ending with the assistant header and ANSWER_PREFIX."""
+    """Full prompt text, ending with the assistant header and ANSWER_PREFIX.
+
+    With [kb], two worked examples for the question's kind come first (not in short mode, the
+    cheap retry after unparseable output)."""
+    examples = ""
+    if kb is not None and not short:
+        from pipeline.shots import shot_turns
+
+        for user, answer in shot_turns(kb, question, verdict.language):
+            examples += _header("user") + user + EOT + _header("assistant") + answer + EOT
     return (
         prompt_prefix(include_bos)
+        + examples
         + _header("user")
         + user_message(verdict, attributes, language_name, question, short)
         + EOT

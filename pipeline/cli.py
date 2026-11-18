@@ -97,7 +97,9 @@ def main(argv: list[str] | None = None) -> int:
         result["verified"] = declined(kb, verdict).to_dict()
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
-    result["prompt"] = build_prompt(verdict, attributes, kb.language_name(args.lang), args.question)
+    result["prompt"] = build_prompt(
+        verdict, attributes, kb.language_name(args.lang), args.question, kb=kb
+    )
     if args.llm_model:
         if args.tokenizer is None:
             print("--llm-model needs --tokenizer", file=sys.stderr)

@@ -61,7 +61,7 @@ object Assistant {
         val raws = mutableListOf<String>()
         var verified: VerifiedOutput? = null
         for (short in listOf(false, true)) {
-            val prompt = Prompt.build(verdict, attributes, languageName, question, short, includeBos)
+            val prompt = Prompt.build(verdict, attributes, languageName, question, short, includeBos, kb)
             val raw = generate(prompt)
             prompts.add(prompt)
             raws.add(raw)

@@ -32,45 +32,12 @@ sys.path.insert(0, str(REPO))
 from kb.build_kb import build  # noqa: E402
 from pipeline.kb import KnowledgeBase, Verdict  # noqa: E402
 from pipeline.prompt import ANSWER_PREFIX, EOT, build_prompt, full_answer  # noqa: E402
+from pipeline.shots import QUESTIONS, answer_for  # noqa: E402
 from pipeline.verify import verify  # noqa: E402
 
 OUT_DIR = Path(__file__).resolve().parent / "out"
 LANGS = ("en", "hi")
 VAL_SHARE = 0.15
-
-# Hindi oblique colour forms ("नीले डिब्बे", not "नीला डिब्बे").
-HI_COLOUR_OBLIQUE = {"green": "हरे", "blue": "नीले", "red": "लाल", "black": "काले"}
-
-QUESTIONS = {
-    "explain": {"en": None, "hi": None},  # None = the default question in prompt.py
-    "which_bin": {"en": "Which bin does this go in?", "hi": "यह किस डिब्बे में जाएगा?"},
-    "recyclable": {"en": "Is this recyclable?", "hi": "क्या यह रीसायकल हो सकता है?"},
-    "prepare": {
-        "en": "How should I prepare this before throwing it away?",
-        "hi": "इसे फेंकने से पहले कैसे तैयार करूँ?",
-    },
-    "off_topic": {"en": "What is the capital of France?", "hi": "आज मौसम कैसा रहेगा?"},
-}
-
-TIPS = {
-    "wet": {
-        "en": "Keep a small lidded bin in the kitchen for wet waste.",
-        "hi": "गीले कचरे के लिए रसोई में ढक्कन वाला छोटा डिब्बा रखें।",
-    },
-    "dry": {
-        # No "can be recycled" here: dry waste is not always recyclable (chips packets).
-        "en": "Keep dry waste clean and dry so it is easy to sort.",
-        "hi": "सूखे कचरे को साफ़ और सूखा रखें ताकि उसे छाँटना आसान हो।",
-    },
-    "sanitary": {
-        "en": "Always wrap sanitary waste before putting it in the bin.",
-        "hi": "सैनिटरी कचरे को डिब्बे में डालने से पहले हमेशा लपेटें।",
-    },
-    "special_care": {
-        "en": "Store special care waste safely until the next collection drive.",
-        "hi": "विशेष देखभाल कचरे को अगले संग्रह अभियान तक सुरक्षित रखें।",
-    },
-}
 
 
 @dataclass(frozen=True)
@@ -93,44 +60,9 @@ def _split(item_id: str) -> str:
     return "val" if u < VAL_SHARE else "train"
 
 
-def _bin_phrase(v: Verdict) -> str:
-    if v.language == "hi":
-        return f"{HI_COLOUR_OBLIQUE.get(v.bin_colour, v.bin_colour_name)} डिब्बे"
-    return f"{v.bin_colour_name} bin"
-
-
-def why_for(kind: str, v: Verdict, kb: KnowledgeBase) -> str:
-    hi = v.language == "hi"
-    if kind == "off_topic":
-        # The app declines these before asking Llama; training on them is a second line.
-        return kb.message("off_topic", v.language)
-    if kind == "which_bin":
-        lead = (
-            f"यह {_bin_phrase(v)} ({v.stream_name}) में जाएगा।"
-            if hi
-            else f"It goes in the {_bin_phrase(v)} ({v.stream_name.lower()})."
-        )
-    elif kind == "recyclable":
-        if hi:
-            lead = (
-                "हाँ, इसे रीसायकल किया जा सकता है।"
-                if v.recyclable
-                else "नहीं, इसे रीसायकल नहीं किया जा सकता।"
-            )
-        else:
-            lead = "Yes, it can be recycled." if v.recyclable else "No, it cannot be recycled."
-    elif kind == "prepare":
-        lead = (f"पहला कदम: {v.steps[0]}।" if hi else f"First: {v.steps[0]}.").replace("।।", "।")
-    else:
-        lead = ""
-    parts = [lead, *v.notes, v.impact]
-    return " ".join(p for p in parts if p).strip()
-
-
 def completion_for(kind: str, v: Verdict, kb: KnowledgeBase) -> str:
     """The text the model should generate after the prompt (which ends with ANSWER_PREFIX)."""
-    tip = TIPS[v.stream][v.language] if v.hazard is None else v.hazard
-    answer = json.dumps({"why": why_for(kind, v, kb), "tip": tip}, ensure_ascii=False)
+    answer = answer_for(kind, v, kb)
     assert answer.startswith(ANSWER_PREFIX)
     return answer[len(ANSWER_PREFIX) :] + EOT
 
@@ -150,7 +82,7 @@ def generate(kb: KnowledgeBase) -> list[Example]:
                 verdict = kb.resolve(item_id, attributes, lang)
                 for kind, questions in QUESTIONS.items():
                     prompt = build_prompt(
-                        verdict, attributes, kb.language_name(lang), questions[lang]
+                        verdict, attributes, kb.language_name(lang), questions[lang], kb=kb
                     )
                     completion = completion_for(kind, verdict, kb)
                     check = verify(full_answer(completion), verdict)
