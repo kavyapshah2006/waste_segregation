@@ -1,6 +1,7 @@
 """Build the unknown-item fallback: SigLIP 2 image encoder (.pte) + KB text embeddings (WP7).
 
     uv run --group finetune python models/fallback/build.py
+    uv run --group finetune python models/fallback/build.py --text-only   # after KB changes
 
 When the detector stays unsure, the app runs this image encoder on the frame (or the
 detector's best box), compares the embedding with one text embedding per KB item, and offers
@@ -96,6 +97,11 @@ def export(encoder: torch.nn.Module, out: Path, quantize: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--out", type=Path, default=OUT)
+    p.add_argument(
+        "--text-only",
+        action="store_true",
+        help="only rebuild text_embeddings.json (after KB changes); keep the .pte files",
+    )
     args = p.parse_args(argv)
 
     from huggingface_hub import snapshot_download
@@ -123,6 +129,8 @@ def main(argv: list[str] | None = None) -> int:
         "item_ids": ids, "embeddings": [[round(float(x), 6) for x in row] for row in emb],
     }) + "\n", encoding="utf-8")  # fmt: skip
     print(f"wrote {text_json} ({len(ids)} items)")
+    if args.text_only:
+        return 0
 
     encoder = ImageEncoder(model).eval()
     report = {}
