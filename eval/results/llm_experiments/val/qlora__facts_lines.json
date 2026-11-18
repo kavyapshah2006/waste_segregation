@@ -1,0 +1,44 @@
+{
+  "model": "qlora",
+  "variant": {
+    "name": "facts_lines",
+    "rules": false,
+    "facts": "lines",
+    "shots": "none",
+    "lead": "none",
+    "temperature": 0.0,
+    "retries": 0,
+    "retry_lead": false,
+    "max_new_tokens": 200
+  },
+  "kb_version": "29e3922bea84ae99",
+  "cases": 110,
+  "off_topic_declined_rate": 1.0,
+  "false_declines": 0,
+  "sent_to_llm": 88,
+  "answered": 88,
+  "json_valid_rate": 0.955,
+  "clean_rate": 0.83,
+  "useful_rate": 0.83,
+  "status": {
+    "ok": 73,
+    "corrected": 11,
+    "fallback": 4
+  },
+  "contradictions": {
+    "why_recyclable": 6,
+    "tip_negates": 1,
+    "tip_recyclable": 1,
+    "unparseable": 4,
+    "why_negates": 3
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 19.4,
+  "useful_rate_en": 0.864,
+  "useful_rate_hi": 0.795,
+  "mean_attempts": 1.0,
+  "mean_generated_tokens": 77.3,
+  "kb_lead_rate": 0.0,
+  "useful_with_llm_text_rate": 0.818,
+  "host_minutes": 16.2
+}

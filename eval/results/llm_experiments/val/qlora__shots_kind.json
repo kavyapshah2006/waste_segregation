@@ -1,0 +1,43 @@
+{
+  "model": "qlora",
+  "variant": {
+    "name": "shots_kind",
+    "rules": false,
+    "facts": "json",
+    "shots": "kind",
+    "lead": "none",
+    "temperature": 0.0,
+    "retries": 0,
+    "retry_lead": false,
+    "retry_temperature": null,
+    "max_new_tokens": 200
+  },
+  "kb_version": "29e3922bea84ae99",
+  "cases": 110,
+  "off_topic_declined_rate": 1.0,
+  "false_declines": 0,
+  "sent_to_llm": 88,
+  "answered": 88,
+  "json_valid_rate": 1.0,
+  "clean_rate": 0.898,
+  "useful_rate": 0.898,
+  "status": {
+    "ok": 79,
+    "corrected": 9
+  },
+  "contradictions": {
+    "why_recyclable": 4,
+    "why_bin": 2,
+    "why_negates": 3
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 15.4,
+  "useful_rate_en": 0.886,
+  "useful_rate_hi": 0.909,
+  "mean_attempts": 1.0,
+  "mean_generated_tokens": 61.9,
+  "kb_lead_rate": 0.0,
+  "useful_with_llm_text_rate": 0.875,
+  "decode_errors": 0,
+  "host_minutes": 24.4
+}
