@@ -55,7 +55,9 @@ class LatencyLog(val clock: () -> Long = System::nanoTime) {
     fun toJson(meta: Map<String, Any?>): String {
         val out = linkedMapOf<String, Any?>("kind" to "stage_latency")
         out.putAll(meta)
-        out["samples"] = samples.mapValues { it.value.toList() }
+        // Rounded to the microsecond: Json.dumps refuses exponent notation, which Kotlin uses
+        // for anything under 0.001 (a fast KB lookup would otherwise print as 8.0E-4).
+        out["samples"] = samples.mapValues { e -> e.value.map { Math.round(it * 1000) / 1000.0 } }
         return Json.dumps(out)
     }
 

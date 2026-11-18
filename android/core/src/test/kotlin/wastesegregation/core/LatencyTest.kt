@@ -59,6 +59,17 @@ class LatencyTest {
     }
 
     @Test
+    fun exportRoundsTinyDurations() {
+        val log = LatencyLog(clock = { 0L })
+        log.record(Stages.KB, 0.0008)
+        log.record(Stages.KB, 0.0004)
+        log.record(Stages.KB, 3.14159)
+        val parsed = Json.parse(log.toJson(emptyMap())) as Map<String, Any?>
+        val kb = (parsed["samples"] as Map<String, List<Any?>>).getValue("kb").map(::num)
+        assertEquals(listOf(0.001, 0.0, 3.142), kb)
+    }
+
+    @Test
     fun rejectsNegativeDurations() {
         assertFailsWith<IllegalArgumentException> { LatencyLog().record(Stages.KB, -1.0) }
     }
