@@ -4,7 +4,14 @@ import json
 
 import pytest
 
-from eval.accuracy.report import average_precision, ground_truth, iou, load_predictions, score
+from eval.accuracy.report import (
+    average_precision,
+    ground_truth,
+    iou,
+    load_predictions,
+    score,
+    verdicts,
+)
 
 STREAMS = {"pet_bottle": "dry", "glass_bottle": "dry", "aa_battery": "special_care"}
 
@@ -70,6 +77,22 @@ def test_lower_gate_trades_misses_for_hits(dataset):
     gt = ground_truth(dataset, "test")
     r = score(gt, load_predictions(dataset / "preds.jsonl"), STREAMS, gate=0.3)
     assert r["item_accuracy"] == 0.5 and r["stream_accuracy"] == 0.75
+
+
+def test_verdicts_take_the_top_prediction_per_image(dataset):
+    gt = ground_truth(dataset, "test")
+    preds = load_predictions(dataset / "preds.jsonl")
+    # gate .5: img1 right; img2 pet over glass (item wrong, stream right); img4 battery on an
+    # empty image (wrong); img3 nothing and img5 below the gate: no verdict.
+    assert verdicts(gt, preds, STREAMS, 0.5) == {
+        "gate": 0.5,
+        "coverage": 0.6,
+        "item_accuracy": 0.3333,
+        "stream_accuracy": 0.6667,
+    }
+    low = verdicts(gt, preds, STREAMS, 0.3)  # img5 now answered, correctly
+    assert (low["coverage"], low["item_accuracy"], low["stream_accuracy"]) == (0.8, 0.5, 0.75)
+    assert score(gt, preds, STREAMS, gate=0.5)["verdict"]["coverage"] == 0.6
 
 
 def test_iou_and_ap_edges():

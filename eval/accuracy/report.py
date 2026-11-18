@@ -21,7 +21,12 @@ Metrics, all at IoU >= 0.5:
   (what the user needs: the right bin). This is the number behind the 92% target. Missed
   objects count as wrong;
 - confusion: ground-truth item -> predicted item (or "missed"), plus false positives on
-  background.
+  background;
+- **verdict** (what the app does with one frame): take the image's most confident item
+  prediction; below the gate the app says "not sure" (no verdict). Coverage = share of images
+  with a verdict; verdict item / stream accuracy = share of verdicts that overlap (IoU >= 0.5)
+  a ground-truth object of the same item / stream. A verdict on an image with no object is
+  wrong. `sweep` prints these for a range of gates, to pick the gate on the val split.
 """
 
 from __future__ import annotations
@@ -172,6 +177,30 @@ def score(gt: dict, predictions: dict, stream_of: dict[str, str], gate: float) -
         "per_class": per_class,
         "confusion": {k: dict(sorted(v.items())) for k, v in sorted(confusion.items())},
         "background_false_positives": dict(sorted(background_fp.items())),
+        "verdict": verdicts(gt, predictions, stream_of, gate),
+    }
+
+
+def verdicts(gt: dict, predictions: dict, stream_of: dict[str, str], gate: float) -> dict:
+    """Top prediction per image, as the app would show it (see module docstring)."""
+    given = item_right = stream_right = 0
+    for image, boxes in gt.items():
+        preds = [p for p in predictions.get(image, []) if p.get("item_id")]
+        if not preds:
+            continue
+        top = max(preds, key=lambda p: p["confidence"])
+        if top["confidence"] < gate:
+            continue
+        given += 1
+        overlapping = [item for item, box in boxes if iou(box, top["bbox"]) >= IOU]
+        item_right += top["item_id"] in overlapping
+        stream_right += stream_of.get(top["item_id"]) in {stream_of.get(i) for i in overlapping}
+    n = len(gt)
+    return {
+        "gate": gate,
+        "coverage": round(given / n, 4) if n else None,
+        "item_accuracy": round(item_right / given, 4) if given else None,
+        "stream_accuracy": round(stream_right / given, 4) if given else None,
     }
 
 
@@ -209,6 +238,12 @@ def main(argv: list[str] | None = None) -> int:
     sc.add_argument("--predictions", type=Path, required=True)
     sc.add_argument("--gate", type=float, default=0.5, help="confidence gate (pipeline/stability)")
     sc.add_argument("--label", help="save to eval/results/accuracy_<label>.json")
+    sw = sub.add_parser("sweep", help="verdict coverage and accuracy over a range of gates")
+    sw.add_argument("--dataset", type=Path, required=True)
+    sw.add_argument("--split", default="val")
+    sw.add_argument("--predictions", type=Path, required=True)
+    sw.add_argument("--target", type=float, default=0.92, help="verdict stream accuracy to reach")
+    sw.add_argument("--label", help="save to eval/results/gate_sweep_<label>.json")
     args = p.parse_args(argv)
 
     if args.cmd == "predict":
@@ -227,6 +262,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"wrote {len(images)} predictions to {args.out}")
         return 0
 
+    if args.cmd == "sweep":
+        gt = ground_truth(args.dataset, args.split)
+        preds = load_predictions(args.predictions)
+        streams = kb_streams()
+        rows = [verdicts(gt, preds, streams, g / 100) for g in range(10, 96, 5)]
+        reaching = [r for r in rows if (r["stream_accuracy"] or 0) >= args.target]
+        best = reaching[0]["gate"] if reaching else None
+        for r in rows:
+            print(json.dumps(r))
+        print(f"lowest gate with verdict stream accuracy >= {args.target}: {best}")
+        if args.label:
+            out = RESULTS / f"gate_sweep_{args.label}.json"
+            payload = {
+                "split": args.split,
+                "target": args.target,
+                "lowest_gate": best,
+                "rows": rows,
+            }
+            out.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+            print(f"saved {out}")
+        return 0
+
     report = score(
         ground_truth(args.dataset, args.split),
         load_predictions(args.predictions),
@@ -235,7 +292,8 @@ def main(argv: list[str] | None = None) -> int:
     )
     report = {"split": args.split, **report}
     summary = {
-        k: report[k] for k in ("images", "objects", "map50", "item_accuracy", "stream_accuracy")
+        k: report[k]
+        for k in ("images", "objects", "map50", "item_accuracy", "stream_accuracy", "verdict")
     }
     print(json.dumps(summary, indent=2))
     if args.label:
