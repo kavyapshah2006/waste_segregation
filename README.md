@@ -12,6 +12,7 @@ On-device AI assistant that identifies waste, decides the correct bin under Indi
 - [Hardware requirements](docs/HARDWARE_REQUIREMENTS.md): minimal, phone-first
 - [Roadmap](docs/roadmap.md): phased plan from setup to submission
 - [Future plan](docs/FuturePlan.md): work-package implementation guide with contracts, tests and status
+- [Pipelines](docs/PIPELINES.md): the five on-device pipelines, their runtimes, models and memory policy
 - [Dev setup](docs/DEV_SETUP.md): Python, Android and phone setup
 - [Technical report (draft)](docs/TECHNICAL_REPORT.md) and [demo video script](docs/DEMO_SCRIPT.md)
 - [Evaluation report](eval/REPORT.md): every measured number, regenerated from `eval/results/`

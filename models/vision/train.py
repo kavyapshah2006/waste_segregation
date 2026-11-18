@@ -1,7 +1,8 @@
 """Train the YOLO26n waste detector on the prepared dataset.
 
 Meant for a GPU runtime (Colab or Kaggle, see train.ipynb). On the laptop use --smoke to
-check the pipeline end to end in a few minutes on CPU.
+check the pipeline end to end in a few minutes on CPU, or --device cpu for a slow but complete
+baseline run (hours; the GPU run on Colab is the one to publish).
 
 Usage:
     python models/vision/train.py --data data/processed/waste/dataset.yaml
@@ -33,6 +34,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--name", default="yolo26n_waste")
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--fraction", type=float, default=1.0, help="share of training images to use")
+    p.add_argument("--device", help="e.g. cpu or 0; default lets Ultralytics choose")
+    p.add_argument("--workers", type=int, default=8, help="data loader processes")
+    p.add_argument("--patience", type=int, default=100, help="stop after N epochs without gain")
     p.add_argument("--smoke", action="store_true", help="1 epoch, small images, CPU")
     args = p.parse_args(argv)
 
@@ -47,11 +51,15 @@ def main(argv: list[str] | None = None) -> int:
         batch=args.batch,
         seed=args.seed,
         fraction=args.fraction,
+        workers=args.workers,
+        patience=args.patience,
         deterministic=True,
         project=str(REPO / "models" / "vision" / "runs"),
         name=args.name,
         exist_ok=True,
     )
+    if args.device is not None:
+        kwargs["device"] = args.device
     if args.smoke:
         kwargs.update(epochs=1, imgsz=320, batch=4, device="cpu", workers=0)
     model.train(**kwargs)
