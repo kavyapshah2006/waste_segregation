@@ -33,6 +33,7 @@ import json
 import re
 import sys
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -66,7 +67,14 @@ def guarded(kb: KnowledgeBase, case: Example) -> bool:
     return not is_on_topic(question, kb.names_of(case.item_id))
 
 
-def score(kb: KnowledgeBase, cases: list[Example], answers: dict[str, str]) -> dict:
+def score(
+    kb: KnowledgeBase,
+    cases: list[Example],
+    answers: dict[str, str],
+    join: Callable[[str], str] = full_answer,
+) -> dict:
+    """Score answers. join turns a stored answer into the full JSON text (default: the
+    generated text after ANSWER_PREFIX; pass an identity function for full answers)."""
     status = Counter()
     contradictions = Counter()
     lang_checks = Counter()
@@ -83,7 +91,7 @@ def score(kb: KnowledgeBase, cases: list[Example], answers: dict[str, str]) -> d
             status["missing"] += 1
             continue
         verdict = kb.resolve(case.item_id, case.attributes, case.language)
-        result = verify(full_answer(raw), verdict)
+        result = verify(join(raw), verdict)
         status[result.status] += 1
         contradictions.update(result.contradictions)
         why = result.output["why"]
