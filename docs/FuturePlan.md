@@ -440,7 +440,7 @@ If a goal is missed, report the real number and the reason; do not tune the test
 | AAR and export versions drift | Keep `executorch` (Python) and `executorch-android` (Gradle) on the same version; bump together |
 | YOLO26 ExecuTorch export fails on an op | Export works (checked 2026-11-17, raw head + NMS in post-processing). If a later version breaks: pin Ultralytics, try another `imgsz`, fall back to YOLO11n; last resort a classification-only model |
 | AGPL-3.0 is unacceptable later | Swap the detector for an Apache-licensed one (for example an RT-DETR-family model outside Ultralytics) and retrain |
-| TACO image licences are mixed (466 ODbL, 319 "CC" without a variant, 715 with no licence field) | Images are never redistributed. Before publishing trained weights, decide whether training on the unlabelled-licence images is acceptable; if not, filter them out in `data/scripts/prepare.py` and retrain (see THIRD_PARTY.md) |
+| TACO image licences are mixed (466 ODbL, 319 "CC" without a variant, 715 with no licence field) | Images are never redistributed. Before publishing trained weights, decide whether training on the unlabelled-licence images is acceptable: `prepare.py --licences all|known|odbl` (and `LICENCES` in the Colab notebook). Cost, from `data/taco_licences.md`: `all` trains 13 of 40 items, `known` 9, `odbl` 7 (see THIRD_PARTY.md) |
 | Not enough India-specific data | Prioritise the 15 most common items; lean on the confidence gate and CLIP fallback |
 | Phone unavailable near the deadline | Keep a recorded benchmark set and demo footage from every session |
 | Indic ASR/TTS quality or licence problems | Android built-in recognition/TTS for that language; text-only mode |

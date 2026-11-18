@@ -104,17 +104,42 @@ def coco_boxes(coco: dict, mapping: dict[str, str | None]) -> tuple[dict[int, li
     return boxes, dropped
 
 
-def prepare(sources: dict[str, Path], out: Path, taxonomy: dict) -> dict:
+LICENCE_POLICIES = ("all", "known", "odbl")
+
+
+def licence_ok(img: dict, policy: str) -> bool:
+    """Per-image licence filter. TACO images carry a free-text `license` field: about a third
+    are "ODBL (c) OpenLitterMap & Contributors", a fifth just "CC", and half have none.
+    - all: keep every image (the default; the choice is the project owner's, see THIRD_PARTY.md)
+    - known: drop images without a licence field
+    - odbl: keep only ODbL (OpenLitterMap) images
+    Datasets whose images have no `license` field at all are kept under every policy."""
+    lic = img.get("license")
+    if policy == "all":
+        return True
+    if policy == "known":
+        return lic is not None
+    if policy == "odbl":
+        return lic is not None and "odbl" in str(lic).lower()
+    raise ValueError(f"unknown licence policy {policy!r}")
+
+
+def prepare(sources: dict[str, Path], out: Path, taxonomy: dict, licences: str = "all") -> dict:
     """Build the dataset; returns the report. Images must sit in <annotations dir>/images/."""
     collected = []  # (dataset, image_path, file_name, boxes, (w, h))
     dropped_by_dataset = {}
+    dropped_by_licence: Counter = Counter()
     for dataset, ann_path in sources.items():
         coco = json.loads(ann_path.read_text(encoding="utf-8"))
         mapping = label_map(taxonomy, dataset, [c["name"] for c in coco["categories"]])
         boxes, dropped = coco_boxes(coco, mapping)
         dropped_by_dataset[dataset] = dict(dropped)
         image_dir = ann_path.parent / "images"
+        has_licence_field = any("license" in img for img in coco["images"])
         for img in coco["images"]:
+            if has_licence_field and not licence_ok(img, licences):
+                dropped_by_licence[str(img.get("license"))] += 1
+                continue
             path = image_dir / img["file_name"]
             if path.exists() and boxes[img["id"]]:
                 size = (img["width"], img["height"])
@@ -168,6 +193,8 @@ def prepare(sources: dict[str, Path], out: Path, taxonomy: dict) -> dict:
         "instances": {c: counts[c] for c in used},
         "classes_left_out": left_out,
         "dropped_labels": dropped_by_dataset,
+        "licence_policy": licences,
+        "dropped_by_licence": dict(dropped_by_licence),
         "skipped_size_mismatch": skipped_size,
     }
     (out / "report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
@@ -185,6 +212,12 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--no-taco", action="store_true")
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument(
+        "--licences",
+        choices=LICENCE_POLICIES,
+        default="all",
+        help="which images to keep by their licence field (see licence_ok)",
+    )
     args = parser.parse_args(argv)
 
     sources = {} if args.no_taco else {"taco": REPO / "data" / "raw" / "taco" / "annotations.json"}
@@ -195,8 +228,9 @@ def main(argv: list[str] | None = None) -> int:
     if missing:
         print("missing annotations (run the download script first):", *missing, file=sys.stderr)
         return 1
-    report = prepare(sources, args.out, load_taxonomy())
-    print(json.dumps({k: report[k] for k in ("images_per_split", "classes_left_out")}, indent=2))
+    report = prepare(sources, args.out, load_taxonomy(), args.licences)
+    keys = ("images_per_split", "classes_left_out", "licence_policy", "dropped_by_licence")
+    print(json.dumps({k: report[k] for k in keys}, indent=2))
     print(f"dataset: {args.out / 'dataset.yaml'}")
     return 0
 
