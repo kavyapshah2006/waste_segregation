@@ -63,17 +63,24 @@ class Detection:
         }
 
 
-def letterbox(image: Image.Image, size: int = INPUT_SIZE) -> tuple[np.ndarray, Letterbox]:
-    image = image.convert("RGB")
-    w, h = image.size
+def letterbox_geometry(w: int, h: int, size: int = INPUT_SIZE) -> tuple[Letterbox, int, int]:
+    """Scale, padding and resized size for a w x h image (step 1 of the module docstring).
+    Shared with the Kotlin core through tests/fixtures/detect_cases.json."""
     r = min(size / h, size / w)
     new_w, new_h = round(w * r), round(h * r)  # Python round = round half to even
-    resized = image.resize((new_w, new_h), Image.BILINEAR)
     left, top = math.floor((size - new_w) / 2), math.floor((size - new_h) / 2)
+    return Letterbox(r, left, top, w, h), new_w, new_h
+
+
+def letterbox(image: Image.Image, size: int = INPUT_SIZE) -> tuple[np.ndarray, Letterbox]:
+    image = image.convert("RGB")
+    lb, new_w, new_h = letterbox_geometry(*image.size, size)
+    resized = image.resize((new_w, new_h), Image.BILINEAR)
+    left, top = lb.left, lb.top
     canvas = Image.new("RGB", (size, size), (PAD_VALUE,) * 3)
     canvas.paste(resized, (left, top))
     tensor = np.asarray(canvas, dtype=np.float32).transpose(2, 0, 1)[None] / 255.0
-    return np.ascontiguousarray(tensor), Letterbox(r, left, top, w, h)
+    return np.ascontiguousarray(tensor), lb
 
 
 def iou_one_to_many(box: np.ndarray, boxes: np.ndarray) -> np.ndarray:

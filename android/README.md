@@ -13,6 +13,7 @@ A Kotlin/JVM library with no Android dependencies. The app (WP5) will use it as 
 | `Prompt.kt` | `pipeline/prompt.py` | Llama 3.2 prompt with the prefilled `{"why": "` answer start |
 | `Verify.kt` | `pipeline/verify.py` | JSON extraction and repair, bin/stream/recyclable/compostable/step/unsafe checks |
 | `Assistant.kt` | `pipeline/assistant.py` | Off-topic guard, one short retry, fallback to KB text |
+| `Detect.kt` | `pipeline/detect.py` | Letterbox geometry, decoding the YOLO output, class-aware NMS, mapping boxes back to the image (float32, like NumPy). The app does the pixel resize itself |
 | `Stability.kt` | `pipeline/stability.py` | Confidence gate and voting over camera frames: a verdict shows once one item wins 3 of the last 5 frames |
 | `FallbackRank.kt` | `rank()` in `pipeline/fallback.py` | Top-3 KB items from a SigLIP 2 image embedding, for the unknown-item fallback |
 | `Voice.kt` | `pipeline/voice.py` | Speech transcript → KB items (pronunciation key, script mapping, sentence windows, confidence margin) |
