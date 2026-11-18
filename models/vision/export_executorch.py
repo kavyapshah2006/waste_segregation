@@ -5,9 +5,9 @@ Usage (vision group):
     uv run --group vision python models/vision/export_executorch.py --weights yolo26n.pt \\
         --imgsz 640 --check-images data/fixtures/images
 
-Writes <out>/model.pte and <out>/metadata.yaml (class names in index order). The check runs
-pipeline.detect on the .pte and the PyTorch model on the same images and fails if a
-detection has no match with IoU >= --min-iou.
+Writes <out>/model.pte and <out>/metadata.yaml (class names in index order). The check feeds the
+same letterboxed tensor to the .pte and the PyTorch model and fails if raw boxes or scores
+differ by more than --max-box-px / --max-score or the decoded detections differ.
 """
 
 from __future__ import annotations
@@ -36,28 +36,45 @@ def export(weights: Path, imgsz: int, out: Path) -> Path:
     return out / "model.pte"
 
 
-def check(weights: Path, pte: Path, images: list[Path], imgsz: int, min_iou: float) -> bool:
+def check(
+    weights: Path, pte: Path, images: list[Path], max_box_px: float, max_score: float
+) -> bool:
+    """Run the .pte and the PyTorch model on the same letterboxed tensor and compare raw outputs.
+
+    Both use the head the export keeps (one-to-many, end2end off), so boxes and scores must
+    agree to float precision and the decoded detections must be identical. Comparing against
+    Ultralytics predict() instead would mix in its rectangular letterbox and NMS settings,
+    which change borderline boxes without saying anything about the export.
+    """
+    import torch
+    from PIL import Image
     from ultralytics import YOLO
 
-    from pipeline.detect import Detector, iou_one_to_many
+    from pipeline.detect import Detector, decode, letterbox
 
     detector = Detector(pte, REPO / "data" / "taxonomy.yaml")
-    model = YOLO(str(weights))
+    model = YOLO(str(weights)).model.float().eval()
+    model.model[-1].end2end = False
     ok = True
     for path in images:
-        ours = detector.detect_path(path)
-        ref = model.predict(str(path), imgsz=imgsz, conf=0.25, iou=0.7, verbose=False)[0]
-        h, w = ref.orig_shape
-        ref_boxes = ref.boxes.xyxy.numpy() / np.array([w, h, w, h])
-        worst = 1.0
-        for d in ours:
-            best = (
-                float(iou_one_to_many(np.array(d.bbox), ref_boxes).max()) if len(ref_boxes) else 0.0
-            )
-            worst = min(worst, best)
-        status = "ok" if worst >= min_iou and len(ours) == len(ref_boxes) else "MISMATCH"
-        ok &= status == "ok"
-        print(f"{status:8} {path.name}: pte={len(ours)} torch={len(ref_boxes)} min IoU={worst:.3f}")
+        tensor, lb = letterbox(Image.open(path).convert("RGB"))
+        ours = detector.raw(tensor)
+        with torch.no_grad():
+            ref = model(torch.from_numpy(tensor))
+        ref = (ref[0] if isinstance(ref, (list, tuple)) else ref).numpy()
+        box_diff = float(np.abs(ours[:, :4] - ref[:, :4]).max())
+        score_diff = float(np.abs(ours[:, 4:] - ref[:, 4:]).max())
+        a = decode(ours, lb, detector.class_names)
+        b = decode(ref, lb, detector.class_names)
+        same = len(a) == len(b) and all(
+            x.detector_class == y.detector_class for x, y in zip(a, b, strict=True)
+        )
+        good = same and box_diff <= max_box_px and score_diff <= max_score
+        ok &= good
+        print(
+            f"{'ok' if good else 'MISMATCH':8} {path.name}: dets={len(a)}/{len(b)} "
+            f"box diff={box_diff:.4f} px score diff={score_diff:.2e}"
+        )
     return ok
 
 
@@ -67,7 +84,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--imgsz", type=int, default=640)
     p.add_argument("--out", type=Path, help="default: models/vision/out/<weights stem>_<imgsz>")
     p.add_argument("--check-images", type=Path, help="folder of images for the host check")
-    p.add_argument("--min-iou", type=float, default=0.9)
+    p.add_argument("--max-box-px", type=float, default=0.5, help="max raw box difference")
+    p.add_argument("--max-score", type=float, default=1e-3, help="max raw score difference")
     args = p.parse_args(argv)
 
     out = args.out or REPO / "models" / "vision" / "out" / f"{args.weights.stem}_{args.imgsz}"
@@ -77,7 +95,7 @@ def main(argv: list[str] | None = None) -> int:
         images = sorted(
             p for p in args.check_images.iterdir() if p.suffix.lower() in {".jpg", ".jpeg", ".png"}
         )
-        if not check(args.weights, pte, images, args.imgsz, args.min_iou):
+        if not check(args.weights, pte, images, args.max_box_px, args.max_score):
             return 1
     return 0
 
