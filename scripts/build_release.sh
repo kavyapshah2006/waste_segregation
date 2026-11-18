@@ -15,6 +15,11 @@ LLM_DIR=models/llm/out/spinquant
 ASR_DIR=models/speech/out/sherpa-onnx-omnilingual-asr-1600-languages-300M-ctc-v2-int8-2026-02-05
 LLAMA_LICENSE_URL=https://raw.githubusercontent.com/meta-llama/llama-models/main/models/llama3_2/LICENSE
 
+if [ -z "${ANDROID_HOME:-}" ] && ! grep -qs '^sdk.dir=' android/local.properties; then
+    echo "Android SDK not found: set ANDROID_HOME or sdk.dir in android/local.properties" >&2
+    exit 1
+fi
+
 echo "== 1. detector: export to ExecuTorch and check against PyTorch"
 check_dir=$(mktemp -d)
 ls data/processed/waste/images/test/* | head -20 | xargs -I{} cp {} "$check_dir"/
@@ -45,7 +50,7 @@ cp NOTICE "$DIST/NOTICE.txt"
 cp LICENSE "$DIST/LICENSE_app_AGPL-3.0.txt"
 cp THIRD_PARTY.md "$DIST/"
 # The Llama 3.2 Community License requires a copy with the Llama materials: fetched verbatim.
-curl -fsSL -o "$DIST/LICENSE_Llama_3.2.txt" "$LLAMA_LICENSE_URL"
+curl -fsSL --retry 3 --retry-all-errors -o "$DIST/LICENSE_Llama_3.2.txt" "$LLAMA_LICENSE_URL"
 (cd "$DIST" && sha256sum -- * > SHA256SUMS)
 ls -la "$DIST"
 echo "Phone install from a release: put the .pte, tokenizer.model, siglip2_image_int8.pte,"

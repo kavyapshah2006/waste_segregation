@@ -57,3 +57,4 @@ models/llm/out/
 
 # Generated fine-tuning data
 models/llm/synth_data/out/
+dist/
