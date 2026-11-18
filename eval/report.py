@@ -105,25 +105,65 @@ def llm_experiments_section() -> list[str]:
 
 
 def accuracy_section() -> list[str]:
+    lines = ["## Detector accuracy", ""]
+    standard = _load("detector_ultralytics_*.json")
+    if standard:
+        lines += [
+            "Standard box metrics (Ultralytics val, conf 0.001, test split):",
+            "",
+        ]
+        lines += _table(
+            ["Run", "mAP50", "mAP50-95"],
+            [
+                [f"`{stem.removeprefix('detector_ultralytics_')}`", _num(r["map50"]),
+                 _num(r["map50_95"])]
+                for stem, r in standard
+            ],
+        )  # fmt: skip
+        lines.append("")
     rows = []
     for stem, r in _load("accuracy_*.json"):
+        v = r.get("verdict") or {}
         rows.append([
             f"`{stem.removeprefix('accuracy_')}`", r.get("split", "–"), str(r["images"]),
             str(r["objects"]), _num(r["map50"]), _pct(r["item_accuracy"]),
-            f"**{_pct(r['stream_accuracy'])}**", str(r["gate"]),
+            _pct(r["stream_accuracy"]), str(r["gate"]), _pct(v.get("coverage")),
+            _pct(v.get("item_accuracy")), f"**{_pct(v.get('stream_accuracy'))}**",
         ])  # fmt: skip
-    lines = ["## Detector accuracy", ""]
     if not rows:
         return lines + ["No results yet (`eval/accuracy/report.py`).", ""]
     lines += _table(
-        ["Run", "Split", "Images", "Objects", "mAP50", "Item acc.", "Stream acc.", "Gate"], rows
-    )
-    return lines + [
+        ["Run", "Split", "Images", "Objects", "mAP50 (app conf)", "Object item acc.",
+         "Object stream acc.", "Gate", "Verdict coverage", "Verdict item acc.",
+         "Verdict stream acc."],
+        rows,
+    )  # fmt: skip
+    lines += [
         "",
-        "Stream accuracy (target 92%): share of ground-truth objects whose prediction lands in "
-        "the right bin; missed objects count as wrong.",
+        "Run through the exported `.pte` with the app's pre/post-processing (conf 0.25, so mAP "
+        "here is lower than the standard one). Object columns: every ground-truth object, missed "
+        "ones count as wrong. Verdict columns: what the app does with a frame (top prediction "
+        'or "not sure"); coverage = share of images with a verdict. Target: 92% verdict stream '
+        "accuracy.",
         "",
     ]
+    for stem, r in _load("gate_sweep_*.json"):
+        lines += [f"Gate sweep `{stem.removeprefix('gate_sweep_')}` ({r['split']} split):", ""]
+        lines += _table(
+            ["Gate", "Coverage", "Verdict item acc.", "Verdict stream acc."],
+            [
+                [str(x["gate"]), _pct(x["coverage"]), _pct(x["item_accuracy"]),
+                 _pct(x["stream_accuracy"])]
+                for x in r["rows"]
+                if round(x["gate"] * 100) % 10 == 0
+            ],
+        )  # fmt: skip
+        lines += [
+            "",
+            f"Lowest gate reaching {_pct(r['target'])}: {r['lowest_gate']}.",
+            "",
+        ]
+    return lines
 
 
 def fallback_section() -> list[str]:
