@@ -389,7 +389,9 @@ Format: **Goal · Depends on · Human needed · Create · Steps · Tests · Acce
 - **Demo script:** mixed items on a table → instant verdicts; a composite item; a dirty item; an unknown object ("not sure"); Hindi voice question; airplane mode visible; impact screen; latency overlay.
 - **Acceptance:** a teammate follows the README on a clean machine and reproduces the demo.
 
-### WP13 (optional): Raspberry Pi 5 kiosk
+### WP13 (optional, dropped): Raspberry Pi 5 kiosk
+
+**Dropped:** no Raspberry Pi is available, so the phone is the only target. Kept below for reference.
 
 - **Goal:** the same models and KB in a smart-bin form factor.
 - **Depends on:** WP4, hardware. Reuse `pipeline/`; add camera loop and a simple screen UI under `pi/` (uv group `pi`). If an AI HAT+ is used, compile the detector to `.hef` on x86 and document HailoRT as a separate vision pipeline; Llama stays on ExecuTorch on the Pi CPU.
@@ -481,7 +483,7 @@ Update this table in the same commit that completes a WP.
 | 10 | Impact and education | Logic done | `pipeline/impact.py` (repeats within 30 s ignored, counts by stream, estimated kg diverted = typical weights of recyclable/compostable/special-collection items, cleaning rate, local-day streak) and `pipeline/education.py` (did-you-know, watch-out cards from rule notes, daily which-bin quiz; KB facts only, no Llama). Kotlin port in `android/core` passes the same fixtures (`tests/fixtures/impact/cases.json`). No CO2 or money figures: the KB has no sourced factors. Screens (Room storage, Compose) come with WP6 |
 | 11 | Evaluation | Report tooling done | `eval/accuracy/report.py` (predict with the `.pte`, then per-class AP50/P/R, mAP50, confusion, item and **stream accuracy**, the 92% target); `eval/report.py` rebuilds `eval/REPORT.md` from `eval/results/` in one command (a test fails if it is stale). **Needs:** trained detector, phone sessions for latency/battery |
 | 12 | Submission | Paperwork drafted | `LICENSE` (AGPL-3.0 text from gnu.org), `NOTICE` (Llama notice, "Built with Llama"), `THIRD_PARTY.md` (licences checked against source; TACO image licences are mixed), `docs/TECHNICAL_REPORT.md` (outline with measured results, *pending* sections marked), `docs/DEMO_SCRIPT.md`. CI actions on Node 24. **Needs:** final numbers, the APK, the video, a GitHub Release with models (ship the Llama licence copy with them) |
-| 13 | Pi kiosk (optional) | Not started | |
+| 13 | Pi kiosk (optional) | Dropped | No Raspberry Pi available; the phone is the only target |
 
 ---
 
