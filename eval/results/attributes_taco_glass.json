@@ -1,0 +1,27 @@
+{
+  "attribute": "broken",
+  "proxy": "TACO broken_glass (broken) vs glass_bottle (intact), glass bottle prompts",
+  "encoder": "siglip2_image_int8.pte",
+  "kb_version": "29e3922bea84ae99",
+  "crops": {
+    "broken": 136,
+    "intact": 110
+  },
+  "auc": 0.678,
+  "mean_margin": {
+    "broken": 0.0026,
+    "intact": -0.0084
+  },
+  "current_band": {
+    "low": -0.01,
+    "high": 0.01,
+    "answered_rate": 0.492,
+    "accuracy_when_answered": 0.678
+  },
+  "suggested_band_90pct": {
+    "low": -0.0196,
+    "high": 0.0304,
+    "answered_rate": 0.163,
+    "accuracy_when_answered": 0.9
+  }
+}

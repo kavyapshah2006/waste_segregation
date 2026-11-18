@@ -30,6 +30,7 @@ android/app/build/
 android/core/build/
 models/llm/lora/out/
 models/fallback/out/
+models/attributes/out/
 models/speech/out/
 android/.kotlin/
 android/local.properties

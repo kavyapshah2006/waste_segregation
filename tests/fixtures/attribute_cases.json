@@ -1,0 +1,54 @@
+{
+  "prompts": {
+    "thresholds": {
+      "broken": {"low": -0.01, "high": 0.01},
+      "contaminated": {"low": -0.02, "high": 0.05}
+    },
+    "items": {
+      "glass_bottle": {
+        "broken": {"positive": [0.6, 0.8, 0.0], "negative": [0.8, 0.6, 0.0]}
+      },
+      "milk_pouch": {
+        "contaminated": {"positive": [0.0, 0.6, 0.8], "negative": [0.0, 0.8, 0.6]}
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "broken_clear_yes",
+      "item_id": "glass_bottle",
+      "embedding": [0.0, 1.0, 0.0],
+      "expected": {"broken": {"value": true, "margin": 0.2}}
+    },
+    {
+      "id": "broken_clear_no",
+      "item_id": "glass_bottle",
+      "embedding": [1.0, 0.0, 0.0],
+      "expected": {"broken": {"value": false, "margin": -0.2}}
+    },
+    {
+      "id": "broken_unsure_asks_user",
+      "item_id": "glass_bottle",
+      "embedding": [0.7071, 0.7071, 0.0],
+      "expected": {"broken": {"value": null, "margin": 0.0}}
+    },
+    {
+      "id": "contaminated_inside_wider_band",
+      "item_id": "milk_pouch",
+      "embedding": [0.0, 0.6, 0.8],
+      "expected": {"contaminated": {"value": null, "margin": 0.04}}
+    },
+    {
+      "id": "contaminated_yes",
+      "item_id": "milk_pouch",
+      "embedding": [0.0, 0.0, 1.0],
+      "expected": {"contaminated": {"value": true, "margin": 0.2}}
+    },
+    {
+      "id": "item_without_condition_rules",
+      "item_id": "newspaper_unknown_here",
+      "embedding": [1.0, 0.0, 0.0],
+      "expected": {}
+    }
+  ]
+}
