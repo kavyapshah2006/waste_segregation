@@ -16,6 +16,9 @@ dependencyResolutionManagement {
 
 rootProject.name = "waste-segregation"
 
-// Plain Kotlin/JVM: KB lookup, prompt, verifier, off-topic guard. The Android app (WP5) will
-// depend on it; it needs no Android SDK, so it builds and tests anywhere with a JDK.
+// core: plain Kotlin/JVM (KB, prompt, verifier, detector post-processing, voting, impact, ...).
+// It needs no Android SDK, so it builds and tests anywhere with a JDK.
 include(":core")
+
+// app: the Android app. Needs the Android SDK (ANDROID_HOME or local.properties sdk.dir).
+include(":app")
