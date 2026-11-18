@@ -39,7 +39,24 @@ Confidence differs slightly because Ultralytics predicts on a non-square letterb
 
 - **Training**: run `train.ipynb` on Colab/Kaggle GPU and upload `best.pt` to a GitHub Release.
 - **More data**: the Roboflow e-waste set needs a Roboflow account; Indian photos are WP7.
-- **Baseline metrics** table goes here after the first training run.
+- **Baseline metrics** (YOLO26n, COCO init, 640 px, laptop CPU, best epoch 22 of 37; TACO test split, Ultralytics val): **mAP50 0.305, mAP50-95 0.237**. App-level verdict accuracy and the gate sweep: `eval/REPORT.md`.
+
+| Class | Test objects | mAP50 | mAP50-95 |
+|---|---|---|---|
+| newspaper | 11 | 0.092 | 0.078 |
+| cardboard_box | 22 | 0.291 | 0.212 |
+| paper_cup | 12 | 0.309 | 0.144 |
+| pet_bottle | 35 | 0.644 | 0.472 |
+| plastic_carry_bag | 61 | 0.380 | 0.275 |
+| chips_packet | 24 | 0.260 | 0.215 |
+| tetra_pak | 5 | 0.322 | 0.281 |
+| aluminium_can | 31 | 0.572 | 0.403 |
+| tin_can | 2 | 0.745 | 0.745 |
+| glass_bottle | 17 | 0.454 | 0.316 |
+| broken_glass | 3 | 0.000 | 0.000 |
+| thermocol | 18 | 0.171 | 0.142 |
+| aluminium_foil | 1 | 0.021 | 0.021 |
+| used_tissue | 5 | 0.015 | 0.014 |
 
 ## Licence
 

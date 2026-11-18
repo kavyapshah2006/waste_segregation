@@ -2,7 +2,7 @@
 
 On-device AI assistant that identifies waste, decides the correct bin under India's SWM Rules 2026, and explains disposal and recycling options. Vision and Llama run fully offline on an Arm Android phone through **ExecuTorch**.
 
-> Status: the Android app builds (CI produces the APK) with camera scan, instant KB verdict, streamed Llama explanation, photo upload, unknown-item suggestions, dirty/broken questions, Hindi/English voice, corrections and an impact screen. Llama answers: 96.6% useful on held-out questions with the shipped prompt (69.3% baseline). Waiting on: the trained detector, the phone session (speed, memory, battery, demo video). Per-work-package status: [docs/FuturePlan.md](docs/FuturePlan.md#12-status); measured results: [eval/REPORT.md](eval/REPORT.md).
+> Status: the Android app builds (CI produces the APK) with camera scan, instant KB verdict, streamed Llama explanation, photo upload, unknown-item suggestions, dirty/broken questions, Hindi/English voice, corrections and an impact screen. Llama answers: 96.6% useful on held-out questions with the shipped prompt (69.3% baseline). Detector (YOLO26n on TACO, 9.8 MB): 0.305 mAP50 on held-out images; at the 0.5 gate 88.4% of its verdicts land in the right stream ([report §5.1](docs/TECHNICAL_REPORT.md#51-sorting-accuracy)). Waiting on: the phone session (speed, memory, battery, demo video). Per-work-package status: [docs/FuturePlan.md](docs/FuturePlan.md#12-status); measured results: [eval/REPORT.md](eval/REPORT.md).
 
 **Built with Llama.** Licensed under the GNU AGPL-3.0 ([LICENSE](LICENSE)); third-party licences in [THIRD_PARTY.md](THIRD_PARTY.md) and [NOTICE](NOTICE).
 

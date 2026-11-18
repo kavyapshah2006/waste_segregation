@@ -2,8 +2,8 @@
 
 Bharat AI-SoC Challenge, PS2 (Edge AI for waste classification and disposal). Every number below
 comes from a result file in `eval/results/`; [eval/REPORT.md](../eval/REPORT.md) regenerates the
-tables with `uv run python eval/report.py`. Sections marked **[phone]** or **[detector]** are
-filled after the phone session and the detector training run.
+tables with `uv run python eval/report.py`. Sections marked **[phone]** are filled after the
+phone session.
 
 ## 1. Problem and goal
 
@@ -75,20 +75,50 @@ ranking, dirty/broken check, voice matching, impact, latency summaries, correcti
   the rest reach the user through the fallback, voice or search. TACO's image licences are mixed
   (466 ODbL, 319 "CC" without a variant, 715 with none); training used all images, the release
   documents this ([THIRD_PARTY.md](../THIRD_PARTY.md), [data/taco_licences.md](../data/taco_licences.md)).
-- **Detector training** [detector]: YOLO26n from COCO weights, 640 px, on the laptop CPU (50 epochs,
-  early stop after 15 without gain); same notebook runs on a GPU (`models/vision/train.ipynb`).
+- **Detector training**: YOLO26n from COCO weights, 640 px, batch 16, on the laptop CPU (up to 50
+  epochs, early stop after 15 without gain: stopped at epoch 37, best at 22, about 4 hours); the
+  same settings run on a GPU from `models/vision/train.ipynb`.
 - **Llama**: the prebuilt `executorch-community` Llama 3.2 1B Instruct SpinQuant INT4 `.pte`. A LoRA
   fine-tune on 470 KB-written examples is fully tooled and dry-run verified but was not run (it
   needs gated weights and a GPU session); prompt design closed most of the gap instead (§5.2).
 
 ## 5. Results
 
-### 5.1 Sorting accuracy [detector]
+### 5.1 Sorting accuracy
 
-Box mAP50 and mAP50-95 on the TACO test split, per-class precision/recall, item and **stream**
-accuracy (the 92% target is on stream: putting an item in the right bin). For reference, the TACO
-authors' Mask R-CNN (ResNet-50 FPN, 1024 px) reached 17.6–19.4 mask AP (IoU 0.5:0.95) on their
-10-class split; class sets and metrics differ, so this is context, not a head-to-head comparison.
+YOLO26n (2.4 M parameters) trained on the 1,138 TACO images that contain one of our 14 items
+(train / val / test 870 / 138 / 130). Scored on the 130 held-out test images (247 objects).
+
+**Standard box metrics** (Ultralytics val): **mAP50 0.305, mAP50-95 0.237**. Best classes: PET
+bottle 0.64, aluminium can 0.57, glass bottle 0.45, carry bag 0.38 mAP50. Classes with 1–5 test
+objects (broken glass, foil, used tissue, Tetra Pak) and newspaper are weak.
+
+**The exported `.pte` matches PyTorch**: on the same input tensor, raw boxes agree within 0.011 px
+and scores within 1e-5, with identical detections on 20 test images.
+
+**What the user gets** (the `.pte` with the app's own pre- and post-processing). Per frame, the app
+takes the most confident detection; below the confidence gate it says "not sure" and offers the
+fallback suggestions instead of guessing. The gate was chosen on the val split: 0.5 is the lowest
+gate whose verdicts reach the 92% stream target there (92.6%, verdicts on 59% of images; full sweep
+in [eval/REPORT.md](../eval/REPORT.md)). On the test split at gate 0.5:
+
+| Images with a verdict | Verdict names the right item | Verdict puts it in the right stream |
+|---|---|---|
+| 66.1% | 59.3% | **88.4%** (target 92%) |
+
+Read the stream number with care: 13 of the 14 detector classes are dry waste, so on TACO a stream
+error is almost always a box on the background, not a wrong bin (9 of 10 wrong-stream verdicts on
+test). The meaningful test of wet / sanitary / special-care sorting is the phone session's real-item
+set (§5.6), where the KB and fallback carry the 39 items the detector does not know.
+
+**State of the art on TACO.** Results depend heavily on the class set, so these are context, not a
+leaderboard. The TACO authors' Mask R-CNN (ResNet-50 FPN, 1024 px) reached 17.6–19.4 mask AP
+(IoU 0.5:0.95) on a 10-class split ([Proença & Simões 2020](https://arxiv.org/abs/2003.06975)). A
+2026 study on TACO's 28 supercategories reports 0.245 mAP50 for a direct YOLO26s at 768 px and 0.335
+for its best two-stage hierarchical system with multi-view inference (Skinderowicz, KES 2026). Our
+nano model at 640 px, trained on a laptop CPU in about four hours, reaches 0.305 mAP50 on 14 classes:
+in the same range as much larger published systems, small enough (9.8 MB) to run every camera frame
+on a phone. Fewer classes make our task easier, and it is not a like-for-like comparison.
 
 ### 5.2 Llama answer quality (laptop, same `.pte` as the phone)
 
