@@ -27,6 +27,7 @@ eval/tmp/
 android/.gradle/
 android/build/
 android/app/build/
+android/app/libs/
 android/core/build/
 models/llm/lora/out/
 models/fallback/out/

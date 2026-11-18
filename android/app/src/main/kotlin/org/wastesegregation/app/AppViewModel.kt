@@ -33,6 +33,7 @@ import wastesegregation.core.Suggestion
 import wastesegregation.core.Verdict
 import wastesegregation.core.VerifiedOutput
 import wastesegregation.core.Verifier
+import wastesegregation.core.Voice
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -64,6 +65,10 @@ data class UiState(
     val didYouKnow: Map<String, Any?>? = null,
     val quiz: Map<String, Any?>? = null,
     val message: String? = null,
+    val listening: Boolean = false,
+    val transcribing: Boolean = false,
+    val transcript: String? = null,
+    val voiceChoices: List<String> = emptyList(),
 )
 
 /** Everything the screens need: models, the scan state machine, Llama, stores. */
@@ -75,6 +80,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val main = Handler(Looper.getMainLooper())
     val analysisExecutor = Executors.newSingleThreadExecutor()
     private val work = Executors.newSingleThreadExecutor()
+    private val voiceThread = Executors.newSingleThreadExecutor()
 
     private val files = ModelFiles(app)
     private var kb: KnowledgeBase? = null
@@ -82,6 +88,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var siglip: Siglip? = null
     private var llama: Llama? = null
     private var checker: AttributeChecker? = null
+    private var speech: SpeechInput? = null
     private val voter = FrameVoter()
     val latency = LatencyLog()
     private val llmStats = mutableListOf<String>()
@@ -140,6 +147,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             } else "missing (push siglip2_image_int8.pte)"
         } catch (e: Exception) {
             "error: ${e.message}"
+        }
+        status["Voice input"] = run {
+            val model = files.asrModel()
+            val tokens = files.asrTokens()
+            if (model != null && tokens != null) {
+                speech = SpeechInput(model, tokens)
+                "ready (loads per question)"
+            } else "missing (push model.int8.onnx and tokens.txt)"
         }
         report()
         status["Llama"] = try {
@@ -200,7 +215,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * Show the verdict for [itemId] at once (KB only), then ask Llama to explain. Runs on a
      * background thread (analysis or work): the attribute check runs the SigLIP encoder.
      */
-    private fun lock(itemId: String, crop: Bitmap?, confidence: Double?, t0Nanos: Long, question: String? = null) {
+    private fun lock(
+        itemId: String,
+        crop: Bitmap?,
+        confidence: Double?,
+        t0Nanos: Long,
+        question: String? = null,
+        language: String = ui.language,
+    ) {
         val kb = kb ?: return
         locked = true
         val attributes = linkedMapOf<String, Any?>()
@@ -213,7 +235,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 if (result.value == null) ask.add(attr) else attributes[attr] = result.value
             }
         }
-        val verdict = latency.time(Stages.KB) { kb.resolve(itemId, attributes, ui.language) }
+        val verdict = latency.time(Stages.KB) { kb.resolve(itemId, attributes, language) }
         val cardMs = (SystemClock.elapsedRealtimeNanos() - t0Nanos) / 1e6
         latency.record(Stages.FRAME_TO_CARD, cardMs)
         scans.add(itemId, attributes)
@@ -259,11 +281,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         work.execute {
             llmBusy = true
             try {
-                val explanation = Assistant.explain(kb, verdict, attributes, { prompt ->
+                fun run(prompt: String, temperature: Float): String {
                     val start = SystemClock.elapsedRealtimeNanos()
                     var first = true
                     val raw = StringBuilder()
-                    val text = llama.generate(prompt) { piece ->
+                    val text = llama.generate(prompt, temperature = temperature) { piece ->
                         if (first) {
                             first = false
                             latency.record(Stages.LLM_FIRST_TOKEN, (SystemClock.elapsedRealtimeNanos() - start) / 1e6)
@@ -273,8 +295,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                         update { it.copy(whyStream = partial) }
                     }
                     llama.lastStats?.let { s -> synchronized(llmStats) { llmStats.add(s) } }
-                    text
-                }, question)
+                    return text
+                }
+                // Greedy first; sampled retries (temperature 0.7) only if the checks fail.
+                val explanation = Assistant.explain(
+                    kb, verdict, attributes, { run(it, 0f) }, question, sample = { run(it, 0.7f) },
+                )
                 val tps = llama.lastStats?.let { decodeTokensPerSecond(it) }
                 update {
                     it.copy(verified = explanation.verified, explaining = false, decodeTps = tps,
@@ -380,6 +406,68 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ------------------------------------------------------------------ voice
+
+    /** Push-to-talk: record until [stopVoice] (or 8 s), transcribe on the phone, then act. */
+    fun startVoice() {
+        val speech = speech
+        if (speech == null) {
+            update { it.copy(message = "Voice model not on the phone (see docs/PHONE_SESSION.md)") }
+            return
+        }
+        if (ui.listening || ui.transcribing) return
+        update { it.copy(listening = true, transcript = null, voiceChoices = emptyList()) }
+        voiceThread.execute {
+            try {
+                val audio = speech.record()
+                update { it.copy(listening = false, transcribing = true) }
+                val text = latency.time(Stages.ASR) { speech.transcribe(audio) }
+                handleTranscript(text)
+            } catch (e: Throwable) {
+                update { it.copy(listening = false, transcribing = false, message = "Voice failed: ${e.message}") }
+            }
+        }
+    }
+
+    fun stopVoice() {
+        speech?.stop()
+    }
+
+    private fun handleTranscript(text: String) {
+        val kb = kb ?: return
+        // Devanagari in the transcript: answer in Hindi.
+        val language = if (text.any { it in '\u0900'..'\u097F' }) "hi" else ui.language
+        update { it.copy(transcribing = false, transcript = text, language = language) }
+        if (text.isBlank()) {
+            update { it.copy(message = if (language == "hi") "कुछ सुनाई नहीं दिया, फिर से बोलें" else "Didn't catch that, try again") }
+            return
+        }
+        val matches = Voice.match(kb, text)
+        val top = matches.firstOrNull()
+        when {
+            top != null && !top.confirm -> {
+                locked = true
+                work.execute { lock(top.itemId, null, null, SystemClock.elapsedRealtimeNanos(), text, language) }
+            }
+            matches.isNotEmpty() -> update { it.copy(voiceChoices = matches.map { m -> m.itemId }) }
+            ui.verdict != null -> {
+                val verdict = kb.resolve(ui.verdict!!.itemId, ui.attributes, language)
+                update { it.copy(verdict = verdict) }
+                explain(text, verdict, ui.attributes)
+            }
+            else -> update { it.copy(message = "Say the item's name, e.g. \"old battery\"") }
+        }
+    }
+
+    /** The user picked one of the voice matches: show it and answer the spoken question. */
+    fun chooseVoice(itemId: String) {
+        val text = ui.transcript
+        val language = ui.language
+        update { it.copy(voiceChoices = emptyList()) }
+        locked = true
+        work.execute { lock(itemId, null, null, SystemClock.elapsedRealtimeNanos(), text, language) }
+    }
+
     fun itemChoices(): List<Pair<String, String>> {
         val kb = kb ?: return emptyList()
         return kb.itemIds.map { it to kb.resolve(it, emptyMap(), ui.language).name }.sortedBy { it.second }
@@ -456,6 +544,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         siglip?.close()
         analysisExecutor.shutdown()
         work.shutdown()
+        voiceThread.shutdown()
     }
 
     companion object {

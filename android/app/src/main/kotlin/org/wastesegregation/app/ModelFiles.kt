@@ -40,6 +40,8 @@ class ModelFiles(private val context: Context) {
 
     fun tokenizer(): File? = pushed("tokenizer.model")
     fun siglip(): File? = pushed("siglip2_image_int8.pte")
+    fun asrModel(): File? = pushed("model.int8.onnx")
+    fun asrTokens(): File? = pushed("tokens.txt")
     fun detector(): File? = pushed("model.pte") ?: asset("model.pte")
     fun detectorNames(): File? = pushed("metadata.yaml") ?: asset("metadata.yaml")
     fun kb(): File? = asset("kb.sqlite")

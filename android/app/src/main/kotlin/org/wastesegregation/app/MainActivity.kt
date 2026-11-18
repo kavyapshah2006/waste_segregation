@@ -261,8 +261,12 @@ fun ItemPicker(vm: AppViewModel, onPick: (String) -> Unit, onDismiss: () -> Unit
 @Composable
 fun AskScreen(vm: AppViewModel) {
     val ui = vm.ui
+    val context = LocalContext.current
     var text by remember { mutableStateOf("") }
     val hi = ui.language == "hi"
+    val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
+        if (ok) vm.startVoice()
+    }
     Column(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             ui.verdict?.let { (if (hi) "विषय: " else "About: ") + it.name }
@@ -270,8 +274,24 @@ fun AskScreen(vm: AppViewModel) {
             fontWeight = FontWeight.Bold,
         )
         OutlinedTextField(text, { text = it }, Modifier.fillMaxWidth(), label = { Text(if (hi) "आपका सवाल" else "Your question") })
-        Button(onClick = { if (text.isNotBlank()) vm.ask(text.trim()) }, enabled = !ui.explaining) {
-            Text(if (hi) "पूछें" else "Ask")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = { if (text.isNotBlank()) vm.ask(text.trim()) }, enabled = !ui.explaining) {
+                Text(if (hi) "पूछें" else "Ask")
+            }
+            when {
+                ui.listening -> Button(onClick = vm::stopVoice) { Text(if (hi) "रुकें" else "Stop") }
+                ui.transcribing -> OutlinedButton(onClick = {}, enabled = false) { Text(if (hi) "सुन रहा है…" else "Listening…") }
+                else -> OutlinedButton(onClick = {
+                    if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                        vm.startVoice()
+                    } else mic.launch(Manifest.permission.RECORD_AUDIO)
+                }) { Text(if (hi) "🎤 बोलें" else "🎤 Speak") }
+            }
+        }
+        ui.transcript?.let { Text((if (hi) "सुना: " else "Heard: ") + it, fontSize = 13.sp) }
+        if (ui.voiceChoices.isNotEmpty()) {
+            Text(if (hi) "आपका मतलब?" else "Did you mean?", fontWeight = FontWeight.Bold)
+            ui.voiceChoices.forEach { id -> TextButton(onClick = { vm.chooseVoice(id) }) { Text(vm.nameOf(id)) } }
         }
         if (ui.verdict != null) VerdictCard(vm, Modifier.weight(1f), onWrong = {})
     }

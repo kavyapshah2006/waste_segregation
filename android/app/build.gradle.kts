@@ -1,3 +1,6 @@
+import java.net.URI
+import java.security.MessageDigest
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -79,9 +82,31 @@ androidComponents {
     }
 }
 
+/**
+ * sherpa-onnx (speech recognition, Apache-2.0) publishes its Android AAR on GitHub releases, not
+ * on Maven. Fetched once into app/libs (gitignored) and checked against a pinned SHA-256.
+ */
+val sherpaVersion = "1.13.8"
+val sherpaSha256 = "633c24321e06b1fe79feafa03ea16cbc0f8a286641e2da3559bac91bdb13bd96"
+val sherpaAar = file("libs/sherpa-onnx-$sherpaVersion.aar")
+
+fun sha256(f: File): String = MessageDigest.getInstance("SHA-256")
+    .digest(f.readBytes()).joinToString("") { "%02x".format(it) }
+
+if (!sherpaAar.isFile) {
+    sherpaAar.parentFile.mkdirs()
+    val url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/v$sherpaVersion/sherpa-onnx-$sherpaVersion.aar"
+    logger.lifecycle("Downloading $url")
+    val tmp = File(sherpaAar.path + ".part")
+    URI(url).toURL().openStream().use { input -> tmp.outputStream().use { input.copyTo(it) } }
+    check(sha256(tmp) == sherpaSha256) { "sherpa-onnx AAR checksum mismatch" }
+    tmp.renameTo(sherpaAar)
+}
+
 dependencies {
     implementation(project(":core"))
     implementation(libs.executorch.android)
+    implementation(files(sherpaAar))
     implementation(libs.camerax.core)
     implementation(libs.camerax.camera2)
     implementation(libs.camerax.lifecycle)

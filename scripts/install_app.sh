@@ -27,6 +27,8 @@ if [[ -z "${SKIP_MODELS:-}" ]]; then
     llm_dir="models/llm/out/$LLM"
     files=("$llm_dir"/Llama-*.pte "$llm_dir/tokenizer.model")
     [[ -f models/fallback/out/siglip2_image_int8.pte ]] && files+=(models/fallback/out/siglip2_image_int8.pte)
+    asr=models/speech/out/sherpa-onnx-omnilingual-asr-1600-languages-300M-ctc-v2-int8-2026-02-05
+    [[ -f $asr/model.int8.onnx ]] && files+=("$asr/model.int8.onnx" "$asr/tokens.txt")
     PHONE_DIR="/sdcard/Android/data/$PKG/files/models" ./scripts/push_models.sh "${files[@]}"
 fi
 echo "done: open the app; Settings lists which models loaded"
