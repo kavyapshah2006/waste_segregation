@@ -14,6 +14,7 @@ On-device AI assistant that identifies waste, decides the correct bin under Indi
 - [Future plan](docs/FuturePlan.md): work-package implementation guide with contracts, tests and status
 - [Pipelines](docs/PIPELINES.md): the five on-device pipelines, their runtimes, models and memory policy
 - [Dev setup](docs/DEV_SETUP.md): Python, Android and phone setup
+- [Phone session runbook](docs/PHONE_SESSION.md): install, measure and record the demo in one ~90 minute sitting
 - [Technical report (draft)](docs/TECHNICAL_REPORT.md) and [demo video script](docs/DEMO_SCRIPT.md)
 - [Evaluation report](eval/REPORT.md): every measured number, regenerated from `eval/results/`
 

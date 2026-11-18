@@ -3,10 +3,15 @@
 # Usage: ./scripts/device_info.sh > docs/DEVICE.md
 set -euo pipefail
 
-if command -v adb >/dev/null 2>&1; then
-    ADB=adb
+WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe 2>/dev/null | head -1 || true)
+if [[ -n "${ADB:-}" ]]; then
+    :
 elif command -v adb.exe >/dev/null 2>&1; then
     ADB=adb.exe
+elif [[ -n "$WIN_ADB" ]]; then
+    ADB="$WIN_ADB"
+elif command -v adb >/dev/null 2>&1; then
+    ADB=adb
 else
     echo "adb not found. Install Android Studio platform-tools (see docs/DEV_SETUP.md)." >&2
     exit 1
