@@ -1,0 +1,27 @@
+{
+  "corrections": [
+    {"time_ms": 1795000000000, "source": "detector", "predicted": "pet_bottle", "corrected": "glass_bottle", "confidence": 0.62, "attributes": {"broken": false, "contaminated": false}, "image": "corrections/1795000000000.jpg"},
+    {"time_ms": 1795000060000, "source": "fallback", "predicted": "paper_cup", "corrected": "kulhad", "confidence": 0.31, "attributes": {"broken": true}, "image": "corrections/1795000060000.jpg"},
+    {"time_ms": 1795000120000, "source": "voice", "predicted": null, "corrected": "fruit_veg_peels", "confidence": null, "attributes": {}, "image": null},
+    {"time_ms": 1795000180000, "source": "detector", "predicted": "pet_bottle", "corrected": "glass_bottle", "confidence": 0.55, "attributes": {"contaminated": true}, "image": "corrections/1795000180000.jpg"}
+  ],
+  "lines": [
+    "{\"time_ms\": 1795000000000, \"source\": \"detector\", \"predicted\": \"pet_bottle\", \"corrected\": \"glass_bottle\", \"confidence\": 0.62, \"attributes\": {\"broken\": false, \"contaminated\": false}, \"image\": \"corrections/1795000000000.jpg\"}",
+    "{\"time_ms\": 1795000060000, \"source\": \"fallback\", \"predicted\": \"paper_cup\", \"corrected\": \"kulhad\", \"confidence\": 0.31, \"attributes\": {\"broken\": true}, \"image\": \"corrections/1795000060000.jpg\"}",
+    "{\"time_ms\": 1795000120000, \"source\": \"voice\", \"predicted\": null, \"corrected\": \"fruit_veg_peels\", \"confidence\": null, \"attributes\": {}, \"image\": null}",
+    "{\"time_ms\": 1795000180000, \"source\": \"detector\", \"predicted\": \"pet_bottle\", \"corrected\": \"glass_bottle\", \"confidence\": 0.55, \"attributes\": {\"contaminated\": true}, \"image\": \"corrections/1795000180000.jpg\"}"
+  ],
+  "summary": {
+    "corrections": 4,
+    "by_source": {"detector": 2, "fallback": 1, "voice": 1},
+    "pairs": {"pet_bottle -> glass_bottle": 2, "(none) -> fruit_veg_peels": 1, "paper_cup -> kulhad": 1},
+    "with_image": 3,
+    "unknown_items": []
+  },
+  "invalid": [
+    {"time_ms": 1, "source": "camera", "predicted": null, "corrected": "pet_bottle", "confidence": null, "attributes": {}, "image": null},
+    {"time_ms": 1, "source": "voice", "predicted": null, "corrected": "", "confidence": null, "attributes": {}, "image": null},
+    {"time_ms": 1, "source": "detector", "predicted": "pet_bottle", "corrected": "glass_bottle", "confidence": 1.5, "attributes": {}, "image": null},
+    {"time_ms": 1, "source": "detector", "predicted": "pet_bottle", "corrected": "glass_bottle", "confidence": 0.5, "attributes": {"wet": true}, "image": null}
+  ]
+}
