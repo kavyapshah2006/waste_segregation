@@ -50,3 +50,14 @@ def test_preprocess_matches_siglip_processing():
     assert np.allclose(white, 1.0)
     black = preprocess(Image.new("L", (100, 300), 0))  # grey input becomes RGB
     assert np.allclose(black, -1.0)
+
+
+AGREEMENT = json.loads((Path(__file__).parent / "fixtures" / "agreement_cases.json").read_text())
+
+
+@pytest.mark.parametrize("case", AGREEMENT, ids=[c["id"] for c in AGREEMENT])
+def test_agreement_rule(case):
+    from pipeline.fallback import confirms
+
+    suggestions = [{"item_id": i, "cosine": 0.1, "score": 0.1} for i in case["suggestions"]]
+    assert confirms(case["detector_item"], suggestions) is case["expected"]

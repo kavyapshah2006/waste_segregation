@@ -10,6 +10,7 @@ object Stages {
     const val DETECT = "detect"
     const val ATTRIBUTES = "attributes"
     const val VOTE = "vote"
+    const val AGREEMENT = "agreement"
     const val KB = "kb"
     const val FRAME_TO_CARD = "frame_to_card"
     const val FALLBACK = "fallback"
@@ -18,7 +19,7 @@ object Stages {
     const val TTS_START = "tts_start"
 
     val ORDER = listOf(
-        CAPTURE, PREPROCESS, DETECT, ATTRIBUTES, VOTE, KB, FRAME_TO_CARD, FALLBACK,
+        CAPTURE, PREPROCESS, DETECT, ATTRIBUTES, VOTE, AGREEMENT, KB, FRAME_TO_CARD, FALLBACK,
         LLM_FIRST_TOKEN, ASR, TTS_START,
     )
 }

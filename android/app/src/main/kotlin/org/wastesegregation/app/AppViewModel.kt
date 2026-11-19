@@ -20,6 +20,7 @@ import wastesegregation.core.Correction
 import wastesegregation.core.CorrectionLog
 import wastesegregation.core.Detected
 import wastesegregation.core.Education
+import wastesegregation.core.FallbackRank
 import wastesegregation.core.FrameVoter
 import wastesegregation.core.Impact
 import wastesegregation.core.Json
@@ -205,10 +206,31 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             )
         }
         if (state.state == "stable" && state.itemId != null) {
+            if (!agrees(state.itemId!!, bitmap)) return
             val best = detections.filter { it.itemId == state.itemId }.maxByOrNull { it.confidence }
             val crop = best?.let { bitmap.crop(it.bbox) } ?: bitmap
             lock(state.itemId!!, crop, state.confidence, t0)
         }
+    }
+
+    /**
+     * Agreement rule: the detector's item becomes a verdict only if SigLIP also ranks it among
+     * its top 3 for the same frame. Otherwise show those three as suggestions (no verdict) and
+     * return false. The detector alone calls fruit peels and fish waste "carry bag"; on 2,371
+     * BDWaste photos this rule lifts the right bin from 75% to 92% (eval/bdwaste/evaluate.py).
+     * Without the SigLIP model the detector decides alone, as before.
+     */
+    private fun agrees(itemId: String, frame: Bitmap): Boolean {
+        val siglip = siglip ?: return true
+        val top3 = latency.time(Stages.AGREEMENT) { siglip.suggest(siglip.embed(frame)) }
+        if (FallbackRank.confirms(itemId, top3)) return true
+        locked = true
+        lastFrame = frame
+        update {
+            it.copy(scanState = "unsure", verdict = null, suggestions = top3,
+                message = "Not sure what this is: pick one")
+        }
+        return false
     }
 
     /**
@@ -397,7 +419,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val t0 = SystemClock.elapsedRealtimeNanos()
             val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
             if (best != null && best.confidence >= GATE) {
-                lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
+                if (agrees(best.itemId!!, bitmap)) {
+                    lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
+                }
             } else {
                 locked = true
                 update { it.copy(scanState = "unsure", verdict = null, message = "Not sure what this is: pick one") }

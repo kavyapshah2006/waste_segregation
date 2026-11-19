@@ -39,5 +39,14 @@ object FallbackRank {
             }
     }
 
+    /**
+     * Agreement rule (port of confirms() in pipeline/fallback.py): a detector verdict stands
+     * only when SigLIP also ranks that item among its [suggestions]; otherwise the app shows the
+     * suggestions instead. On 2,371 BDWaste photos it lifts the right bin from 75% to 92%
+     * (wet waste from 55% to 97%), because the detector alone calls peels "carry bag".
+     */
+    fun confirms(detectorItem: String, suggestions: List<Suggestion>): Boolean =
+        suggestions.any { it.itemId == detectorItem }
+
     private fun round4(x: Double) = BigDecimal(x).setScale(4, RoundingMode.HALF_EVEN).toDouble()
 }

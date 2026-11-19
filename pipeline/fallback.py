@@ -48,6 +48,18 @@ class Fallback:
         return rank(self.text, self.item_ids, self.embed(image), self.scale, self.bias, k)
 
 
+def confirms(detector_item: str, suggestions: list[dict]) -> bool:
+    """Agreement rule: a detector verdict stands only when SigLIP also ranks that item among
+    its suggestions (top 3); otherwise the app shows the suggestions instead of a verdict.
+
+    Measured on 2,371 BDWaste photos (eval/bdwaste/evaluate.py): the TACO-trained detector
+    confidently calls fruit peels and fish waste "carry bag", so detector-first sends wet waste
+    to the dry bin 45% of the time; with this rule the right bin rises from 75% to 92%.
+    Shared with the Kotlin core (FallbackRank.confirms) through tests/fixtures/agreement_cases.json.
+    """
+    return any(s["item_id"] == detector_item for s in suggestions)
+
+
 def rank(
     text: np.ndarray, item_ids: list[str], image_emb: np.ndarray, scale: float, bias: float, k: int
 ) -> list[dict]:

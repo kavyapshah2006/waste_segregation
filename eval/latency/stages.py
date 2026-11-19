@@ -21,6 +21,7 @@ STAGES = (
     "detect",
     "attributes",
     "vote",
+    "agreement",
     "kb",
     "frame_to_card",
     "fallback",

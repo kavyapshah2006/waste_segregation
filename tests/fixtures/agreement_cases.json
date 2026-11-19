@@ -1,0 +1,6 @@
+[
+  {"id": "detector_item_first", "detector_item": "pet_bottle", "suggestions": ["pet_bottle", "shampoo_bottle", "glass_bottle"], "expected": true},
+  {"id": "detector_item_third", "detector_item": "chips_packet", "suggestions": ["milk_pouch", "plastic_carry_bag", "chips_packet"], "expected": true},
+  {"id": "peel_called_carry_bag", "detector_item": "plastic_carry_bag", "suggestions": ["fruit_veg_peels", "food_scraps", "garden_waste"], "expected": false},
+  {"id": "no_suggestions", "detector_item": "pet_bottle", "suggestions": [], "expected": false}
+]
