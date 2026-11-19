@@ -1,0 +1,10 @@
+item_id,placement,app_item_id,app_bin,correct_item,correct_bin,notes
+shampoo_bottle,table,shampoo_bottle,dry,yes,yes,orange detergent jug; first scan offered suggestions (agreement not met) with the right item first; later scans gave the verdict
+shampoo_bottle,hand,pet_bottle,dry,no,yes,assumed the same detergent jug held in the hand; app named PET bottle; bin still right
+aluminium_can,,aluminium_can,dry,yes,yes,
+small_electronics,hand,(dry item; name not captured),dry,no,no,computer mouse; app put it in the dry bin instead of special care (e-waste); most serious error of the session
+plastic_toy,,plastic_toy,dry,yes,yes,plastic box; the KB has no plastic box item and "broken plastic toy or household item" is the closest; counted right
+charger_cable,,small_electronics,special_care,yes,yes,phone charger; app said small electronic device; same bin and same drop-off as charger; user marked right
+food_scraps,,food_scraps,wet,yes,yes,biscuit
+(several more items),mixed,suggestions,,yes,yes,"user report: for the remaining items the app was unsure and the right item was in the three suggestions every time"
+small_electronics,,mobile_phone,special_care,no,yes,"calculator: the KB has no calculator item; app chose mobile phone; same bin (e-waste)"
