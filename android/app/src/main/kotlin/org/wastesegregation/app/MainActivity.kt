@@ -390,7 +390,7 @@ private fun HintPill(ui: UiState, hi: Boolean) {
         ui.scanState == "stable" -> ui.liveItem ?: ""
         ui.scanState == "unsure" -> if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady"
         ui.status.startsWith("Point") -> if (hi) "कैमरा किसी कचरे की चीज़ पर करें" else "Point your camera at a waste item"
-        ui.status.startsWith("Starting") -> if (hi) "कचरे की चीज़ पर कैमरा रखें, कुछ सेकंड रुकें" else "Point at a waste item, wait a few seconds"
+        ui.status.startsWith("Starting") || ui.status.startsWith("Loading") -> if (hi) "शुरू हो रहा है… लगभग आधा मिनट" else "Starting up… about half a minute"
         else -> ui.status
     }
     if (text.isEmpty()) return
@@ -400,7 +400,7 @@ private fun HintPill(ui: UiState, hi: Boolean) {
             .padding(horizontal = 18.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (ui.lookingCloser) {
+        if (ui.lookingCloser || ui.status.startsWith("Starting") || ui.status.startsWith("Loading")) {
             CircularProgressIndicator(Modifier.size(14.dp), color = Palette.Mint, strokeWidth = 2.dp)
             Spacer(Modifier.width(8.dp))
         }

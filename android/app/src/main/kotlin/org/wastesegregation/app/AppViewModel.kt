@@ -111,6 +111,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var tts: TextToSpeech? = null
 
     @Volatile private var locked = false
+    /** All models loaded (or given up on). Scanning waits for it: models run one at a time, so
+     *  a scan during Llama's ~30 s load would only sit waiting behind it. */
+    @Volatile private var ready = false
     @Volatile private var llmBusy = false
     @Volatile private var lastFrame: Bitmap? = null
     /** When the current search started (first frame without a stable item), for auto-suggest. */
@@ -196,6 +199,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             "error: ${e.message}"
         }
         report()
+        ready = true
         update { it.copy(status = "Point the camera at one item") }
         refreshImpact()
     }
@@ -204,7 +208,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onFrame(proxy: ImageProxy) {
         val det = detector
-        if (det == null || locked || llmBusy) {
+        if (det == null || !ready || locked || llmBusy) {
             proxy.close()
             return
         }
@@ -497,6 +501,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun photo(bitmap: Bitmap) {
+        if (!ready) {
+            update { it.copy(message = "Still starting up (about half a minute). Try again in a moment.") }
+            return
+        }
         val det = detector
         lastFrame = bitmap
         cancelExplanation()
