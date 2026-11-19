@@ -99,4 +99,4 @@ its 1.2 GB of models) and turn USB debugging off.
 4. Scan the same bottle again: the explanation appears instantly (kept on the phone).
 5. Tap the white shutter on a battery: a photo is taken and analysed, no crash.
 6. Settings → **Prepare all explanations**, leave it charging if there is time (or before the demo video).
-7. Settings → **Export timings for the report**, then .
+7. Settings → **Export timings for the report**, then `./scripts/phone_collect.sh finish`.
