@@ -75,6 +75,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -315,7 +316,10 @@ fun ScanScreen(vm: AppViewModel, onSettings: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Icon(AppIcon.LeafFilled, Palette.Mint, 34.dp)
+                Image(
+                    painterResource(R.drawable.app_logo), "SwachhSathi",
+                    Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)),
+                )
                 Spacer(Modifier.width(10.dp))
                 Text(
                     "SwachhSathi", style = MaterialTheme.typography.headlineSmall, color = Color.White,

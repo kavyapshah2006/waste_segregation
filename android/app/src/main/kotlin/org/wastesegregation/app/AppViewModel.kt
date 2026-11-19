@@ -152,6 +152,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             "error: ${e.message}"
         }
         report()
+        // Scanning works from here on; Llama and the rest keep loading in the background.
+        if (detector != null) update { it.copy(status = "Point the camera at one item") }
         status["Dirty/broken check"] = try {
             files.attributePrompts()?.let { checker = AttributeChecker(Json.parse(it.readText()) as Map<String, Any?>); "ready" }
                 ?: "missing"
