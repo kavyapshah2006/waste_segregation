@@ -22,6 +22,9 @@ through ExecuTorch.
   condition rules for dirty and broken items, a city profile with bin colours) decides stream, bin,
   steps, hazards and drop-off points. Sources: SWM Rules 2026 and the SBM-Urban source-segregation
   guideline, E-Waste Rules, US EPA guidance for mercury items.
+- **Two models must agree before the app commits to an item**: the detector's choice stands only
+  if SigLIP 2 independently ranks it in its top 3; otherwise the user picks from suggestions. On
+  South Asian photos this lifts the right bin from 75% to 92% (§5.3).
 - **Vision only names the item** (detector, frame voting, a "not sure" state) and, for the ten items
   whose advice depends on it, asks whether the item is dirty or broken.
 - **Llama 3.2 1B only explains**: a one-or-two-sentence `why` and a `tip`. A verifier checks every
@@ -35,7 +38,9 @@ through ExecuTorch.
 flowchart LR
   cam[Camera frame] --> det[YOLO26n detector<br/>ExecuTorch XNNPACK]
   det --> vote[Frame voting<br/>3 of 5 frames, gate 0.5]
-  vote -->|stable| kb[(Knowledge base<br/>SWM 2026 rules)]
+  vote -->|stable| agree{SigLIP 2 top 3<br/>agrees?}
+  agree -->|yes| kb[(Knowledge base<br/>SWM 2026 rules)]
+  agree -->|no| fb
   vote -->|not sure| fb[SigLIP 2 fallback<br/>top-3 suggestions]
   fb -->|user picks| kb
   kb --> card[Verdict card<br/>bin colour, steps, hazard]
@@ -55,7 +60,8 @@ INTERNET permission). Runtimes, models and memory policy: [PIPELINES.md](PIPELIN
 |---|---|---|---|
 | Detection | YOLO26n (Ultralytics) fine-tuned on TACO, exported to ExecuTorch XNNPACK; decoding + NMS in app code (the exporter drops the NMS-free head) | ~9 MB | every frame |
 | Stability | Confidence gate 0.5; an item is stable after winning 3 of the last 5 frames | – | every frame |
-| Unknown items | SigLIP 2 base image encoder, int8 `.pte`, cosine against KB item text embeddings; top 3 offered, never auto-decided | 94 MB | when not sure |
+| Agreement | A stable detector item becomes a verdict only if SigLIP 2 also ranks it in its top 3 (§5.3) | 0 MB extra | before each verdict |
+| Unknown items | SigLIP 2 base image encoder, int8 `.pte`, cosine against KB item text embeddings; top 3 offered, never auto-decided | 94 MB | when not sure or not agreed |
 | Dirty / broken | Same SigLIP 2 embedding vs item-specific prompts ("dirty milk pouch" vs "clean milk pouch"); in the unsure band the app asks the user | 0 MB extra | stable item with condition rules |
 | Decision | KB (`kb.sqlite`) + city profile | <1 MB | every verdict |
 | Explanation | Llama 3.2 1B Instruct SpinQuant INT4 `.pte` + verifier | 1.1 GB | after the card |
@@ -75,6 +81,14 @@ ranking, dirty/broken check, voice matching, impact, latency summaries, correcti
   the rest reach the user through the fallback, voice or search. TACO's image licences are mixed
   (466 ODbL, 319 "CC" without a variant, 715 with none); training used all images, the release
   documents this ([THIRD_PARTY.md](../THIRD_PARTY.md), [data/taco_licences.md](../data/taco_licences.md)).
+- **Open South Asian detection data, checked and not used.** DWSD (Kolkata, CC BY 4.0, 784
+  images): about half the images are rotated or tinted copies of the same scenes, so its own
+  train/test split leaks (the closest test/train pairs are the same pile of litter), dense scenes
+  are labelled sparsely, and several classes do not match their names (most "thermocol" regions
+  are wrappers and cardboard). pLitterStreet (Sri Lanka, Thailand, Vietnam, CC BY 4.0): vehicle
+  camera views where the median object covers under 0.1% of the frame, mostly labelled just
+  "litter". Training on either would have taught the detector wrong or irrelevant labels; the
+  India-specific test comes from real items on the phone (§5.6) and BDWaste (§5.3) instead.
 - **Detector training**: YOLO26n from COCO weights, 640 px, batch 16, on the laptop CPU (up to 50
   epochs, early stop after 15 without gain: stopped at epoch 37, best at 22, about 4 hours); the
   same settings run on a GPU from `models/vision/train.ipynb`.
@@ -148,10 +162,38 @@ catches every off-topic phrasing.
 Whatever still fails is never shown: the card keeps the KB's own text. So the user-facing error rate
 for bin and steps is zero by construction; Llama errors only cost an explanation.
 
-### 5.3 Unknown-item fallback
+### 5.3 Four-bin test on South Asian photos (BDWaste) and the agreement rule
 
-83.5% top-3 (68.4% top-1) on 133 TACO object crops with the int8 encoder that ships, within one
-point of fp32 — zero-shot, with no training on our classes.
+**Data.** BDWaste (Rahman et al., Data in Brief 2024, CC BY 4.0): close-up phone photos of single
+waste items taken around Dhaka. 19 of its 21 classes map to KB items: 2,371 photos across **wet**
+(peels of banana, mango, potato, lemon and orange, sugarcane husk, egg shells, rice, fish waste),
+**dry** (bottles, cans, chips packets, polythene, glass shards, empty blister packs, paper, coffee
+cups, plastic jugs) and **special care** (wires). Masks and gloves are skipped: the KB has no item
+for them yet. Many photos within a class repeat the same arrangement, so the 120–130 photos per
+class are less varied than the count suggests. Script: `eval/bdwaste/evaluate.py`.
+
+**Finding: the detector alone sends wet waste to the dry bin.** It only knows 14 dry-or-sanitary
+TACO items, and it is confidently wrong on what it has not seen: orange halves, sugarcane husk and
+fish waste come out as "carry bag" (105, 93 and 121 times). The SigLIP 2 suggestions, zero-shot,
+name these far better.
+
+**Fix: the agreement rule.** A detector verdict now stands only when SigLIP also ranks that item in
+its top 3 for the same frame; otherwise the app shows SigLIP's three suggestions instead of a
+verdict (`pipeline.fallback.confirms`, `FallbackRank.confirms`, shared fixture). Same photos, same
+models, scoring the item the user would get (the verdict, or the first suggestion):
+
+| Rule | Right bin | Wet | Dry | Special care | Right item | Right item in the 3 offered |
+|---|---|---|---|---|---|---|
+| Detector decides alone (before) | 75.2% | 55.3% | 93.1% | 95.0% | 49.3% | – |
+| **Agreement (shipped)** | **91.9%** | **97.5%** | 85.7% | 97.5% | **70.8%** | 90.2% |
+
+Firm verdicts drop to 13% of photos but are right on bin 95% of the time; every other photo gets
+three suggestions to confirm. Dry falls a little because a user tapping the first suggestion is
+counted as is; in the app they see all three. Cost: one extra SigLIP pass (about the size of the
+fallback pass) before a verdict, timed as the `agreement` stage on the phone (§5.6).
+
+**Fallback alone on TACO crops** (earlier check): 83.5% top-3 (68.4% top-1) on 133 TACO object
+crops with the int8 encoder that ships, within one point of fp32, zero-shot.
 
 ### 5.4 Dirty / broken check
 
@@ -200,8 +242,10 @@ runs on a phone without a network.
 
 ## 8. Limitations and next steps
 
-Detector trained on European litter photos (TACO), not on Indian household waste; India photo set,
-retraining and a trained dirty/broken head are next. Hindi KB text unreviewed; Tamil, Telugu, Bengali
+Detector trained on European litter photos (TACO), not on Indian household waste: on its own it
+mistakes unfamiliar wet waste for dry items, which the agreement rule now catches (§5.3); an India
+photo set, retraining and a trained dirty/broken head are next. The open South Asian detection sets
+we found were not usable for training (§4). No KB item yet for used masks and gloves. Hindi KB text unreviewed; Tamil, Telugu, Bengali
 and Marathi not yet written. Voice measured on synthetic speech. One city profile. LoRA fine-tune
 tooled but not run.
 
