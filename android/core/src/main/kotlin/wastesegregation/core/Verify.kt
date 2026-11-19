@@ -7,8 +7,8 @@ import java.util.regex.Pattern
  * docs/FuturePlan.md section 5.5). The KB always wins on facts; only `why` and `tip` come from
  * Llama, and both are dropped if either contradicts the KB.
  *
- * Patterns are compiled with UNICODE_CHARACTER_CLASS so that \s, \S, \w and \b follow Unicode
- * like Python's `re` does for str patterns.
+ * Patterns use Unicode character classes (Regexes.UNICODE_CLASSES) so that \s, \S, \w and \b
+ * follow Unicode like Python's `re` does for str patterns, on the JVM and on Android.
  */
 data class VerifiedOutput(
     /** "ok", "corrected", "fallback" or "declined". */
@@ -25,7 +25,7 @@ data class VerifiedOutput(
 
 private fun re(pattern: String, ignoreCase: Boolean = false): Pattern = Pattern.compile(
     pattern,
-    Pattern.UNICODE_CHARACTER_CLASS or
+    Regexes.UNICODE_CLASSES or
         (if (ignoreCase) Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE else 0),
 )
 

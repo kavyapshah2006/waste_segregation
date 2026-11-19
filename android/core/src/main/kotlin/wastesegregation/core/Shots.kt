@@ -44,7 +44,7 @@ object Shots {
         ),
     )
 
-    private const val FLAGS = Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE or Pattern.UNICODE_CHARACTER_CLASS
+    private val FLAGS = Pattern.CASE_INSENSITIVE or Pattern.UNICODE_CASE or Regexes.UNICODE_CLASSES
     private val KINDS = listOf(
         "recyclable" to Pattern.compile("recycl|रीसा[यइ]कल", FLAGS),
         "prepare" to Pattern.compile("""prepar|before\s+(?:throw|dispos|bin)|rinse|तैयार|पहले""", FLAGS),

@@ -16,7 +16,7 @@ data class Explanation(
 }
 
 object Assistant {
-    private const val FLAGS = Pattern.UNICODE_CHARACTER_CLASS
+    private val FLAGS = Regexes.UNICODE_CLASSES
 
     private val TOPIC_EN = Pattern.compile(
         """\b(?:bins?|dustbins?|waste|trash|garbage|rubbish|junk|recycl\w*|compost\w*|dispos\w*|""" +
