@@ -15,7 +15,11 @@ if [[ $# -eq 0 ]]; then
 fi
 
 # Windows platform-tools in the default SDK folder, if adb.exe is not on PATH.
-WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe 2>/dev/null | head -1 || true)
+# Windows SDK, or the same folder redirected into a packaged app's LocalCache (e.g. when the
+# SDK was installed from the Claude desktop app).
+WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe \
+    /mnt/c/Users/*/AppData/Local/Packages/*/LocalCache/Local/Android/Sdk/platform-tools/adb.exe \
+    2>/dev/null | head -1 || true)
 
 if [[ -n "${ADB:-}" ]]; then
     case "$ADB" in *.exe) to_adb_path() { wslpath -w "$1"; } ;; *) to_adb_path() { printf '%s' "$1"; } ;; esac

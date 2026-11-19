@@ -3,7 +3,11 @@
 # Usage: ./scripts/device_info.sh > docs/DEVICE.md
 set -euo pipefail
 
-WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe 2>/dev/null | head -1 || true)
+# Windows SDK, or the same folder redirected into a packaged app's LocalCache (e.g. when the
+# SDK was installed from the Claude desktop app).
+WIN_ADB=$(ls /mnt/c/Users/*/AppData/Local/Android/Sdk/platform-tools/adb.exe \
+    /mnt/c/Users/*/AppData/Local/Packages/*/LocalCache/Local/Android/Sdk/platform-tools/adb.exe \
+    2>/dev/null | head -1 || true)
 if [[ -n "${ADB:-}" ]]; then
     :
 elif command -v adb.exe >/dev/null 2>&1; then
