@@ -91,7 +91,7 @@ its 1.2 GB of models) and turn USB debugging off.
 
 ## Final check (15–20 minutes, after the full session)
 
-1. Connect the phone; on the laptop: installing android/app/build/outputs/apk/release/app-release.apk (models stay on the phone).
+1. Connect the phone; on the laptop: `SKIP_MODELS=1 ./scripts/install_app.sh` (models stay on the phone).
 2. Open SwachhSathi: scanning should be ready within a few seconds ("Point your camera at a waste item").
 3. Scan a bottle: the card appears, and "Why it matters" starts about 1.5 s later; Llama loads the
    first time (about half a minute). Tap **Scan again** while it is writing and scan the next item
