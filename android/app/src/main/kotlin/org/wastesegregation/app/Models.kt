@@ -72,7 +72,10 @@ class Detector(path: File, private val classNames: List<String>, private val kb:
     private val input = FloatArray(3 * size * size)
     private val shape = longArrayOf(1, 3, size.toLong(), size.toLong())
 
-    fun detect(src: Bitmap, log: LatencyLog): List<Detection> {
+    /** Whole call under the lock: the letterbox buffers below are shared between threads. */
+    fun detect(src: Bitmap, log: LatencyLog): List<Detection> = Inference.lock.withLock { detectLocked(src, log) }
+
+    private fun detectLocked(src: Bitmap, log: LatencyLog): List<Detection> {
         val geo = log.time(Stages.PREPROCESS) {
             val g = Detect.letterboxGeometry(src.width, src.height, size)
             canvas.drawColor(Color.rgb(Detect.PAD_VALUE, Detect.PAD_VALUE, Detect.PAD_VALUE))

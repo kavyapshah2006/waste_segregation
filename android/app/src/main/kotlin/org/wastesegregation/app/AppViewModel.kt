@@ -9,6 +9,8 @@ import android.os.Looper
 import android.os.SystemClock
 import android.provider.Settings
 import android.speech.tts.TextToSpeech
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -303,7 +305,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             it.copy(
                 verdict = verdict, confidence = confidence, attributes = attributes, askAttributes = ask,
                 verified = null, whyStream = "", question = question, suggestions = emptyList(),
-                cardMs = cardMs, scanState = "locked", verdictImage = crop,
+                cardMs = cardMs, scanState = "locked", verdictImage = crop, lookingCloser = false,
             )
         }
         speak(verdict)
@@ -445,9 +447,44 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Shutter: decide on the current frame now instead of waiting for frame voting. */
+    /** The camera's still-photo use case; bound by the screen next to preview and analysis. */
+    @Volatile var imageCapture: ImageCapture? = null
+
+    /**
+     * Shutter: take a full-resolution photo and analyse it like an uploaded picture (detector,
+     * agreement check, then a verdict or suggestions). Live scanning is untouched; without a still
+     * camera (binding failed) the last analysis frame is used instead.
+     */
     fun captureNow() {
-        val frame = lastFrame ?: return
-        photo(frame)
+        if (!ready) {
+            update { it.copy(message = "Still starting up (about half a minute). Try again in a moment.") }
+            return
+        }
+        val capture = imageCapture
+        if (capture == null) {
+            lastFrame?.let(::photo)
+            return
+        }
+        locked = true  // stop live scanning while the photo is taken and analysed
+        update { it.copy(lookingCloser = true, suggestions = emptyList(), canSuggest = false) }
+        capture.takePicture(vision, object : ImageCapture.OnImageCapturedCallback() {
+            override fun onCaptureSuccess(image: ImageProxy) {
+                val bitmap = try {
+                    image.toBitmap().rotate(image.imageInfo.rotationDegrees).limit(PHOTO_MAX_SIDE)
+                } finally {
+                    image.close()
+                }
+                photo(bitmap)
+            }
+
+            override fun onError(exception: ImageCaptureException) {
+                val frame = lastFrame
+                if (frame != null) photo(frame) else {
+                    locked = false
+                    update { it.copy(lookingCloser = false, message = "Couldn't take a photo: ${exception.message}") }
+                }
+            }
+        })
     }
 
     /** Camera torch (flash); the camera itself is bound by the screen. */
@@ -678,6 +715,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         const val SUGGEST_BUTTON_MS = 1000L
         /** The detector sees something but stays unsure this long: suggest without a tap. */
         const val AUTO_SUGGEST_MS = 1500L
+        /** Shutter photos are scaled down to this long side: plenty for 640 px models, less memory. */
+        const val PHOTO_MAX_SIDE = 1600
 
         /** The text of "why" so far, from the raw output after the answer prefix. */
         fun partialWhy(raw: String): String {
@@ -713,6 +752,14 @@ private fun Bitmap.rotate(degrees: Int): Bitmap {
     if (degrees == 0) return this
     val m = Matrix().apply { postRotate(degrees.toFloat()) }
     return Bitmap.createBitmap(this, 0, 0, width, height, m, true)
+}
+
+/** Scale down so the longer side is at most [maxSide] pixels (never up). */
+private fun Bitmap.limit(maxSide: Int): Bitmap {
+    val side = maxOf(width, height)
+    if (side <= maxSide) return this
+    val f = maxSide.toFloat() / side
+    return Bitmap.createScaledBitmap(this, (width * f).toInt(), (height * f).toInt(), true)
 }
 
 /** Crop a normalised [x1, y1, x2, y2] box with a 10% margin (as models/fallback/check_crops.py). */
