@@ -22,7 +22,9 @@ fi
 
 echo "== 1. detector: export to ExecuTorch and check against PyTorch"
 check_dir=$(mktemp -d)
-ls data/processed/waste/images/test/* | head -20 | xargs -I{} cp {} "$check_dir"/
+# An array, not `ls | head`: with pipefail, head closing the pipe early can kill the script.
+test_images=(data/processed/waste/images/test/*)
+cp "${test_images[@]:0:20}" "$check_dir"/
 uv run --group vision python models/vision/export_executorch.py --weights "$WEIGHTS" \
     --out models/vision/out --check-images "$check_dir"
 rm -r "$check_dir"

@@ -12,7 +12,7 @@ documented here as its own pipeline.
 | # | Pipeline | Runtime on the phone | Model file | Size | Precision | Runs when |
 |---|---|---|---|---|---|---|
 | 1 | Detector | ExecuTorch, XNNPACK backend | YOLO26n fine-tuned on our taxonomy (`model.pte`) | ~9.4 MB | fp32 | every camera frame while scanning (paused while Llama writes) |
-| 2 | Unknown-item fallback | ExecuTorch, XNNPACK backend | SigLIP 2 base image encoder (`siglip2_image_int8.pte`) + KB text embeddings (`text_embeddings.json`) | 94 MB + 0.3 MB | int8 (dynamic) | only when the detector is below the confidence gate |
+| 2 | Unknown-item fallback | ExecuTorch, XNNPACK backend | SigLIP 2 base image encoder (`siglip2_image_int8.pte`) + KB text embeddings (`text_embeddings.json`) | 94 MB + 0.3 MB | int8 (dynamic) | before each verdict (agreement) and when the detector is below the confidence gate |
 | 3 | Knowledge base | Android SQLite | `kb.sqlite` (built by `kb/build_kb.py`) | < 1 MB | n/a | after every stable detection or voice match |
 | 4 | Llama explanation | ExecuTorch `LlmModule`, XNNPACK backend | Llama 3.2 1B Instruct, prebuilt `INT4_EO8` `.pte` (SpinQuant or QLoRA; chosen by the step E experiments) | ~1.1 GB | 4-bit weights | after the verdict card is shown, or when the user asks a question |
 | 5 | Speech | sherpa-onnx (ONNX Runtime) for speech → text; Android's built-in text-to-speech | Meta Omnilingual ASR 300M CTC v2 | 366 MB | int8 | push-to-talk only; loaded on demand and released after use |
@@ -32,10 +32,15 @@ comes from the phone.
   `stability_cases.json`).
 - **Export:** `models/vision/export_executorch.py`; details in [models/vision/README.md](../models/vision/README.md).
 
-## 2. Unknown-item fallback
+## 2. Unknown-item fallback and agreement check
 
-- **Input:** the detector's crop (or the whole frame), resized to 224×224, normalised with
-  `(x − 0.5) / 0.5`.
+- **When it runs:** when the detector is below the confidence gate, and also before every verdict:
+  a stable detector item becomes a verdict only if this encoder ranks it in its top 3 for the
+  same frame (agreement rule, `confirms()`); otherwise its three suggestions are shown instead.
+  Measured on 2,371 BDWaste photos: right bin 91.9% with the rule, 75.2% without
+  ([TECHNICAL_REPORT.md §5.3](TECHNICAL_REPORT.md)).
+- **Input:** the whole frame (agreement, fallback) or the detector's crop (dirty/broken check),
+  resized to 224×224, normalised with `(x − 0.5) / 0.5`.
 - **Output:** an L2-normalised 768-number embedding, compared by cosine with one precomputed text
   embedding per KB item. The top 3 items are offered to the user to confirm; nothing is decided
   automatically.
