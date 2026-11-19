@@ -88,8 +88,9 @@ class Detector(path: File, private val classNames: List<String>, private val kb:
             }
             g
         }
-        val out = log.time(Stages.DETECT) {
-            Inference.lock.withLock { module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor() }
+        // Time the forward only, inside the lock: waiting for another model is not detector time.
+        val out = Inference.lock.withLock {
+            log.time(Stages.DETECT) { module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor() }
         }
         val outShape = out.shape()
         val data = out.dataAsFloatArray
@@ -125,7 +126,12 @@ class Siglip(path: File, textEmbeddings: File) : Closeable {
     }
 
     /** RGB 224x224 bilinear (no padding), [0,1], then (x - 0.5) / 0.5; L2-normalised output. */
-    fun embed(bitmap: Bitmap): FloatArray {
+    /** Milliseconds of the last embed (resize + forward), excluding any wait for the lock. */
+    @Volatile var lastMs = 0.0
+        private set
+
+    fun embed(bitmap: Bitmap): FloatArray = Inference.lock.withLock {
+        val start = System.nanoTime()
         val scaled = Bitmap.createScaledBitmap(bitmap, SIZE, SIZE, true)
         scaled.getPixels(pixels, 0, SIZE, 0, 0, SIZE, SIZE)
         val plane = SIZE * SIZE
@@ -136,9 +142,9 @@ class Siglip(path: File, textEmbeddings: File) : Closeable {
             input[2 * plane + i] = ((p and 0xFF) / 255f - 0.5f) / 0.5f
         }
         val shape = longArrayOf(1, 3, SIZE.toLong(), SIZE.toLong())
-        return Inference.lock.withLock {
-            module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor().dataAsFloatArray
-        }
+        val out = module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor().dataAsFloatArray
+        lastMs = (System.nanoTime() - start) / 1e6
+        out
     }
 
     fun suggest(embedding: FloatArray, k: Int = 3): List<Suggestion> =

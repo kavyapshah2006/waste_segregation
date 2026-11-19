@@ -257,7 +257,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private fun agrees(itemId: String, frame: Bitmap): Boolean {
         val siglip = siglip ?: return true
         update { it.copy(lookingCloser = true) }
-        val top3 = latency.time(Stages.AGREEMENT) { siglip.suggest(siglip.embed(frame)) }
+        val top3 = siglip.suggest(siglip.embed(frame))
+        latency.record(Stages.AGREEMENT, siglip.lastMs)
         update { it.copy(lookingCloser = false) }
         if (FallbackRank.confirms(itemId, top3)) return true
         locked = true
@@ -285,7 +286,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val siglip = siglip
         val checker = checker
         if (crop != null && siglip != null && checker != null && checker.attributesFor(itemId).isNotEmpty()) {
-            val emb = latency.time(Stages.ATTRIBUTES) { siglip.embed(crop) }
+            val emb = siglip.embed(crop).also { latency.record(Stages.ATTRIBUTES, siglip.lastMs) }
             for ((attr, result) in checker.check(itemId, emb)) {
                 if (result.value == null) ask.add(attr) else attributes[attr] = result.value
             }
@@ -433,7 +434,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         lastFrame = bitmap
         update { it.copy(lookingCloser = true, canSuggest = false, scanState = "unsure") }
         vision.execute {
-            val emb = latency.time(Stages.FALLBACK) { siglip.embed(bitmap) }
+            val emb = siglip.embed(bitmap).also { latency.record(Stages.FALLBACK, siglip.lastMs) }
             val suggestions = siglip.suggest(emb)
             update { it.copy(suggestions = suggestions, lookingCloser = false) }
         }
