@@ -83,6 +83,12 @@ data class UiState(
     val verdictImage: Bitmap? = null,
     val history: List<HistoryRow> = emptyList(),
     val torchOn: Boolean = false,
+    /** Llama is loading for its first explanation (~30 s on a budget phone). */
+    val llamaLoading: Boolean = false,
+    /** "12 / 70" while Settings > Prepare explanations runs. */
+    val preparing: String? = null,
+    /** Explanations saved on this phone. */
+    val cachedAnswers: Int = 0,
 )
 
 /** Everything the screens need: models, the scan state machine, Llama, stores. */
@@ -115,6 +121,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val llmStats = mutableListOf<String>()
     private val scans = ScanStore(File(app.filesDir, "scans.jsonl"))
     private val corrections = CorrectionLog(File(app.filesDir, "corrections.jsonl"))
+    private val explanations = ExplanationCache(File(app.filesDir, "explanations.jsonl"))
+    /** Llama files on the phone; the model itself loads on the first explanation. */
+    @Volatile private var llamaFiles: Pair<File, File>? = null
+    @Volatile private var preparing = false
     private var tts: TextToSpeech? = null
 
     @Volatile private var locked = false
@@ -190,24 +200,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             } else "missing (push model.int8.onnx and tokens.txt)"
         }
         report()
-        status["Llama"] = try {
+        // Llama loads on the first explanation, not here: scanning is ready in seconds instead of
+        // waiting ~30 s, and cached explanations never need Llama at all.
+        status["Llama"] = run {
             val model = files.llama()
             val tok = files.tokenizer()
             if (model != null && tok != null) {
-                status["Llama"] = "loading ${model.name}…"
-                report()
-                // Models share one lock (Inference), so scanning waits for this load.
-                update { it.copy(status = "Starting up") }
-                val t0 = SystemClock.elapsedRealtime()
-                llama = Llama(model, tok).also { it.load() }
-                "ready: ${model.name} (load ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s)"
+                llamaFiles = model to tok
+                "on the phone; loads on the first explanation (~30 s)"
             } else "missing (push the Llama .pte and tokenizer.model)"
-        } catch (e: Throwable) {
-            "error: ${e.message}"
         }
         report()
         ready = true
-        update { it.copy(status = "Point the camera at one item") }
+        update { it.copy(status = "Point the camera at one item", cachedAnswers = explanations.size()) }
         refreshImpact()
     }
 
@@ -346,8 +351,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     ) {
         val kb = kb ?: return
         val verdict = verdictArg ?: return
-        val llama = llama
-        if (llama == null) {
+        // Plain scans reuse what Llama already wrote on this phone for the same item and condition.
+        val key = if (question == null) ExplanationCache.key(kb.version, verdict.itemId, attributes, verdict.language) else null
+        val cached = key?.let { explanations.get(it) }
+        if (cached != null) {
+            explainGeneration++
+            update { it.copy(verified = cached, explaining = false, whyStream = "", question = null) }
+            return
+        }
+        if (llama == null && llamaFiles == null) {
             val verified = if (Assistant.isOnTopic(question, kb.namesOf(verdict.itemId))) {
                 VerifiedOutput("fallback", Verifier.kbOutput(verdict), listOf("no_model"))
             } else Assistant.declined(kb, verdict)
@@ -356,45 +368,146 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         val gen = ++explainGeneration
         update { it.copy(explaining = true, whyStream = "", verified = null, question = question) }
+        val start = Runnable {
+            if (gen == explainGeneration) work.execute { runExplanation(gen, kb, verdict, attributes, question, key) }
+        }
+        // A scan waits a moment before Llama starts: someone who glances at the bin and scans the
+        // next item never waits behind Llama reading its prompt (which cannot be interrupted).
+        if (question == null) main.postDelayed(start, EXPLAIN_DELAY_MS) else start.run()
+    }
+
+    private fun runExplanation(
+        gen: Int,
+        kb: KnowledgeBase,
+        verdict: Verdict,
+        attributes: Map<String, Any?>,
+        question: String?,
+        key: String?,
+    ) {
+        if (gen != explainGeneration) return
+        llmBusy = true
+        try {
+            val llama = ensureLlama()
+            if (llama == null) {
+                update { it.copy(explaining = false, verified = VerifiedOutput("fallback", Verifier.kbOutput(verdict), listOf("no_model"))) }
+                return
+            }
+            fun run(prompt: String, temperature: Float): String {
+                if (gen != explainGeneration) throw Cancelled()
+                val start = SystemClock.elapsedRealtimeNanos()
+                var first = true
+                val raw = StringBuilder()
+                val text = llama.generate(prompt, temperature = temperature) { piece ->
+                    if (first) {
+                        first = false
+                        latency.record(Stages.LLM_FIRST_TOKEN, (SystemClock.elapsedRealtimeNanos() - start) / 1e6)
+                    }
+                    raw.append(piece)
+                    val partial = partialWhy(raw.toString())
+                    if (gen == explainGeneration) update { it.copy(whyStream = partial) }
+                }
+                llama.lastStats?.let { s -> synchronized(llmStats) { llmStats.add(s) } }
+                if (gen != explainGeneration) throw Cancelled()
+                return text
+            }
+            // Greedy first; sampled retries (temperature 0.7) only if the checks fail.
+            val explanation = Assistant.explain(
+                kb, verdict, attributes, { run(it, 0f) }, question, sample = { run(it, 0.7f) },
+            )
+            key?.let { explanations.put(it, explanation.verified) }
+            val tps = llama.lastStats?.let { decodeTokensPerSecond(it) }
+            update {
+                it.copy(verified = explanation.verified, explaining = false, decodeTps = tps,
+                    firstTokenS = latency.samples(Stages.LLM_FIRST_TOKEN).lastOrNull()?.div(1000),
+                    cachedAnswers = explanations.size())
+            }
+        } catch (e: Cancelled) {
+            // Scan again or a new item: the new state is already on screen.
+        } catch (e: Throwable) {
+            if (gen == explainGeneration) {
+                update { it.copy(explaining = false, message = "Llama failed: ${e.message}") }
+            }
+        } finally {
+            llmBusy = false
+        }
+    }
+
+    /** Load Llama the first time it is needed (on the work thread, under the model lock). */
+    private fun ensureLlama(): Llama? {
+        llama?.let { return it }
+        val (model, tok) = llamaFiles ?: return null
+        update { it.copy(llamaLoading = true) }
+        setModelStatus("Llama", "loading ${model.name}…")
+        return try {
+            val t0 = SystemClock.elapsedRealtime()
+            Llama(model, tok).also {
+                it.load()
+                llama = it
+                setModelStatus("Llama", "ready: ${model.name} (load ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s)")
+            }
+        } catch (e: Throwable) {
+            llamaFiles = null
+            setModelStatus("Llama", "error: ${e.message}")
+            null
+        } finally {
+            update { it.copy(llamaLoading = false) }
+        }
+    }
+
+    private fun setModelStatus(name: String, status: String) =
+        update { it.copy(models = LinkedHashMap(it.models).apply { put(name, status) }) }
+
+    /**
+     * Settings > Prepare explanations: write every item's explanation on this phone now (each
+     * item, and each condition answer for items that ask one), so later scans show it at once.
+     * Pauses scanning while it runs; tapping again stops it.
+     */
+    fun prepareExplanations() {
+        if (preparing) {
+            preparing = false
+            if (llmBusy) runCatching { llama?.stop() }
+            return
+        }
+        val kb = kb ?: return
+        if (llamaFiles == null && llama == null) {
+            update { it.copy(message = "Llama is not on the phone") }
+            return
+        }
+        preparing = true
+        val language = ui.language
+        val checker = checker
+        val jobs = kb.itemIds.flatMap { id ->
+            listOf(id to emptyMap<String, Any?>()) +
+                checker?.attributesFor(id).orEmpty().flatMap { a -> listOf(id to mapOf<String, Any?>(a to true), id to mapOf<String, Any?>(a to false)) }
+        }
+        update { it.copy(preparing = "0 / ${jobs.size}") }
         work.execute {
-            if (gen != explainGeneration) return@execute
             llmBusy = true
             try {
-                fun run(prompt: String, temperature: Float): String {
-                    if (gen != explainGeneration) throw Cancelled()
-                    val start = SystemClock.elapsedRealtimeNanos()
-                    var first = true
-                    val raw = StringBuilder()
-                    val text = llama.generate(prompt, temperature = temperature) { piece ->
-                        if (first) {
-                            first = false
-                            latency.record(Stages.LLM_FIRST_TOKEN, (SystemClock.elapsedRealtimeNanos() - start) / 1e6)
-                        }
-                        raw.append(piece)
-                        val partial = partialWhy(raw.toString())
-                        if (gen == explainGeneration) update { it.copy(whyStream = partial) }
-                    }
-                    llama.lastStats?.let { s -> synchronized(llmStats) { llmStats.add(s) } }
-                    if (gen != explainGeneration) throw Cancelled()
-                    return text
+                val llama = ensureLlama() ?: return@execute
+                fun gen(prompt: String, temperature: Float): String {
+                    if (!preparing) throw Cancelled()
+                    return llama.generate(prompt, temperature = temperature) { }
                 }
-                // Greedy first; sampled retries (temperature 0.7) only if the checks fail.
-                val explanation = Assistant.explain(
-                    kb, verdict, attributes, { run(it, 0f) }, question, sample = { run(it, 0.7f) },
-                )
-                val tps = llama.lastStats?.let { decodeTokensPerSecond(it) }
-                update {
-                    it.copy(verified = explanation.verified, explaining = false, decodeTps = tps,
-                        firstTokenS = latency.samples(Stages.LLM_FIRST_TOKEN).lastOrNull()?.div(1000))
+                for ((i, job) in jobs.withIndex()) {
+                    if (!preparing) break
+                    val (id, attrs) = job
+                    val key = ExplanationCache.key(kb.version, id, attrs, language)
+                    if (explanations.get(key) == null) {
+                        val verdict = kb.resolve(id, attrs, language)
+                        val e = Assistant.explain(kb, verdict, attrs, { gen(it, 0f) }, null, sample = { gen(it, 0.7f) })
+                        explanations.put(key, e.verified)
+                    }
+                    update { it.copy(preparing = "${i + 1} / ${jobs.size}", cachedAnswers = explanations.size()) }
                 }
             } catch (e: Cancelled) {
-                // Scan again or a new item: the new state is already on screen.
+                // stopped from Settings
             } catch (e: Throwable) {
-                if (gen == explainGeneration) {
-                    update { it.copy(explaining = false, message = "Llama failed: ${e.message}") }
-                }
+                update { it.copy(message = "Preparing stopped: ${e.message}") }
             } finally {
+                preparing = false
                 llmBusy = false
+                update { it.copy(preparing = null, cachedAnswers = explanations.size()) }
             }
         }
     }
@@ -742,6 +855,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         const val SUGGEST_BUTTON_MS = 1000L
         /** The detector sees something but stays unsure this long: suggest without a tap. */
         const val AUTO_SUGGEST_MS = 1500L
+        /** Llama starts this long after a card appears (not for typed or spoken questions). */
+        const val EXPLAIN_DELAY_MS = 1500L
         /** Shutter photos are scaled down to this long side: plenty for 640 px models, less memory. */
         const val PHOTO_MAX_SIDE = 1600
 

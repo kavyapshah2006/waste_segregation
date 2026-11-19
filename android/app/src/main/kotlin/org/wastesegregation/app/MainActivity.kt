@@ -387,6 +387,7 @@ fun ScanScreen(vm: AppViewModel, onSettings: () -> Unit) {
 @Composable
 private fun HintPill(ui: UiState, hi: Boolean) {
     val text = when {
+        ui.preparing != null -> (if (hi) "व्याख्याएँ तैयार हो रही हैं " else "Preparing explanations ") + ui.preparing
         ui.lookingCloser -> if (hi) "ध्यान से देख रहे हैं…" else "Looking closer…"
         ui.scanState == "stable" -> ui.liveItem ?: ""
         ui.scanState == "unsure" -> if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady"
@@ -401,7 +402,7 @@ private fun HintPill(ui: UiState, hi: Boolean) {
             .padding(horizontal = 18.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        if (ui.lookingCloser || ui.status.startsWith("Starting") || ui.status.startsWith("Loading")) {
+        if (ui.lookingCloser || ui.preparing != null || ui.status.startsWith("Starting") || ui.status.startsWith("Loading")) {
             CircularProgressIndicator(Modifier.size(14.dp), color = Palette.Mint, strokeWidth = 2.dp)
             Spacer(Modifier.width(8.dp))
         }
@@ -682,7 +683,13 @@ private fun ResultBody(vm: AppViewModel, onWrong: (() -> Unit)?) {
             ui.explaining -> Row(verticalAlignment = Alignment.Top) {
                 CircularProgressIndicator(Modifier.padding(top = 3.dp).size(14.dp), color = Palette.Teal500, strokeWidth = 2.dp)
                 Spacer(Modifier.width(10.dp))
-                if (ui.whyStream.isEmpty()) WaitingLine(hi)
+                if (ui.llamaLoading) {
+                    Text(
+                        if (hi) "Llama आपके फ़ोन पर तैयार हो रहा है (सिर्फ़ पहली बार, लगभग आधा मिनट)…"
+                        else "Waking up Llama on your phone (first time only, about half a minute)…",
+                        style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk, fontStyle = FontStyle.Italic,
+                    )
+                } else if (ui.whyStream.isEmpty()) WaitingLine(hi)
                 else Text(ui.whyStream, style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk)
             }
             else -> Text("–", color = Palette.InkMuted)
@@ -1024,6 +1031,20 @@ fun SettingsScreen(vm: AppViewModel, onClose: () -> Unit) {
                             Text(status, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted)
                         }
                     }
+                }
+            }
+            WhiteCard {
+                Text(if (hi) "व्याख्याएँ" else "Explanations", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (hi) "इस फ़ोन पर सहेजी गईं: ${ui.cachedAnswers}। पहले से तैयार करने पर हर स्कैन का 'क्यों' तुरंत दिखता है (लगभग 30 मिनट, चार्जर लगा रखें)।"
+                    else "Saved on this phone: ${ui.cachedAnswers}. Prepare them once and every scan shows its 'why' at once " +
+                        "(about 30 minutes, keep the phone charging; scanning pauses meanwhile).",
+                    style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
+                )
+                if (ui.preparing != null) {
+                    SecondaryButton((if (hi) "रोकें " else "Stop preparing ") + ui.preparing, Modifier.fillMaxWidth()) { vm.prepareExplanations() }
+                } else {
+                    PrimaryButton(if (hi) "व्याख्याएँ तैयार करें" else "Prepare all explanations", Modifier.fillMaxWidth()) { vm.prepareExplanations() }
                 }
             }
             WhiteCard {
