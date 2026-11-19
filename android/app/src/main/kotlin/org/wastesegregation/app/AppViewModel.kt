@@ -187,7 +187,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 status["Llama"] = "loading ${model.name}…"
                 report()
                 // Models share one lock (Inference), so scanning waits for this load.
-                update { it.copy(status = "Getting ready: loading Llama…") }
+                update { it.copy(status = "Starting up") }
                 val t0 = SystemClock.elapsedRealtime()
                 llama = Llama(model, tok).also { it.load() }
                 "ready: ${model.name} (load ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s)"

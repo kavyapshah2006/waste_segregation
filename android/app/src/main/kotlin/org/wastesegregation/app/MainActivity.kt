@@ -62,6 +62,8 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,6 +92,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executor
+import kotlinx.coroutines.delay
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -387,6 +390,7 @@ private fun HintPill(ui: UiState, hi: Boolean) {
         ui.scanState == "stable" -> ui.liveItem ?: ""
         ui.scanState == "unsure" -> if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady"
         ui.status.startsWith("Point") -> if (hi) "कैमरा किसी कचरे की चीज़ पर करें" else "Point your camera at a waste item"
+        ui.status.startsWith("Starting") -> if (hi) "कचरे की चीज़ पर कैमरा रखें, कुछ सेकंड रुकें" else "Point at a waste item, wait a few seconds"
         else -> ui.status
     }
     if (text.isEmpty()) return
@@ -667,11 +671,8 @@ private fun ResultBody(vm: AppViewModel, onWrong: (() -> Unit)?) {
             ui.explaining -> Row(verticalAlignment = Alignment.Top) {
                 CircularProgressIndicator(Modifier.padding(top = 3.dp).size(14.dp), color = Palette.Teal500, strokeWidth = 2.dp)
                 Spacer(Modifier.width(10.dp))
-                Text(
-                    ui.whyStream.ifEmpty { if (hi) "Llama इसी फ़ोन पर समझा रहा है…" else "Llama is explaining, on this phone…" },
-                    style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk,
-                    fontStyle = if (ui.whyStream.isEmpty()) FontStyle.Italic else FontStyle.Normal,
-                )
+                if (ui.whyStream.isEmpty()) WaitingLine(hi)
+                else Text(ui.whyStream, style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk)
             }
             else -> Text("–", color = Palette.InkMuted)
         }
@@ -1034,4 +1035,31 @@ fun SettingsScreen(vm: AppViewModel, onClose: () -> Unit) {
             )
         }
     }
+}
+
+private val WAIT_EN = listOf(
+    "Reading the rules for this item…",
+    "Writing a short reason on your phone, offline…",
+    "Checking it against the rulebook…",
+    "Almost there. The bin above is already final.",
+)
+private val WAIT_HI = listOf(
+    "इस चीज़ के नियम पढ़ रहे हैं…",
+    "आपके फ़ोन पर, बिना इंटरनेट, कारण लिख रहे हैं…",
+    "नियम-पुस्तिका से मिला रहे हैं…",
+    "बस थोड़ा और। ऊपर बताया डिब्बा पक्का है।",
+)
+
+/** While Llama writes (about 15 s on a budget phone): what it is doing, one line at a time. */
+@Composable
+private fun WaitingLine(hi: Boolean) {
+    val lines = if (hi) WAIT_HI else WAIT_EN
+    var i by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (i < lines.size - 1) {
+            delay(3500)
+            i++
+        }
+    }
+    Text(lines[i], style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk, fontStyle = FontStyle.Italic)
 }
