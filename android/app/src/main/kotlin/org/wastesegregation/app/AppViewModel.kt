@@ -56,7 +56,10 @@ data class UiState(
     val verified: VerifiedOutput? = null,
     val question: String? = null,
     val suggestions: List<Suggestion> = emptyList(),
-    val unsureFrames: Int = 0,
+    /** Nothing stable for a second: offer the "Suggest" button. */
+    val canSuggest: Boolean = false,
+    /** SigLIP is ranking KB items for the current frame. */
+    val lookingCloser: Boolean = false,
     val detectMs: Double? = null,
     val cardMs: Double? = null,
     val firstTokenS: Double? = null,
@@ -81,6 +84,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val main = Handler(Looper.getMainLooper())
     val analysisExecutor = Executors.newSingleThreadExecutor()
     private val work = Executors.newSingleThreadExecutor()
+    /** SigLIP (suggestions, picks) gets its own thread so it never waits behind Llama. */
+    private val vision = Executors.newSingleThreadExecutor()
     private val voiceThread = Executors.newSingleThreadExecutor()
 
     private val files = ModelFiles(app)
@@ -100,6 +105,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     @Volatile private var locked = false
     @Volatile private var llmBusy = false
     @Volatile private var lastFrame: Bitmap? = null
+    /** When the current search started (first frame without a stable item), for auto-suggest. */
+    @Volatile private var searchStartMs: Long? = null
+    /** Bumped to cancel a running explanation (scan again, new item). */
+    @Volatile private var explainGeneration = 0
+
+    private class Cancelled : RuntimeException()
 
     /** State changes always land on the main thread; callers may be on any thread. */
     private fun update(f: (UiState) -> UiState) {
@@ -143,7 +154,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val pte = files.siglip()
             val text = files.textEmbeddings()
             if (pte != null && text != null) {
-                siglip = Siglip(pte, text)
+                siglip = Siglip(pte, text).also { model ->
+                    // First inference allocates and plans; do it now, not when the user waits.
+                    runCatching { model.embed(Bitmap.createBitmap(224, 224, Bitmap.Config.ARGB_8888)) }
+                }
                 "ready"
             } else "missing (push siglip2_image_int8.pte)"
         } catch (e: Exception) {
@@ -197,13 +211,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         val detectMs = latency.samples(Stages.DETECT).lastOrNull()
         val name = state.itemId?.let { kb?.resolve(it, emptyMap(), ui.language)?.name }
+        val now = SystemClock.elapsedRealtime()
+        val searching = state.state != "stable"
+        if (!searching) searchStartMs = null else if (searchStartMs == null) searchStartMs = now
+        val waited = searchStartMs?.let { now - it } ?: 0L
         update {
             it.copy(
                 scanState = state.state,
                 liveItem = name,
                 detectMs = detectMs,
-                unsureFrames = if (state.state == "unsure") it.unsureFrames + 1 else 0,
+                canSuggest = searching && waited >= SUGGEST_BUTTON_MS,
             )
+        }
+        // The detector sees something but cannot decide: ask SigLIP straight away rather than
+        // making the user wait and tap. (An empty view only gets the button: nothing to rank.)
+        if (state.state == "unsure" && waited >= AUTO_SUGGEST_MS) {
+            suggest(bitmap)
+            return
         }
         if (state.state == "stable" && state.itemId != null) {
             if (!agrees(state.itemId!!, bitmap)) return
@@ -222,14 +246,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      */
     private fun agrees(itemId: String, frame: Bitmap): Boolean {
         val siglip = siglip ?: return true
+        update { it.copy(lookingCloser = true) }
         val top3 = latency.time(Stages.AGREEMENT) { siglip.suggest(siglip.embed(frame)) }
+        update { it.copy(lookingCloser = false) }
         if (FallbackRank.confirms(itemId, top3)) return true
         locked = true
         lastFrame = frame
-        update {
-            it.copy(scanState = "unsure", verdict = null, suggestions = top3,
-                message = "Not sure what this is: pick one")
-        }
+        update { it.copy(scanState = "unsure", verdict = null, suggestions = top3, lookingCloser = false) }
         return false
     }
 
@@ -274,12 +297,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun scanAgain() {
+        cancelExplanation()
         voter.reset()
+        searchStartMs = null
         locked = false
         update {
             it.copy(verdict = null, verified = null, whyStream = "", suggestions = emptyList(), scanState = "empty",
-                askAttributes = emptyList(), question = null)
+                askAttributes = emptyList(), question = null, explaining = false, lookingCloser = false,
+                canSuggest = false)
         }
+    }
+
+    /** Stop a running explanation: the camera waits for Llama (memory), so never keep it waiting. */
+    private fun cancelExplanation() {
+        explainGeneration++
+        if (llmBusy) runCatching { llama?.stop() }
     }
 
     // ------------------------------------------------------------------ Llama
@@ -299,11 +331,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             update { it.copy(verified = verified, question = question) }
             return
         }
+        val gen = ++explainGeneration
         update { it.copy(explaining = true, whyStream = "", verified = null, question = question) }
         work.execute {
+            if (gen != explainGeneration) return@execute
             llmBusy = true
             try {
                 fun run(prompt: String, temperature: Float): String {
+                    if (gen != explainGeneration) throw Cancelled()
                     val start = SystemClock.elapsedRealtimeNanos()
                     var first = true
                     val raw = StringBuilder()
@@ -314,9 +349,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                         }
                         raw.append(piece)
                         val partial = partialWhy(raw.toString())
-                        update { it.copy(whyStream = partial) }
+                        if (gen == explainGeneration) update { it.copy(whyStream = partial) }
                     }
                     llama.lastStats?.let { s -> synchronized(llmStats) { llmStats.add(s) } }
+                    if (gen != explainGeneration) throw Cancelled()
                     return text
                 }
                 // Greedy first; sampled retries (temperature 0.7) only if the checks fail.
@@ -328,8 +364,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     it.copy(verified = explanation.verified, explaining = false, decodeTps = tps,
                         firstTokenS = latency.samples(Stages.LLM_FIRST_TOKEN).lastOrNull()?.div(1000))
                 }
+            } catch (e: Cancelled) {
+                // Scan again or a new item: the new state is already on screen.
             } catch (e: Throwable) {
-                update { it.copy(explaining = false, message = "Llama failed: ${e.message}") }
+                if (gen == explainGeneration) {
+                    update { it.copy(explaining = false, message = "Llama failed: ${e.message}") }
+                }
             } finally {
                 llmBusy = false
             }
@@ -379,16 +419,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             update { it.copy(message = "Fallback model not loaded") }
             return
         }
-        work.execute {
+        locked = true  // stop scanning while the user chooses
+        lastFrame = bitmap
+        update { it.copy(lookingCloser = true, canSuggest = false, scanState = "unsure") }
+        vision.execute {
             val emb = latency.time(Stages.FALLBACK) { siglip.embed(bitmap) }
             val suggestions = siglip.suggest(emb)
-            update { it.copy(suggestions = suggestions) }
+            update { it.copy(suggestions = suggestions, lookingCloser = false) }
         }
     }
 
+    /** The bin colour of an item (for the suggestion list). */
+    fun binColourOf(itemId: String): String? = kb?.resolve(itemId, emptyMap(), ui.language)?.binColour
+
     fun choose(itemId: String) {
         locked = true
-        work.execute { lock(itemId, lastFrame, null, SystemClock.elapsedRealtimeNanos()) }
+        cancelExplanation()
+        vision.execute { lock(itemId, lastFrame, null, SystemClock.elapsedRealtimeNanos()) }
     }
 
     /** "This is wrong": log the correction (with the photo), then show the right item. */
@@ -409,13 +456,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             ),
         )
         locked = true
-        work.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos()) }
+        cancelExplanation()
+        vision.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos()) }
     }
 
     fun photo(bitmap: Bitmap) {
         val det = detector
         lastFrame = bitmap
-        work.execute {
+        cancelExplanation()
+        locked = true
+        vision.execute {
             val t0 = SystemClock.elapsedRealtimeNanos()
             val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
             if (best != null && best.confidence >= GATE) {
@@ -423,8 +473,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
                 }
             } else {
-                locked = true
-                update { it.copy(scanState = "unsure", verdict = null, message = "Not sure what this is: pick one") }
+                update { it.copy(verdict = null) }
                 suggest(bitmap)
             }
         }
@@ -573,6 +622,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     companion object {
         const val GATE = 0.5f
+        /** No stable item for this long: show the "Suggest" button. */
+        const val SUGGEST_BUTTON_MS = 1000L
+        /** The detector sees something but stays unsure this long: suggest without a tap. */
+        const val AUTO_SUGGEST_MS = 1500L
 
         /** The text of "why" so far, from the raw output after the answer prefix. */
         fun partialWhy(raw: String): String {
