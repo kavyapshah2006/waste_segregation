@@ -152,8 +152,6 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             "error: ${e.message}"
         }
         report()
-        // Scanning works from here on; Llama and the rest keep loading in the background.
-        if (detector != null) update { it.copy(status = "Point the camera at one item") }
         status["Dirty/broken check"] = try {
             files.attributePrompts()?.let { checker = AttributeChecker(Json.parse(it.readText()) as Map<String, Any?>); "ready" }
                 ?: "missing"
@@ -188,6 +186,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             if (model != null && tok != null) {
                 status["Llama"] = "loading ${model.name}…"
                 report()
+                // Models share one lock (Inference), so scanning waits for this load.
+                update { it.copy(status = "Getting ready: loading Llama…") }
                 val t0 = SystemClock.elapsedRealtime()
                 llama = Llama(model, tok).also { it.load() }
                 "ready: ${model.name} (load ${(SystemClock.elapsedRealtime() - t0) / 1000.0} s)"

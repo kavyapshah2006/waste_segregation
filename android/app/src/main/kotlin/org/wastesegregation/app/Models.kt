@@ -1,5 +1,6 @@
 package org.wastesegregation.app
 
+import kotlin.concurrent.withLock
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -49,6 +50,17 @@ object KbLoader {
         }
 }
 
+/**
+ * One ExecuTorch model runs at a time. Loading Llama resizes ExecuTorch's shared thread pool;
+ * a detector or SigLIP forward running at that moment deadlocked both on the phone (seen
+ * 2026-11-19: Llama stuck "loading", the photo check never returned). One lock around every
+ * load and forward also keeps to the app's memory rule: one heavy model at a time.
+ * Llama.stop() stays outside the lock so it can interrupt a running generation.
+ */
+object Inference {
+    val lock = java.util.concurrent.locks.ReentrantLock()
+}
+
 /** YOLO26n .pte: letterbox (same geometry as pipeline/detect.py) -> forward -> core decode + NMS. */
 class Detector(path: File, private val classNames: List<String>, private val kb: KnowledgeBase) : Closeable {
     private val module = Module.load(path.path)
@@ -77,7 +89,7 @@ class Detector(path: File, private val classNames: List<String>, private val kb:
             g
         }
         val out = log.time(Stages.DETECT) {
-            module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor()
+            Inference.lock.withLock { module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor() }
         }
         val outShape = out.shape()
         val data = out.dataAsFloatArray
@@ -124,7 +136,9 @@ class Siglip(path: File, textEmbeddings: File) : Closeable {
             input[2 * plane + i] = ((p and 0xFF) / 255f - 0.5f) / 0.5f
         }
         val shape = longArrayOf(1, 3, SIZE.toLong(), SIZE.toLong())
-        return module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor().dataAsFloatArray
+        return Inference.lock.withLock {
+            module.forward(EValue.from(Tensor.fromBlob(input, shape)))[0].toTensor().dataAsFloatArray
+        }
     }
 
     fun suggest(embedding: FloatArray, k: Int = 3): List<Suggestion> =
@@ -148,7 +162,7 @@ class Llama(model: File, tokenizer: File) : Closeable {
     @Volatile var lastStats: String? = null
         private set
 
-    fun load() = module.load()
+    fun load() = Inference.lock.withLock { module.load() }
 
     /** Generate after [prompt]; [onToken] gets each piece as it arrives. Returns all the text. */
     fun generate(prompt: String, maxNewTokens: Int = 200, temperature: Float = 0f, onToken: (String) -> Unit): String {
@@ -160,6 +174,7 @@ class Llama(model: File, tokenizer: File) : Closeable {
             .numBos(0)
             .numEos(0)
             .build()
+        Inference.lock.withLock {
         module.resetContext()
         module.generate(
             prompt,
@@ -175,6 +190,7 @@ class Llama(model: File, tokenizer: File) : Closeable {
                 }
             },
         )
+        }
         return out.toString()
     }
 

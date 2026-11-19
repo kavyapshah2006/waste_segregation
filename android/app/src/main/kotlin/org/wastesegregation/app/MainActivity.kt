@@ -590,7 +590,7 @@ private fun ResultBody(vm: AppViewModel, onWrong: (() -> Unit)?) {
         Column(Modifier.weight(1f)) {
             Text(if (hi) "इसे डालें" else "Dispose in the", style = MaterialTheme.typography.bodyLarge, color = Palette.Ink)
             Text(
-                if (hi) "${v.binColourName} डिब्बे में" else "${v.binColourName} bin",
+                if (hi) "${v.binColourName} डिब्बे में" else "${v.binColourName.replaceFirstChar { it.uppercase() }} bin",
                 style = MaterialTheme.typography.headlineMedium, color = Palette.Ink,
             )
             Text(v.streamName, style = MaterialTheme.typography.bodyMedium, color = binColour, fontWeight = FontWeight.Medium)
@@ -841,7 +841,7 @@ fun HistoryScreen(vm: AppViewModel) {
                         Column(Modifier.weight(1f)) {
                             Text(row.name, style = MaterialTheme.typography.titleMedium)
                             Text(
-                                if (hi) "${row.binColourName} डिब्बा · ${row.streamName}" else "${row.binColourName} bin · ${row.streamName}",
+                                if (hi) "${row.binColourName} डिब्बा · ${row.streamName}" else "${row.binColourName.replaceFirstChar { it.uppercase() }} bin · ${row.streamName}",
                                 style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
                             )
                         }
