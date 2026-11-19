@@ -208,12 +208,39 @@ Omnilingual ASR + pronunciation matching, synthetic speech: 92.5% of item names 
 inside full sentences matched first time (97.5% in the top 3), no false confident matches. Native
 speakers and real kitchens are still to be measured.
 
-### 5.6 Speed, memory, battery, offline proof [phone]
+### 5.6 On a budget phone: speed, memory, real items, offline
 
-Per-stage p50/p95 (detector, frame to card, Llama first token, tokens/s, after 5 minutes), peak
-memory, battery drain over 15 minutes, airplane-mode screen recording. Collected with
-`scripts/phone_collect.sh` and the app's timing export ([PHONE_SESSION.md](PHONE_SESSION.md)).
-Reference (ExecuTorch README, OnePlus 12): 1B SpinQuant 50.2 tokens/s, 0.3 s to first token.
+Measured on a realme C61 (Unisoc T612: 2 × Cortex-A75 + 6 × A55, 4 GB RAM, Android 14), an
+entry-level phone rather than a flagship ([DEVICE.md](DEVICE.md),
+[session notes](../eval/results/phone/session_notes_2026-11-19.md)).
+
+| Stage | Measured |
+|---|---|
+| Detector (YOLO26n, 640 px, XNNPACK) | 226–420 ms per frame |
+| Llama 3.2 1B SpinQuant: load | ~30 s, once |
+| Llama: first token / decode | 15.7 s / 4.4 tokens/s |
+| App memory with Llama loaded | ~1.2–1.3 GB (RSS) of 3.7 GB |
+
+For reference, ExecuTorch reports 50.2 tokens/s and 0.3 s to first token for the same model on a
+flagship (OnePlus 12): this phone is roughly 10x slower, so the design leans on it. The bin card
+never waits for Llama; Llama loads on the first explanation, not at start; and every explanation
+Llama writes is kept on the phone, so the next scan of the same item and condition shows it at
+once (Settings can prepare all of them ahead, on the phone).
+
+**Real items.** Scanned on the phone by hand (table and hand), including items the detector never
+saw: the bin was right for every item except a computer mouse (put in dry instead of special
+care); a calculator was named "mobile phone" (no calculator item; same bin). When unsure, the app
+offered three choices and the right one was among them every time
+([items](../eval/results/phone/items_2026-11-19.csv)). **Offline:** everything above ran with
+airplane mode on.
+
+Not measured (session cut short): a 15-minute sustained run, the per-stage timing export, and
+battery drain (the phone was charging over USB).
+
+**Bugs the phone found** (all fixed and re-tested on the phone): an Android regex difference that
+made every explanation fail; a deadlock when Llama loaded while another model ran (fixed with one
+model at a time, which is also the memory rule); the shutter reusing a stale frame and crashing on
+a released camera image; timing that counted waiting as work.
 
 ## 6. Comparison with the state of the art
 

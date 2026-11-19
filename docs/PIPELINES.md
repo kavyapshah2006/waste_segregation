@@ -76,22 +76,29 @@ comes from the phone.
   in the app (Piper Hindi voices are non-commercial or have an unverified licence).
 - Details and measurements: [models/speech/README.md](../models/speech/README.md).
 
-## Memory policy
+## Memory and speed policy
 
-- One heavy model at a time on phones with 6 GB of RAM or less: camera analysis (detector) pauses
-  while Llama generates; the speech model and the fallback encoder load on demand and are released
-  after use.
-- Targets (FuturePlan section 9): app under about 60% of device RAM, detector under 50 ms per
-  frame, verdict under 150 ms, Llama first token under 1.5 s, at least 15 tokens/s.
+- **One ExecuTorch model runs at a time** (`Inference` lock in the app): loading Llama resizes
+  ExecuTorch's shared thread pool, and a detector or SigLIP run at that moment deadlocked both on
+  the phone. The lock also keeps peak memory down: camera analysis pauses while Llama works.
+- **Llama loads on the first explanation**, not at start, so scanning is ready in seconds.
+- **Explanations are kept on the phone** (`ExplanationCache`): a later scan of the same item,
+  condition and language shows the saved, checked answer at once. Settings can prepare all of
+  them ahead, on the phone. Typed and spoken questions always run Llama live.
+- **Llama starts 1.5 s after a card**, so scanning the next item right away never waits behind
+  Llama reading its prompt (that step cannot be interrupted).
+- The speech model loads per question and is released after use; detector and SigLIP stay loaded.
+- Targets (FuturePlan section 9) were set for a mid-range phone: app under about 60% of device RAM,
+  detector under 50 ms per frame, Llama first token under 1.5 s, at least 15 tokens/s.
 
 ## Measured on the phone
 
-To be filled from `eval/results/` after the phone sessions (steps 45, 61, 63, 65).
+realme C61 (Unisoc T612, 4 GB RAM), 2026-11-19, in-app overlay and adb
+([session notes](../eval/results/phone/session_notes_2026-11-19.md)). Single readings, not
+p50/p95: the sustained run and timing export were not done.
 
-| Pipeline | p50 | p95 | Peak memory | Notes |
-|---|---|---|---|---|
-| Detector | pending | pending | pending | |
-| Fallback encoder | pending | pending | pending | |
-| KB lookup | pending | pending | pending | |
-| Llama first token / tokens per second | pending | pending | pending | |
-| Speech → text | pending | pending | pending | |
+| Pipeline | Measured | Memory | Notes |
+|---|---|---|---|
+| Detector | 226–420 ms per frame | | XNNPACK, 640 px |
+| Llama | load ~30 s; first token 15.7 s; 4.4 tokens/s | app ~1.2–1.3 GB RSS with Llama | ~10x slower than a flagship |
+| Fallback encoder, KB lookup, speech | not measured separately | | |
