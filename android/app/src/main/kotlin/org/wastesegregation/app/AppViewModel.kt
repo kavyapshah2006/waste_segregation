@@ -644,7 +644,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val all = scans.all()
             val summary = Impact.summary(kb, all, now, tz)
             val language = ui.language
-            val history = all.asReversed().take(100).mapNotNull { scan ->
+            // Holding one item in view re-confirms it every few seconds: show it once, using the
+            // same rule as the impact counts (same item again within DEDUPE_SECONDS).
+            val distinct = mutableListOf<Scan>()
+            for (scan in all) {
+                val last = distinct.lastOrNull()
+                if (last != null && last.itemId == scan.itemId && scan.timeS - last.timeS <= Impact.DEDUPE_SECONDS) {
+                    distinct[distinct.size - 1] = scan
+                } else distinct.add(scan)
+            }
+            val history = distinct.asReversed().take(100).mapNotNull { scan ->
                 runCatching {
                     val v = kb.resolve(scan.itemId, scan.attributes, language)
                     HistoryRow((scan.timeS * 1000).toLong(), scan.itemId, v.name, v.binColour, v.binColourName, v.streamName)
