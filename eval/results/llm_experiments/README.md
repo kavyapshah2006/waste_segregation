@@ -70,4 +70,4 @@ training-split questions (the stock SpinQuant model never saw them; only the QLo
 used this split): **98.1% useful** (English 98.6%, Hindi 97.6%), 99% valid JSON, 1.09 attempts,
 63 tokens, 104/104 off-topic declined, no false declines. Failures: 4 unparseable, 1 unsafe tip,
 1 unsafe why, 1 wrong recyclable claim, 1 negated step, all stopped by the verifier. Result:
- (135 host minutes).
+`train/spinquant__shots_kind+rules+retry_greedy_sample.json` (135 host minutes).
