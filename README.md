@@ -1,8 +1,32 @@
-# Waste Segregation Assistant
+# SwachhSathi: on-device waste segregation assistant
 
-On-device AI assistant that identifies waste, decides the correct bin under India's SWM Rules 2026, and explains disposal and recycling options. Vision and Llama run fully offline on an Arm Android phone through **ExecuTorch**.
+Point a phone at a piece of waste and SwachhSathi tells you which of India's four SWM Rules 2026
+bins it goes in (green wet, blue dry, red sanitary, black special care), how to prepare it, and
+why, in English or Hindi, by camera, photo or voice. Everything runs offline on the phone's Arm
+CPU through **ExecuTorch**: a YOLO26n detector, a SigLIP 2 image encoder, Llama 3.2 1B and an
+offline speech model. The app has no internet permission at all.
 
-> Status: the Android app builds (CI produces the APK) with camera scan, instant KB verdict, streamed Llama explanation, photo upload, unknown-item suggestions, dirty/broken questions, Hindi/English voice, corrections and an impact screen. Llama answers: 96.6% useful on held-out questions with the shipped prompt (69.3% baseline). Detector (YOLO26n on TACO, 9.8 MB): 0.305 mAP50 on held-out images; at the 0.5 gate 88.4% of its verdicts land in the right stream ([report §5.1](docs/TECHNICAL_REPORT.md#51-sorting-accuracy)). On 2,371 South Asian photos across wet, dry and special-care waste, the detector and SigLIP 2 must agree before a verdict: 91.9% right bin (75.2% with the detector alone; [report §5.3](docs/TECHNICAL_REPORT.md#53-four-bin-test-on-south-asian-photos-bdwaste-and-the-agreement-rule)). Waiting on: the phone session (speed, memory, battery, demo video). Per-work-package status: [docs/FuturePlan.md](docs/FuturePlan.md#12-status); measured results: [eval/REPORT.md](eval/REPORT.md).
+<p>
+<img src="docs/images/result_battery.png" alt="Result screen for an AA battery" width="240">
+<img src="docs/images/result_bottle.png" alt="Result screen for a bottle" width="240">
+<img src="docs/images/history.png" alt="History screen" width="240">
+</p>
+
+**Results** (details in the [technical report](docs/TECHNICAL_REPORT.md), every number in
+[eval/REPORT.md](eval/REPORT.md)):
+
+- **Right bin on 2,371 South Asian photos** (BDWaste, wet, dry and special care): **91.9%**, because
+  a detector verdict needs a second model (SigLIP 2) to agree; the detector alone gets 75.2%
+  (wet waste 55.3% → 97.5%) ([§5.3](docs/TECHNICAL_REPORT.md#53-four-bin-test-on-south-asian-photos-bdwaste-and-the-agreement-rule)).
+- **Llama explanations**: 98.1% useful on 416 held-out questions (96.6% on the 88 the prompt was
+  chosen on; 69.3% before), every answer checked against the knowledge base, off-topic questions
+  declined ([§5.2](docs/TECHNICAL_REPORT.md#52-llama-answer-quality-laptop-same-pte-as-the-phone)).
+- **Detector**: YOLO26n on TACO, 9.8 MB, 0.305 mAP50 on held-out images, in the same range as much
+  larger published TACO systems ([§5.1](docs/TECHNICAL_REPORT.md#51-sorting-accuracy)).
+- **On an entry-level phone** (realme C61, Unisoc T612, 4 GB): detector 0.23–0.42 s per frame,
+  Llama 4.4 tokens/s; the bin card never waits for Llama, and explanations are kept on the phone
+  so repeat scans are instant. Real items scanned by hand: right bin for all but one (a computer
+  mouse); airplane mode on throughout ([§5.6](docs/TECHNICAL_REPORT.md#56-on-a-budget-phone-speed-memory-real-items-offline)).
 
 **Built with Llama.** Licensed under the GNU AGPL-3.0 ([LICENSE](LICENSE)); third-party licences in [THIRD_PARTY.md](THIRD_PARTY.md) and [NOTICE](NOTICE).
 
@@ -15,7 +39,7 @@ On-device AI assistant that identifies waste, decides the correct bin under Indi
 - [Pipelines](docs/PIPELINES.md): the five on-device pipelines, their runtimes, models and memory policy
 - [Dev setup](docs/DEV_SETUP.md): Python, Android and phone setup
 - [Phone session runbook](docs/PHONE_SESSION.md): install, measure and record the demo in one ~90 minute sitting
-- [Technical report (draft)](docs/TECHNICAL_REPORT.md) and [demo video script](docs/DEMO_SCRIPT.md)
+- [Technical report](docs/TECHNICAL_REPORT.md) and [demo video script](docs/DEMO_SCRIPT.md)
 - [Evaluation report](eval/REPORT.md): every measured number, regenerated from `eval/results/`
 
 ## Quick start (WSL Ubuntu)
@@ -32,27 +56,40 @@ Python dependencies are managed only with uv (`uv add <pkg>`, `uv run <cmd>`). `
 
 ## How it works
 
-Point the camera at one item. The detector names it, frame voting makes sure it is stable, and the
-knowledge base decides the bin (SWM Rules 2026: green wet, blue dry, red sanitary, black special
-care) with the steps and any hazard. The card shows at once; Llama 3.2 1B then streams a short
-explanation and tip, checked against the knowledge base before it is shown. Not sure what it is?
-The app offers three suggestions instead of guessing. Ask by typing or by voice, in English or
-Hindi. Everything runs on the phone, with no internet permission at all.
+1. **Scan.** Point the camera at one item, or tap the shutter to analyse a full-resolution photo, or
+   pick one from the gallery. The YOLO26n detector names it and frame voting makes sure it is stable.
+2. **Two models must agree.** The detector's item becomes a verdict only if SigLIP 2 also ranks it
+   in its top three for the same picture; otherwise the app shows three suggestions to pick from
+   instead of guessing. Items the detector never learned (peels, batteries, electronics) reach the
+   user this way.
+3. **The knowledge base decides the bin**, not a neural network: SWM Rules 2026 streams, bin
+   colours, steps, hazards and drop-off points for 53 household items. Items whose bin depends on
+   condition ask "Is it dirty?" or "Is it broken?".
+4. **Llama explains.** Llama 3.2 1B writes a short "why it matters" and a tip, checked against the
+   knowledge base before it is shown; anything that fails the checks falls back to the KB's own text.
+   The card never waits for Llama, and every explanation it writes is kept on the phone.
+5. **Ask and listen.** Type or speak a question in English or Hindi (offline speech recognition);
+   off-topic questions are declined. Verdicts are read aloud. History and Impact keep a private
+   record of what you sorted, with a daily fact and quiz.
 
-Pipelines and models: [docs/PIPELINES.md](docs/PIPELINES.md). Design and results:
-[docs/TECHNICAL_REPORT.md](docs/TECHNICAL_REPORT.md).
+Pipelines, runtimes and the memory policy: [docs/PIPELINES.md](docs/PIPELINES.md).
 
 ## Run it on a phone
 
+From a release: install `swachhsathi.apk`, then copy the model files to the phone (steps in the
+release notes). From source:
+
 ```bash
-cd android && ./gradlew :app:assembleDebug && cd ..   # or download the APK from a release
 ./scripts/download_models.sh llama-spinquant --accept-llama-license   # Llama 3.2 1B .pte
-uv run --group finetune python models/fallback/build.py   # SigLIP 2 image encoder .pte
-./models/speech/download.sh                               # Omnilingual ASR (voice)
-./scripts/install_app.sh                                  # APK + models over USB (adb)
+uv run --group finetune python models/fallback/build.py               # SigLIP 2 image encoder .pte
+./models/speech/download.sh                                           # Omnilingual ASR (voice)
+cd android && ./gradlew :app:assembleRelease && cd ..                 # the APK (detector + KB inside)
+./scripts/install_app.sh                                              # APK + models over USB (adb)
 ```
 
-Full checklist for measuring and recording the demo: [docs/PHONE_SESSION.md](docs/PHONE_SESSION.md).
+On first use, open **Settings → Prepare all explanations** with the phone charging: Llama writes
+every item's explanation once, on the phone, so later scans show it instantly. The full
+measurement runbook is [docs/PHONE_SESSION.md](docs/PHONE_SESSION.md).
 
 ## Repository layout
 

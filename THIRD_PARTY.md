@@ -29,6 +29,14 @@ This project is licensed under the **GNU AGPL-3.0** ([LICENSE](LICENSE)), chosen
 | TACO (pedropro/TACO) | Detector training | Code MIT; **images mixed**: 466 ODbL (OpenLitterMap), 319 marked only "CC", 715 with no licence field | Images are not redistributed. Before publishing trained weights, check that training on the unlabelled-licence images is acceptable, or train without them |
 | Solid Waste Management Rules, 2026 (MoEFCC) | KB stream and bin rules | Government publication | Cited in each KB item's `sources` |
 | US EPA clean-up guidance (broken CFLs, mercury thermometers) | KB steps | US Government work | Cited in the KB items |
+| BDWaste (Rahman et al., Data in Brief 53, 2024; doi:10.17632/96g5pgfnfw.1) | Evaluation only (four-bin test, report §5.3) | CC BY 4.0 | Attribution given here and in the report; images not redistributed; no training on them |
+| DWSD (Ali et al., Data in Brief 59, 2025; doi:10.17632/gr99ny6b8p.1) and pLitterStreet (doi:10.5281/zenodo.8288500) | Checked, **not used** (report §4) | CC BY 4.0 | Not redistributed |
+
+## Brand
+
+| Asset | Licence | Note |
+|---|---|---|
+| SwachhSathi logo (`android/app/logo/swachhsathi_logo.png`) | Provided by the project team | Launcher icon and in-app logo are generated from it by `android/app/make_icons.py` |
 
 ## Used on the laptop only (not shipped)
 

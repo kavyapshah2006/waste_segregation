@@ -88,3 +88,15 @@ Follow [DEMO_SCRIPT.md](DEMO_SCRIPT.md), airplane mode on from the first shot.
 
 If the phone's owner prefers: `adb.exe uninstall org.wastesegregation.app` (removes the app and
 its 1.2 GB of models) and turn USB debugging off.
+
+## Final check (15–20 minutes, after the full session)
+
+1. Connect the phone; on the laptop: installing android/app/build/outputs/apk/release/app-release.apk (models stay on the phone).
+2. Open SwachhSathi: scanning should be ready within a few seconds ("Point your camera at a waste item").
+3. Scan a bottle: the card appears, and "Why it matters" starts about 1.5 s later; Llama loads the
+   first time (about half a minute). Tap **Scan again** while it is writing and scan the next item
+   at once: the camera should not wait.
+4. Scan the same bottle again: the explanation appears instantly (kept on the phone).
+5. Tap the white shutter on a battery: a photo is taken and analysed, no crash.
+6. Settings → **Prepare all explanations**, leave it charging if there is time (or before the demo video).
+7. Settings → **Export timings for the report**, then .

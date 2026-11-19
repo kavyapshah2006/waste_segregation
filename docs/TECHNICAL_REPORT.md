@@ -1,9 +1,9 @@
-# Technical report: on-device waste segregation assistant
+# Technical report: SwachhSathi, an on-device waste segregation assistant
 
 Bharat AI-SoC Challenge, PS2 (Edge AI for waste classification and disposal). Every number below
 comes from a result file in `eval/results/`; [eval/REPORT.md](../eval/REPORT.md) regenerates the
-tables with `uv run python eval/report.py`. Sections marked **[phone]** are filled after the
-phone session.
+tables with `uv run python eval/report.py`. Phone measurements come from one session on an
+entry-level phone (§5.6).
 
 ## 1. Problem and goal
 
@@ -64,7 +64,7 @@ INTERNET permission). Runtimes, models and memory policy: [PIPELINES.md](PIPELIN
 | Unknown items | SigLIP 2 base image encoder, int8 `.pte`, cosine against KB item text embeddings; top 3 offered, never auto-decided | 94 MB | when not sure or not agreed |
 | Dirty / broken | Same SigLIP 2 embedding vs item-specific prompts ("dirty milk pouch" vs "clean milk pouch"); in the unsure band the app asks the user | 0 MB extra | stable item with condition rules |
 | Decision | KB (`kb.sqlite`) + city profile | <1 MB | every verdict |
-| Explanation | Llama 3.2 1B Instruct SpinQuant INT4 `.pte` + verifier | 1.1 GB | after the card |
+| Explanation | Llama 3.2 1B Instruct SpinQuant INT4 `.pte` + verifier; loads on first use, answers kept on the phone | 1.1 GB | 1.5 s after the card, or instantly from the phone's cache |
 | Voice | Omnilingual ASR 300M CTC int8 (sherpa-onnx) → pronunciation-key matcher; Android text-to-speech | 366 MB | push-to-talk |
 | Impact | Scan log, items by stream, kg kept out of landfill (estimate), streak; education cards and quiz from KB facts | – | on demand |
 
@@ -192,6 +192,11 @@ three suggestions to confirm. Dry falls a little because a user tapping the firs
 counted as is; in the app they see all three. Cost: one extra SigLIP pass (about the size of the
 fallback pass) before a verdict, timed as the `agreement` stage on the phone (§5.6).
 
+**Whole photo, not the item crop.** Running the agreement check on the detector's crop (which would
+let one SigLIP pass also serve the dirty/broken check) was measured on the same photos: overall
+right bin 92.1% (vs 91.9%), but firm verdicts were right on bin only 90.4% of the time (vs 95.4%),
+and wet waste fell to 95.9% (vs 97.5%). The whole photo stays.
+
 **Fallback alone on TACO crops** (earlier check): 83.5% top-3 (68.4% top-1) on 133 TACO object
 crops with the int8 encoder that ships, within one point of fp32, zero-shot.
 
@@ -266,15 +271,24 @@ runs on a phone without a network.
 - Run one heavy CPU job at a time: two ExecuTorch runners in parallel were 5–6x slower each.
 - Licences decide architecture: AGPL detector → AGPL repo; research-only MobileCLIP → SigLIP 2;
   non-commercial Piper voices → Android's own text-to-speech.
+- Test on the target data and the target phone. TACO said 88% right bin; South Asian photos showed
+  the detector sending wet waste to the dry bin, and a second model fixed it (§5.3). The phone found
+  four bugs no laptop test could (§5.6).
+- Design for the slowest phone you can find: on a budget phone Llama is ~10x slower than on a
+  flagship, so the answer never waits for it and its explanations are kept and reused.
 
 ## 8. Limitations and next steps
 
 Detector trained on European litter photos (TACO), not on Indian household waste: on its own it
 mistakes unfamiliar wet waste for dry items, which the agreement rule now catches (§5.3); an India
 photo set, retraining and a trained dirty/broken head are next. The open South Asian detection sets
-we found were not usable for training (§4). No KB item yet for used masks and gloves. Hindi KB text unreviewed; Tamil, Telugu, Bengali
-and Marathi not yet written. Voice measured on synthetic speech. One city profile. LoRA fine-tune
-tooled but not run.
+we found were not usable for training (§4). On the phone a computer mouse was put in the dry bin:
+electronics reach the user only through SigLIP suggestions. No KB item yet for used masks,
+gloves or calculators. Llama on a budget phone is slow the first time (15–30 s per explanation)
+until answers are cached; a shorter prompt would help but cost answer quality (§5.2). Not yet
+measured: a 15-minute sustained run and battery drain. Hindi KB text unreviewed; Tamil, Telugu,
+Bengali and Marathi not yet written. Voice measured on synthetic speech. One city profile. LoRA
+fine-tune tooled but not run.
 
 ## Reproduce
 

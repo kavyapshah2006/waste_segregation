@@ -40,7 +40,7 @@ echo "== 3. release APK"
 echo "== 4. collect"
 mkdir -p "$DIST"
 rm -f "$DIST"/*
-cp android/app/build/outputs/apk/release/app-release.apk "$DIST/waste-segregation.apk"
+cp android/app/build/outputs/apk/release/app-release.apk "$DIST/swachhsathi.apk"
 cp "$WEIGHTS" "$DIST/detector_yolo26n_taco.pt"
 cp models/vision/out/model.pte "$DIST/detector_yolo26n_taco.pte"
 cp "$LLM_DIR"/Llama-*.pte "$LLM_DIR/tokenizer.model" "$DIST/"
