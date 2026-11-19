@@ -96,6 +96,11 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val work = Executors.newSingleThreadExecutor()
     /** SigLIP (suggestions, picks) gets its own thread so it never waits behind Llama. */
     private val vision = Executors.newSingleThreadExecutor()
+    /** Shutter photos are copied here the moment they arrive, so the camera buffer is never
+     *  held while the vision thread waits for another model (it was, and got closed under us). */
+    private val captureThread = Executors.newSingleThreadExecutor()
+    /** A shutter photo is being taken or analysed: further taps are ignored until it is done. */
+    @Volatile private var capturing = false
     private val voiceThread = Executors.newSingleThreadExecutor()
 
     private val files = ModelFiles(app)
@@ -315,6 +320,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun scanAgain() {
         cancelExplanation()
+        capturing = false
         voter.reset()
         searchStartMs = null
         locked = false
@@ -460,29 +466,34 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             update { it.copy(message = "Still starting up (about half a minute). Try again in a moment.") }
             return
         }
+        if (capturing) return
         val capture = imageCapture
         if (capture == null) {
             lastFrame?.let(::photo)
             return
         }
+        capturing = true
         locked = true  // stop live scanning while the photo is taken and analysed
         update { it.copy(lookingCloser = true, suggestions = emptyList(), canSuggest = false) }
-        capture.takePicture(vision, object : ImageCapture.OnImageCapturedCallback() {
+        capture.takePicture(captureThread, object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
+                // Copy the pixels now and give the buffer straight back to the camera.
                 val bitmap = try {
                     image.toBitmap().rotate(image.imageInfo.rotationDegrees).limit(PHOTO_MAX_SIDE)
+                } catch (e: IllegalStateException) {
+                    null
                 } finally {
                     image.close()
                 }
-                photo(bitmap)
+                if (bitmap != null) photo(bitmap, fromShutter = true) else failed("the camera released the photo")
             }
 
-            override fun onError(exception: ImageCaptureException) {
-                val frame = lastFrame
-                if (frame != null) photo(frame) else {
-                    locked = false
-                    update { it.copy(lookingCloser = false, message = "Couldn't take a photo: ${exception.message}") }
-                }
+            override fun onError(exception: ImageCaptureException) = failed(exception.message ?: "camera error")
+
+            private fun failed(why: String) {
+                capturing = false
+                locked = false
+                update { it.copy(lookingCloser = false, message = "Couldn't take a photo ($why). Try again.") }
             }
         })
     }
@@ -537,8 +548,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         vision.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos()) }
     }
 
-    fun photo(bitmap: Bitmap) {
+    fun photo(bitmap: Bitmap, fromShutter: Boolean = false) {
         if (!ready) {
+            if (fromShutter) capturing = false
             update { it.copy(message = "Still starting up (about half a minute). Try again in a moment.") }
             return
         }
@@ -547,15 +559,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         cancelExplanation()
         locked = true
         vision.execute {
-            val t0 = SystemClock.elapsedRealtimeNanos()
-            val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
-            if (best != null && best.confidence >= GATE) {
-                if (agrees(best.itemId!!, bitmap)) {
-                    lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
+            try {
+                val t0 = SystemClock.elapsedRealtimeNanos()
+                val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
+                if (best != null && best.confidence >= GATE) {
+                    if (agrees(best.itemId!!, bitmap)) {
+                        lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
+                    }
+                } else {
+                    update { it.copy(verdict = null) }
+                    suggest(bitmap)
                 }
-            } else {
-                update { it.copy(verdict = null) }
-                suggest(bitmap)
+            } finally {
+                if (fromShutter) capturing = false
             }
         }
     }
@@ -715,6 +731,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         siglip?.close()
         analysisExecutor.shutdown()
         work.shutdown()
+        vision.shutdown()
+        captureThread.shutdown()
         voiceThread.shutdown()
     }
 
