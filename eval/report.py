@@ -187,6 +187,34 @@ def fallback_section() -> list[str]:
     ]
 
 
+def bdwaste_section() -> list[str]:
+    lines = ["## Four bins on South Asian photos (BDWaste)", ""]
+    found = _load("bdwaste_*.json")
+    if not found:
+        return lines + ["No results yet (`eval/bdwaste/evaluate.py`).", ""]
+    for stem, r in found:
+        groups = [("all", r["overall"])] + list(r["by_stream"].items())
+        lines += [f"Run `{stem.removeprefix('bdwaste_')}`, gate {r['gate']}:", ""]
+        lines += _table(
+            ["Bin", "Photos", "Right bin (agreement, shipped)", "Right bin (detector alone)",
+             "Right item", "Right item in top 3", "Verdicts", "Verdict right bin"],
+            [
+                [name, str(g["images"]), f"**{_pct(g['app_stream_acc'])}**",
+                 _pct(g["detector_first_stream_acc"]), _pct(g["app_item_acc"]),
+                 _pct(g["fallback_top3_item"]), _pct(g["app_verdict_coverage"]),
+                 _pct(g["app_verdict_stream_acc"])]
+                for name, g in groups
+            ],
+        )  # fmt: skip
+        lines.append("")
+    return lines + [
+        "Close-up phone photos of single items from Dhaka (CC BY 4.0). Agreement: a detector "
+        "verdict only when SigLIP 2 also ranks the item in its top 3, else three suggestions "
+        "(scored as the first one). Detector alone: its verdict whenever it clears the gate.",
+        "",
+    ]
+
+
 def speech_section() -> list[str]:
     rows = []
     for stem, r in _load("speech_*.json"):
@@ -296,7 +324,8 @@ def build() -> str:
         "",
     ]
     sections = (
-        accuracy_section, fallback_section, llm_quality_section, llm_experiments_section,
+        accuracy_section, bdwaste_section, fallback_section, llm_quality_section,
+        llm_experiments_section,
         speech_section,
         latency_section, stage_latency_section,
     )  # fmt: skip

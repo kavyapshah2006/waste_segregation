@@ -32,6 +32,19 @@ Gate sweep `yolo26n_taco_val` (val split):
 
 Lowest gate reaching 92.0%: 0.5.
 
+## Four bins on South Asian photos (BDWaste)
+
+Run `yolo26n_siglip2`, gate 0.5:
+
+| Bin | Photos | Right bin (agreement, shipped) | Right bin (detector alone) | Right item | Right item in top 3 | Verdicts | Verdict right bin |
+|---|---|---|---|---|---|---|---|
+| all | 2371 | **91.9%** | 75.2% | 70.8% | 90.2% | 12.8% | 95.4% |
+| dry | 1118 | **85.7%** | 93.1% | 70.7% | 80.8% | 27.0% | 95.7% |
+| special_care | 120 | **97.5%** | 95.0% | 97.5% | 99.2% | 0.0% | – |
+| wet | 1133 | **97.5%** | 55.3% | 68.1% | 98.5% | 0.1% | 0.0% |
+
+Close-up phone photos of single items from Dhaka (CC BY 4.0). Agreement: a detector verdict only when SigLIP 2 also ranks the item in its top 3, else three suggestions (scored as the first one). Detector alone: its verdict whenever it clears the gate.
+
 ## Unknown-item fallback (SigLIP 2, zero-shot)
 
 | Run | Encoder | Crops | Top-1 item | Top-3 item | Top-1 bin |
