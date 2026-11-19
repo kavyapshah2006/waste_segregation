@@ -1,0 +1,46 @@
+{
+  "model": "spinquant",
+  "variant": {
+    "name": "shots_kind+rules+retry_greedy_sample",
+    "rules": true,
+    "facts": "json",
+    "shots": "kind",
+    "lead": "none",
+    "temperature": 0.0,
+    "retries": 2,
+    "retry_lead": false,
+    "retry_temperature": 0.7,
+    "max_new_tokens": 200
+  },
+  "kb_version": "29e3922bea84ae99",
+  "cases": 520,
+  "off_topic_declined_rate": 1.0,
+  "false_declines": 0,
+  "sent_to_llm": 416,
+  "answered": 416,
+  "json_valid_rate": 0.99,
+  "clean_rate": 0.981,
+  "useful_rate": 0.981,
+  "status": {
+    "ok": 408,
+    "corrected": 4,
+    "fallback": 4
+  },
+  "contradictions": {
+    "tip_unsafe": 1,
+    "why_unsafe": 1,
+    "why_recyclable": 1,
+    "unparseable": 4,
+    "why_negates": 1
+  },
+  "language_match_rate": 1.0,
+  "mean_why_words": 14.0,
+  "useful_rate_en": 0.986,
+  "useful_rate_hi": 0.976,
+  "mean_attempts": 1.09,
+  "mean_generated_tokens": 63.3,
+  "kb_lead_rate": 0.0,
+  "useful_with_llm_text_rate": 0.981,
+  "decode_errors": 15,
+  "host_minutes": 134.9
+}

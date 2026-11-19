@@ -62,3 +62,12 @@ fail. Whatever still fails is never shown: the verifier falls back to the KB's o
 16 random answers of the shipped setup (8 English, 8 Hindi) read by hand: all consistent with
 the KB facts; two Hindi answers have awkward grammar ("सैनिटरी कचरा को…"), one tip on a broken
 glass bottle talks about recycling whole bottles. The Hindi text still needs a native speaker.
+
+## Confirmation on the training split
+
+The shipped setup was chosen on the 88 validation questions, so it was run once more on the 416
+training-split questions (the stock SpinQuant model never saw them; only the QLoRA data generator
+used this split): **98.1% useful** (English 98.6%, Hindi 97.6%), 99% valid JSON, 1.09 attempts,
+63 tokens, 104/104 off-topic declined, no false declines. Failures: 4 unparseable, 1 unsafe tip,
+1 unsafe why, 1 wrong recyclable claim, 1 negated step, all stopped by the verifier. Result:
+ (135 host minutes).

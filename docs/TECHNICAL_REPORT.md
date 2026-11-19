@@ -130,6 +130,12 @@ on a phone. Fewer classes make our task easier, and it is not a like-for-like co
 | + stricter rules | 95.5% | 100% | 63 |
 | + sampled retry only when the checks fail (**shipped**) | **96.6%** | 100% | 66 |
 
+**Confirmed on 416 more questions.** The variants were chosen on the 88 validation questions, so
+the shipped setup was then run once on the 416 training-split questions, which the stock SpinQuant
+model has never seen: **98.1% useful** (English 98.6%, Hindi 97.6%), 99% valid JSON, 1.09 attempts
+per answer, 63 tokens. The 8 failures were 4 unparseable outputs and 4 answers the verifier stopped
+(two unsafe, one wrong recyclable claim, one negated step); none reach the user.
+
 Useful = valid, passes every verifier check, has a `why` in the requested language. 18 variants
 were measured (prompt wording, fact format, examples, KB-written first sentence, temperature,
 retries, SpinQuant vs QLoRA): [eval/results/llm_experiments/README.md](../eval/results/llm_experiments/README.md).
