@@ -41,6 +41,10 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.Executors
 
+/** One past scan, ready to show in History. */
+data class HistoryRow(val timeMs: Long, val itemId: String, val name: String, val binColour: String,
+    val binColourName: String, val streamName: String)
+
 data class UiState(
     val status: String = "Loading…",
     val models: Map<String, String> = emptyMap(),
@@ -73,6 +77,10 @@ data class UiState(
     val transcribing: Boolean = false,
     val transcript: String? = null,
     val voiceChoices: List<String> = emptyList(),
+    /** The photo (detector crop or chosen frame) shown on the result card. */
+    val verdictImage: Bitmap? = null,
+    val history: List<HistoryRow> = emptyList(),
+    val torchOn: Boolean = false,
 )
 
 /** Everything the screens need: models, the scan state machine, Llama, stores. */
@@ -288,7 +296,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             it.copy(
                 verdict = verdict, confidence = confidence, attributes = attributes, askAttributes = ask,
                 verified = null, whyStream = "", question = question, suggestions = emptyList(),
-                cardMs = cardMs, scanState = "locked",
+                cardMs = cardMs, scanState = "locked", verdictImage = crop,
             )
         }
         speak(verdict)
@@ -304,7 +312,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         update {
             it.copy(verdict = null, verified = null, whyStream = "", suggestions = emptyList(), scanState = "empty",
                 askAttributes = emptyList(), question = null, explaining = false, lookingCloser = false,
-                canSuggest = false)
+                canSuggest = false, verdictImage = null)
         }
     }
 
@@ -427,6 +435,31 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val suggestions = siglip.suggest(emb)
             update { it.copy(suggestions = suggestions, lookingCloser = false) }
         }
+    }
+
+    /** Shutter: decide on the current frame now instead of waiting for frame voting. */
+    fun captureNow() {
+        val frame = lastFrame ?: return
+        photo(frame)
+    }
+
+    /** Camera torch (flash); the camera itself is bound by the screen. */
+    @Volatile var camera: androidx.camera.core.Camera? = null
+
+    fun toggleTorch() {
+        val cam = camera ?: return
+        val on = !ui.torchOn
+        cam.cameraControl.enableTorch(on)
+        update { it.copy(torchOn = on) }
+    }
+
+    /** Plain text for the share sheet. */
+    fun shareText(): String? {
+        val v = ui.verdict ?: return null
+        val hi = v.language == "hi"
+        val head = if (hi) "${v.name}: ${v.binColourName} डिब्बा (${v.streamName})" else "${v.name}: ${v.binColourName} bin (${v.streamName})"
+        val steps = v.steps.mapIndexed { i, step -> "${i + 1}. $step" }.joinToString("\n")
+        return "$head\n$steps\n— SwachhSathi (offline, on-device)"
     }
 
     /** The bin colour of an item (for the suggestion list). */
@@ -560,10 +593,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val now = System.currentTimeMillis() / 1000.0
             val tz = java.util.TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 60000
             val day = Impact.localDay(now, tz)
-            val summary = Impact.summary(kb, scans.all(), now, tz)
+            val all = scans.all()
+            val summary = Impact.summary(kb, all, now, tz)
+            val language = ui.language
+            val history = all.asReversed().take(100).mapNotNull { scan ->
+                runCatching {
+                    val v = kb.resolve(scan.itemId, scan.attributes, language)
+                    HistoryRow((scan.timeS * 1000).toLong(), scan.itemId, v.name, v.binColour, v.binColourName, v.streamName)
+                }.getOrNull()
+            }
             update {
                 it.copy(impact = summary, didYouKnow = Education.didYouKnow(kb, day, it.language),
-                    quiz = Education.quiz(kb, day, it.language))
+                    quiz = Education.quiz(kb, day, it.language), history = history)
             }
         }
     }

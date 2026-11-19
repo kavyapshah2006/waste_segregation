@@ -1,12 +1,14 @@
 package org.wastesegregation.app
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,21 +18,28 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,9 +53,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -66,6 +72,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +84,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.Executor
 
 class MainActivity : ComponentActivity() {
@@ -86,121 +98,193 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+private data class Tab(val en: String, val hi: String, val icon: AppIcon)
+
 private val TABS = listOf(
-    Triple("Scan", "स्कैन", AppIcon.Scan),
-    Triple("Ask", "पूछें", AppIcon.Ask),
-    Triple("Impact", "असर", AppIcon.Impact),
-    Triple("Settings", "सेटिंग", AppIcon.Settings),
+    Tab("Scan", "स्कैन", AppIcon.Scan),
+    Tab("Ask", "पूछें", AppIcon.Ask),
+    Tab("History", "इतिहास", AppIcon.History),
+    Tab("Impact", "असर", AppIcon.Impact),
 )
 
 @Composable
 fun App(vm: AppViewModel = viewModel()) {
     var tab by remember { mutableStateOf(0) }
+    var settingsOpen by remember { mutableStateOf(false) }
     val ui = vm.ui
     val hi = ui.language == "hi"
+    BackHandler(enabled = settingsOpen || (tab == 0 && ui.verdict != null) || tab != 0) {
+        when {
+            settingsOpen -> settingsOpen = false
+            tab == 0 && ui.verdict != null -> vm.scanAgain()
+            else -> tab = 0
+        }
+    }
     Scaffold(
-        containerColor = Palette.Background,
-        bottomBar = {
-            Column {
-                HorizontalDivider(color = Palette.Outline)
-                NavigationBar(containerColor = Palette.Background, tonalElevation = 0.dp) {
-                    TABS.forEachIndexed { i, (en, hindi, icon) ->
-                        val selected = tab == i
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { tab = i },
-                            icon = { Icon(icon, if (selected) Palette.Accent else Palette.InkMuted) },
-                            label = { Text(if (hi) hindi else en, style = MaterialTheme.typography.labelMedium) },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = Palette.AccentSoft,
-                                selectedTextColor = Palette.Accent,
-                                unselectedTextColor = Palette.InkMuted,
-                            ),
-                        )
-                    }
-                }
-            }
-        },
+        containerColor = Palette.Page,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        bottomBar = { if (!settingsOpen) BottomBar(tab, hi) { tab = it } },
     ) { padding ->
-        Box(Modifier.padding(padding).fillMaxSize().background(Palette.Background)) {
-            when (tab) {
-                0 -> ScanScreen(vm)
-                1 -> AskScreen(vm)
-                2 -> ImpactScreen(vm)
-                else -> SettingsScreen(vm)
+        Box(Modifier.padding(padding).fillMaxSize()) {
+            when {
+                settingsOpen -> SettingsScreen(vm, onClose = { settingsOpen = false })
+                tab == 0 && ui.verdict != null -> ResultScreen(vm)
+                tab == 0 -> ScanScreen(vm, onSettings = { settingsOpen = true })
+                tab == 1 -> AskScreen(vm)
+                tab == 2 -> HistoryScreen(vm)
+                else -> ImpactScreen(vm)
             }
         }
     }
     ui.message?.let { msg ->
         AlertDialog(
             onDismissRequest = vm::clearMessage,
-            containerColor = Palette.Background,
-            confirmButton = { TextButton(onClick = vm::clearMessage) { Text("OK", color = Palette.Accent) } },
+            containerColor = Palette.Card,
+            confirmButton = { TextButton(onClick = vm::clearMessage) { Text("OK", color = Palette.Teal500) } },
             text = { Text(msg, color = Palette.Ink) },
         )
     }
 }
 
+@Composable
+private fun BottomBar(tab: Int, hi: Boolean, onTab: (Int) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 22.dp, topEnd = 22.dp))
+            .background(Palette.Teal900)
+            .navigationBarsPadding()
+            .padding(top = 10.dp, bottom = 8.dp),
+        horizontalArrangement = Arrangement.SpaceAround,
+    ) {
+        TABS.forEachIndexed { i, t ->
+            val selected = tab == i
+            val colour = if (selected) Palette.Mint else Color(0xFFB5C4BF)
+            Column(
+                Modifier.clip(MaterialTheme.shapes.small).clickable { onTab(i) }.padding(horizontal = 14.dp, vertical = 4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Icon(t.icon, colour, 24.dp)
+                Spacer(Modifier.height(3.dp))
+                Text(if (hi) t.hi else t.en, style = MaterialTheme.typography.labelMedium, color = colour)
+            }
+        }
+    }
+}
+
 // ---------------------------------------------------------------------------------------- shared
 
+/** Deep teal header with the status bar inset, a title row and optional content below. */
 @Composable
-fun Panel(modifier: Modifier = Modifier, padding: Dp = 16.dp, content: @Composable () -> Unit) {
-    Box(
+private fun Header(
+    title: String,
+    onBack: (() -> Unit)? = null,
+    action: (@Composable () -> Unit)? = null,
+    content: (@Composable ColumnScope.() -> Unit)? = null,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(Palette.HeaderGradient)
+            .statusBarsPadding()
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = if (content == null) 18.dp else 30.dp),
+    ) {
+        Row(Modifier.fillMaxWidth().height(44.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) {
+                if (onBack != null) {
+                    Box(Modifier.clip(CircleShape).clickable(onClick = onBack).padding(6.dp)) { Icon(AppIcon.Back, Color.White, 24.dp) }
+                }
+            }
+            Text(
+                title, style = MaterialTheme.typography.titleLarge, color = Color.White,
+                textAlign = TextAlign.Center, modifier = Modifier.weight(1f),
+            )
+            Box(Modifier.size(40.dp), contentAlignment = Alignment.Center) { action?.invoke() }
+        }
+        if (content != null) {
+            Spacer(Modifier.height(12.dp))
+            content()
+        }
+    }
+}
+
+/** White sheet that slightly overlaps the header, like the reference result screen. */
+@Composable
+private fun Sheet(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .offset(y = (-18).dp)
+            .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
+            .background(Palette.Page)
+            .padding(horizontal = 16.dp, vertical = 18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+        content = content,
+    )
+}
+
+@Composable
+private fun WhiteCard(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(
         modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .background(Palette.Surface)
-            .padding(padding),
-    ) { content() }
-}
-
-@Composable
-fun SectionLabel(text: String) {
-    Text(text.uppercase(), style = MaterialTheme.typography.labelMedium, color = Palette.InkMuted)
-}
-
-@Composable
-fun BinChip(colour: Color, text: String, onDark: Boolean = false) {
-    Row(
-        Modifier
-            .clip(RoundedCornerShape(50))
-            .background(if (onDark) Color.White.copy(alpha = 0.18f) else colour.copy(alpha = 0.12f))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Box(Modifier.size(8.dp).clip(CircleShape).background(if (onDark) Color.White else colour))
-        Spacer(Modifier.width(6.dp))
-        Text(text, style = MaterialTheme.typography.labelMedium, color = if (onDark) Color.White else colour)
-    }
+            .background(Palette.Card)
+            .border(1.dp, Palette.Outline, MaterialTheme.shapes.medium)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        content = content,
+    )
 }
 
 @Composable
 fun PrimaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.height(48.dp),
-        shape = MaterialTheme.shapes.small,
-        colors = ButtonDefaults.buttonColors(containerColor = Palette.Accent, contentColor = Color.White),
+        onClick = onClick, enabled = enabled, modifier = modifier.height(52.dp), shape = MaterialTheme.shapes.small,
+        colors = ButtonDefaults.buttonColors(containerColor = Palette.Teal800, contentColor = Color.White),
     ) { Text(text, style = MaterialTheme.typography.labelLarge) }
 }
 
 @Composable
 fun SecondaryButton(text: String, modifier: Modifier = Modifier, enabled: Boolean = true, onClick: () -> Unit) {
     OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier.height(48.dp),
-        shape = MaterialTheme.shapes.small,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Palette.Outline),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Palette.Ink),
+        onClick = onClick, enabled = enabled, modifier = modifier.height(52.dp), shape = MaterialTheme.shapes.small,
+        border = BorderStroke(1.dp, Palette.Outline),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = Palette.Card, contentColor = Palette.Ink),
     ) { Text(text, style = MaterialTheme.typography.labelLarge) }
+}
+
+@Composable
+private fun Chip(text: String, bg: Color, fg: Color, leading: (@Composable () -> Unit)? = null) {
+    Row(
+        Modifier.clip(RoundedCornerShape(50)).background(bg).padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (leading != null) {
+            leading()
+            Spacer(Modifier.width(6.dp))
+        }
+        Text(text, style = MaterialTheme.typography.labelLarge, color = fg)
+    }
+}
+
+@Composable
+private fun RoundIconButton(icon: AppIcon, size: Dp, bg: Color, tint: Color, border: Color? = null, onClick: () -> Unit) {
+    Box(
+        Modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(bg)
+            .then(if (border != null) Modifier.border(1.5.dp, border, CircleShape) else Modifier)
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { Icon(icon, tint, size * 0.42f) }
 }
 
 // ------------------------------------------------------------------------------------------ scan
 
 @Composable
-fun ScanScreen(vm: AppViewModel) {
+fun ScanScreen(vm: AppViewModel, onSettings: () -> Unit) {
     val context = LocalContext.current
     val ui = vm.ui
     val hi = ui.language == "hi"
@@ -211,140 +295,139 @@ fun ScanScreen(vm: AppViewModel) {
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { context.contentResolver.openInputStream(it)?.use(BitmapFactory::decodeStream) }?.let(vm::photo)
     }
-    var correcting by remember { mutableStateOf(false) }
-    val choosing = ui.verdict == null && (ui.suggestions.isNotEmpty() || ui.lookingCloser)
+    var picking by remember { mutableStateOf(false) }
+    val choosing = ui.suggestions.isNotEmpty() || ui.lookingCloser
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp)) {
-        // Camera: large while searching, a strip once there is a verdict or a choice to make.
-        Box(
-            Modifier
-                .fillMaxWidth()
-                .weight(if (ui.verdict == null && !choosing) 1f else 0.38f)
-                .clip(MaterialTheme.shapes.large)
-                .background(Palette.Ink),
+    Box(Modifier.fillMaxSize().background(Color.Black)) {
+        if (granted) CameraPreview(vm) else {
+            Column(Modifier.align(Alignment.Center).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    if (hi) "स्कैन करने के लिए कैमरा चाहिए" else "The camera is needed to scan",
+                    color = Color.White, style = MaterialTheme.typography.bodyLarge,
+                )
+                Spacer(Modifier.height(14.dp))
+                PrimaryButton(if (hi) "कैमरा चालू करें" else "Allow camera") { permission.launch(Manifest.permission.CAMERA) }
+            }
+        }
+        // top: brand + settings, then the hint pill
+        Column(
+            Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 18.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (granted) CameraPreview(vm) else {
-                Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        if (hi) "स्कैन करने के लिए कैमरा चाहिए" else "The camera is needed to scan",
-                        color = Color.White, style = MaterialTheme.typography.bodyMedium,
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    PrimaryButton(if (hi) "कैमरा चालू करें" else "Allow camera") {
-                        permission.launch(Manifest.permission.CAMERA)
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Icon(AppIcon.LeafFilled, Palette.Mint, 34.dp)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    "SwachhSathi", style = MaterialTheme.typography.headlineSmall, color = Color.White,
+                    modifier = Modifier.weight(1f),
+                )
+                Row(
+                    Modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.35f))
+                        .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(50))
+                        .clickable(onClick = onSettings).padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(AppIcon.Settings, Color.White, 18.dp)
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (hi) "सेटिंग" else "Settings", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                }
+            }
+            Spacer(Modifier.height(22.dp))
+            HintPill(ui, hi)
+        }
+        if (granted && !choosing) Viewfinder(Modifier.align(Alignment.Center))
+
+        // bottom: suggestions sheet or the camera controls
+        Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+            if (choosing) {
+                SuggestionSheet(vm, hi, onOther = { picking = true })
+            } else {
+                if (ui.canSuggest) {
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            if (hi) "पक्का नहीं? सुझाव देखें" else "Not sure? See suggestions",
+                            style = MaterialTheme.typography.labelLarge, color = Color.White,
+                            modifier = Modifier.clip(RoundedCornerShape(50)).background(Palette.Teal800.copy(alpha = 0.9f))
+                                .clickable { vm.suggest() }.padding(horizontal = 16.dp, vertical = 10.dp),
+                        )
                     }
+                    Spacer(Modifier.height(16.dp))
+                }
+                Row(
+                    Modifier.fillMaxWidth().padding(bottom = 22.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RoundIconButton(AppIcon.Photo, 56.dp, Color.Black.copy(alpha = 0.35f), Color.White, Color.White.copy(alpha = 0.6f)) {
+                        picker.launch("image/*")
+                    }
+                    Shutter { vm.captureNow() }
+                    RoundIconButton(
+                        AppIcon.Flash, 56.dp,
+                        if (ui.torchOn) Palette.Amber else Color.Black.copy(alpha = 0.35f),
+                        if (ui.torchOn) Palette.Teal900 else Color.White, Color.White.copy(alpha = 0.6f),
+                    ) { vm.toggleTorch() }
                 }
             }
-            if (granted && ui.verdict == null) Viewfinder(Modifier.align(Alignment.Center))
-            StatusPill(ui, hi, Modifier.align(Alignment.TopCenter).padding(top = 12.dp))
-            Row(
-                Modifier.align(Alignment.BottomCenter).padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                CameraAction(AppIcon.Photo, if (hi) "फ़ोटो" else "Photo") { picker.launch("image/*") }
-                if (ui.verdict == null && ui.canSuggest && !choosing) {
-                    CameraAction(AppIcon.Scan, if (hi) "सुझाव दें" else "Suggest") { vm.suggest() }
-                }
-            }
-        }
-        Spacer(Modifier.height(12.dp))
-        when {
-            ui.verdict != null -> VerdictCard(vm, Modifier.weight(0.62f), onWrong = { correcting = true })
-            choosing -> SuggestionCard(vm, Modifier.weight(0.62f), onOther = { correcting = true })
-            else -> Hint(ui, hi)
         }
     }
-    if (correcting) {
-        ItemPicker(vm, onPick = {
-            correcting = false
-            if (ui.verdict != null) vm.correct(it) else vm.choose(it)
-        }, onDismiss = { correcting = false })
+    if (picking) {
+        ItemPicker(vm, onPick = { picking = false; vm.choose(it) }, onDismiss = { picking = false })
     }
 }
 
 @Composable
-private fun Hint(ui: UiState, hi: Boolean) {
-    Text(
-        if (hi) "एक चीज़ कैमरे के सामने रखें। जवाब सबसे पहले, फिर उसका कारण।"
-        else "Hold one item in view. The bin appears first, then why.",
-        style = MaterialTheme.typography.bodyMedium,
-        color = Palette.InkMuted,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-        textAlign = TextAlign.Center,
-    )
-    if (ui.showOverlay) TimingLine(ui, Modifier.fillMaxWidth().padding(top = 6.dp))
+private fun HintPill(ui: UiState, hi: Boolean) {
+    val text = when {
+        ui.lookingCloser -> if (hi) "ध्यान से देख रहे हैं…" else "Looking closer…"
+        ui.scanState == "stable" -> ui.liveItem ?: ""
+        ui.scanState == "unsure" -> if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady"
+        ui.status.startsWith("Point") -> if (hi) "कैमरा किसी कचरे की चीज़ पर करें" else "Point your camera at a waste item"
+        else -> ui.status
+    }
+    if (text.isEmpty()) return
+    Row(
+        Modifier.clip(RoundedCornerShape(50)).background(Color.Black.copy(alpha = 0.45f))
+            .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(50))
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (ui.lookingCloser) {
+            CircularProgressIndicator(Modifier.size(14.dp), color = Palette.Mint, strokeWidth = 2.dp)
+            Spacer(Modifier.width(8.dp))
+        }
+        Text(text, style = MaterialTheme.typography.bodyLarge, color = Color.White)
+    }
+    if (ui.showOverlay && ui.detectMs != null) {
+        Spacer(Modifier.height(6.dp))
+        Text(
+            "detector ${"%.0f".format(ui.detectMs)} ms", style = MaterialTheme.typography.labelSmall,
+            color = Color.White.copy(alpha = 0.75f),
+        )
+    }
 }
 
 @Composable
-private fun TimingLine(ui: UiState, modifier: Modifier = Modifier) {
-    Text(
-        "detector ${ui.detectMs?.let { "%.0f ms".format(it) } ?: "–"} · card ${ui.cardMs?.let { "%.0f ms".format(it) } ?: "–"}" +
-            " · Llama ${ui.firstTokenS?.let { "%.1f s".format(it) } ?: "–"} first, ${ui.decodeTps?.let { "%.1f".format(it) } ?: "–"} tok/s",
-        style = MaterialTheme.typography.labelSmall,
-        color = Palette.InkMuted,
-        textAlign = TextAlign.Center,
-        modifier = modifier,
-    )
+private fun Shutter(onClick: () -> Unit) {
+    Box(
+        Modifier.size(82.dp).clip(CircleShape).border(4.dp, Color.White, CircleShape).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) { Box(Modifier.size(64.dp).clip(CircleShape).background(Color.White)) }
 }
 
 @Composable
 private fun Viewfinder(modifier: Modifier) {
-    Canvas(modifier.size(200.dp)) {
-        val c = Color.White.copy(alpha = 0.85f)
+    Canvas(modifier.size(260.dp)) {
+        val c = Color.White
         val w = size.width
-        val l = w * 0.16f
-        val sw = 3.dp.toPx()
+        val l = w * 0.17f
+        val sw = 5.dp.toPx()
         for ((x, y, dx, dy) in listOf(
             listOf(0f, 0f, 1f, 1f), listOf(w, 0f, -1f, 1f), listOf(0f, w, 1f, -1f), listOf(w, w, -1f, -1f),
         )) {
             drawLine(c, Offset(x, y), Offset(x + l * dx, y), sw, StrokeCap.Round)
             drawLine(c, Offset(x, y), Offset(x, y + l * dy), sw, StrokeCap.Round)
         }
-    }
-}
-
-@Composable
-private fun StatusPill(ui: UiState, hi: Boolean, modifier: Modifier) {
-    val (dot, text) = when {
-        ui.lookingCloser -> Palette.Amber to (if (hi) "ध्यान से देख रहे हैं…" else "Looking closer…")
-        ui.verdict != null -> Bins.colour(ui.verdict.binColour) to ui.verdict.name
-        ui.suggestions.isNotEmpty() -> Palette.Amber to (if (hi) "पक्का नहीं: चुनें" else "Not sure: pick one below")
-        ui.scanState == "stable" -> Palette.Accent to (ui.liveItem ?: "")
-        ui.scanState == "unsure" -> Palette.Amber to (if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady")
-        ui.status.startsWith("Point") -> Palette.InkMuted to (if (hi) "एक चीज़ की ओर कैमरा करें" else "Looking for an item")
-        else -> Palette.InkMuted to ui.status
-    }
-    if (text.isEmpty()) return
-    Row(
-        modifier
-            .clip(RoundedCornerShape(50))
-            .background(Color.White.copy(alpha = 0.94f))
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        if (ui.lookingCloser) {
-            CircularProgressIndicator(Modifier.size(12.dp), color = dot, strokeWidth = 2.dp)
-        } else {
-            Box(Modifier.size(8.dp).clip(CircleShape).background(dot))
-        }
-        Spacer(Modifier.width(8.dp))
-        Text(text, style = MaterialTheme.typography.labelLarge, color = Palette.Ink)
-    }
-}
-
-@Composable
-private fun CameraAction(icon: AppIcon, label: String, onClick: () -> Unit) {
-    Row(
-        Modifier
-            .clip(RoundedCornerShape(50))
-            .background(Color.White.copy(alpha = 0.94f))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 9.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(icon, Palette.Ink, 18.dp)
-        Spacer(Modifier.width(6.dp))
-        Text(label, style = MaterialTheme.typography.labelLarge, color = Palette.Ink)
     }
 }
 
@@ -365,42 +448,45 @@ fun CameraPreview(vm: AppViewModel) {
                     .build()
                 analysis.setAnalyzer(vm.analysisExecutor, vm::onFrame)
                 provider.unbindAll()
-                provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
+                vm.camera = provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
             }, mainExecutor)
         }
     })
 }
 
 @Composable
-fun SuggestionCard(vm: AppViewModel, modifier: Modifier, onOther: () -> Unit) {
+private fun SuggestionSheet(vm: AppViewModel, hi: Boolean, onOther: () -> Unit) {
     val ui = vm.ui
-    val hi = ui.language == "hi"
-    Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(topStart = 26.dp, topEnd = 26.dp))
+            .background(Palette.Card)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(Modifier.align(Alignment.CenterHorizontally).size(width = 40.dp, height = 4.dp).clip(RoundedCornerShape(50)).background(Palette.Outline))
         Text(if (hi) "क्या यह इनमें से कोई है?" else "Is it one of these?", style = MaterialTheme.typography.titleLarge)
         if (ui.lookingCloser && ui.suggestions.isEmpty()) {
-            Panel {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(Modifier.size(18.dp), color = Palette.Accent, strokeWidth = 2.dp)
-                    Spacer(Modifier.width(12.dp))
-                    Text(
-                        if (hi) "मिलती-जुलती चीज़ें ढूँढ रहे हैं…" else "Finding the closest matches…",
-                        style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
-                    )
-                }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 8.dp)) {
+                CircularProgressIndicator(Modifier.size(18.dp), color = Palette.Teal500, strokeWidth = 2.dp)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    if (hi) "मिलती-जुलती चीज़ें ढूँढ रहे हैं…" else "Finding the closest matches…",
+                    style = MaterialTheme.typography.bodyLarge, color = Palette.InkMuted,
+                )
             }
         }
         ui.suggestions.forEach { s ->
             val bin = vm.binColourOf(s.itemId)
             Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clip(MaterialTheme.shapes.medium)
-                    .border(1.dp, Palette.Outline, MaterialTheme.shapes.medium)
-                    .clickable { vm.choose(s.itemId) }
-                    .padding(horizontal = 16.dp, vertical = 14.dp),
+                Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.Page)
+                    .clickable { vm.choose(s.itemId) }.padding(horizontal = 14.dp, vertical = 14.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Box(Modifier.size(12.dp).clip(CircleShape).background(Bins.colour(bin)))
+                Box(Modifier.size(28.dp).clip(CircleShape).background(Bins.tint(bin)), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(12.dp).clip(CircleShape).background(Bins.colour(bin)))
+                }
                 Spacer(Modifier.width(12.dp))
                 Text(vm.nameOf(s.itemId), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
                 Text("›", style = MaterialTheme.typography.titleLarge, color = Palette.InkMuted)
@@ -408,110 +494,198 @@ fun SuggestionCard(vm: AppViewModel, modifier: Modifier, onOther: () -> Unit) {
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SecondaryButton(if (hi) "कोई और" else "Something else", Modifier.weight(1f), onClick = onOther)
-            SecondaryButton(if (hi) "फिर से स्कैन" else "Scan again", Modifier.weight(1f), onClick = vm::scanAgain)
+            PrimaryButton(if (hi) "फिर से स्कैन" else "Scan again", Modifier.weight(1f), onClick = vm::scanAgain)
         }
     }
 }
 
+// ---------------------------------------------------------------------------------------- result
+
 @Composable
-fun VerdictCard(vm: AppViewModel, modifier: Modifier, onWrong: () -> Unit) {
+fun ResultScreen(vm: AppViewModel) {
+    val context = LocalContext.current
+    val ui = vm.ui
+    val v = ui.verdict ?: return
+    val hi = v.language == "hi"
+    var correcting by remember { mutableStateOf(false) }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Header(
+            title = if (hi) "परिणाम" else "Classification result",
+            onBack = vm::scanAgain,
+            action = {
+                Box(
+                    Modifier.clip(CircleShape).clickable {
+                        vm.shareText()?.let { text ->
+                            val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
+                            context.startActivity(Intent.createChooser(send, null))
+                        }
+                    }.padding(6.dp),
+                ) { Icon(AppIcon.Share, Color.White, 24.dp) }
+            },
+        ) { SummaryCard(ui, hi) }
+        Sheet { ResultBody(vm, onWrong = { correcting = true }) }
+    }
+    if (correcting) {
+        ItemPicker(vm, onPick = { correcting = false; vm.correct(it) }, onDismiss = { correcting = false })
+    }
+}
+
+@Composable
+private fun SummaryCard(ui: UiState, hi: Boolean) {
+    val v = ui.verdict ?: return
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(Color.White.copy(alpha = 0.08f))
+            .border(1.dp, Color.White.copy(alpha = 0.14f), MaterialTheme.shapes.medium).padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        val image = ui.verdictImage
+        Box(
+            Modifier.size(104.dp).clip(MaterialTheme.shapes.small).border(2.dp, Color.White, MaterialTheme.shapes.small)
+                .background(Bins.tint(v.binColour)),
+            contentAlignment = Alignment.Center,
+        ) {
+            if (image != null) {
+                Image(image.asImageBitmap(), v.name, Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+            } else {
+                Icon(AppIcon.LeafFilled, Bins.colour(v.binColour), 44.dp)
+            }
+        }
+        Spacer(Modifier.width(16.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(if (hi) "यह है" else "It's a", style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.85f))
+            Text(v.name, style = MaterialTheme.typography.headlineMedium, color = Color.White)
+            Chip(v.streamName, Color.White.copy(alpha = 0.92f), Palette.Teal800)
+            ui.confidence?.let { c ->
+                Chip(
+                    "${(c * 100).toInt()}% " + (if (hi) "भरोसा" else "confidence"),
+                    Palette.Mint.copy(alpha = 0.18f), Color.White,
+                ) {
+                    Box(Modifier.size(18.dp).clip(CircleShape).background(Palette.Mint), contentAlignment = Alignment.Center) {
+                        Icon(AppIcon.Check, Palette.Teal900, 14.dp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Bin banner, condition questions, hazard, steps, and Llama's "why". Shared by Scan and Ask. */
+@Composable
+private fun ResultBody(vm: AppViewModel, onWrong: (() -> Unit)?) {
     val ui = vm.ui
     val v = ui.verdict ?: return
     val hi = v.language == "hi"
     val binColour = Bins.colour(v.binColour)
-    Column(modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        // Header: the bin colour carries the answer.
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .clip(MaterialTheme.shapes.medium)
-                .background(binColour)
-                .padding(16.dp),
-        ) {
-            Text(v.name, style = MaterialTheme.typography.headlineSmall, color = Color.White)
-            Spacer(Modifier.height(8.dp))
-            BinChip(
-                Color.White,
-                if (hi) "${v.binColourName} डिब्बा · ${v.streamName}" else "${v.binColourName} bin · ${v.streamName}",
-                onDark = true,
-            )
-        }
-        ui.askAttributes.forEach { attr ->
-            val q = when (attr) {
-                "broken" -> if (hi) "क्या यह टूटा है?" else "Is it broken?"
-                else -> if (hi) "क्या यह गंदा है (खाना/तेल लगा)?" else "Is it dirty (food or oil on it)?"
-            }
-            Panel(padding = 12.dp) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(q, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { vm.setAttribute(attr, true) }) { Text(if (hi) "हाँ" else "Yes", color = Palette.Accent) }
-                    TextButton(onClick = { vm.setAttribute(attr, false) }) { Text(if (hi) "नहीं" else "No", color = Palette.Accent) }
-                }
-            }
-        }
-        v.hazard?.let {
-            Box(
-                Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.WarningSoft).padding(12.dp),
-            ) { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.Warning, fontWeight = FontWeight.Medium) }
-        }
-        if (v.steps.isNotEmpty()) {
-            SectionLabel(if (hi) "क्या करें" else "What to do")
-            v.steps.forEachIndexed { i, s ->
-                Row(verticalAlignment = Alignment.Top) {
-                    Box(
-                        Modifier.size(24.dp).clip(CircleShape).background(binColour.copy(alpha = 0.12f)),
-                        contentAlignment = Alignment.Center,
-                    ) { Text("${i + 1}", style = MaterialTheme.typography.labelMedium, color = binColour) }
-                    Spacer(Modifier.width(10.dp))
-                    Text(s, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 1.dp))
-                }
-            }
-        }
-        v.dropOffText?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
-        v.notes.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
 
-        SectionLabel(if (hi) "क्यों" else "Why")
-        Panel {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                ui.question?.let { Text(it, style = MaterialTheme.typography.titleMedium) }
-                val verified = ui.verified
-                when {
-                    verified != null -> {
-                        verified.output["why"]?.let { Text(it as String, style = MaterialTheme.typography.bodyLarge) }
-                        verified.output["tip"]?.let {
-                            Text(
-                                (if (hi) "सुझाव: " else "Tip: ") + it,
-                                style = MaterialTheme.typography.bodyMedium, color = Palette.Accent,
-                            )
-                        }
-                        if (verified.status != "ok") {
-                            Text(
-                                if (hi) "ज्ञान-आधार से दिखाया गया" else "Shown from the knowledge base",
-                                style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
-                            )
-                        }
-                    }
-                    ui.explaining -> Row(verticalAlignment = Alignment.Top) {
-                        CircularProgressIndicator(Modifier.size(14.dp).padding(top = 3.dp), color = Palette.Accent, strokeWidth = 2.dp)
-                        Spacer(Modifier.width(10.dp))
-                        Text(
-                            ui.whyStream.ifEmpty { if (hi) "Llama समझा रहा है…" else "Llama is explaining…" },
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontStyle = if (ui.whyStream.isEmpty()) FontStyle.Italic else FontStyle.Normal,
-                            color = if (ui.whyStream.isEmpty()) Palette.InkMuted else Palette.Ink,
-                        )
-                    }
-                    else -> Text("–", color = Palette.InkMuted)
-                }
+    // "Dispose in the Blue bin"
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(Bins.tint(v.binColour))
+            .padding(start = 18.dp, end = 12.dp, top = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(if (hi) "इसे डालें" else "Dispose in the", style = MaterialTheme.typography.bodyLarge, color = Palette.Ink)
+            Text(
+                if (hi) "${v.binColourName} डिब्बे में" else "${v.binColourName} bin",
+                style = MaterialTheme.typography.headlineMedium, color = Palette.Ink,
+            )
+            Text(v.streamName, style = MaterialTheme.typography.bodyMedium, color = binColour, fontWeight = FontWeight.Medium)
+        }
+        BinIllustration(binColour, 84.dp)
+    }
+
+    ui.askAttributes.forEach { attr ->
+        val q = when (attr) {
+            "broken" -> if (hi) "क्या यह टूटा है?" else "Is it broken?"
+            else -> if (hi) "क्या यह गंदा है (खाना/तेल लगा)?" else "Is it dirty (food or oil on it)?"
+        }
+        WhiteCard {
+            Text(q, style = MaterialTheme.typography.titleMedium)
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                SecondaryButton(if (hi) "हाँ" else "Yes", Modifier.weight(1f)) { vm.setAttribute(attr, true) }
+                SecondaryButton(if (hi) "नहीं" else "No", Modifier.weight(1f)) { vm.setAttribute(attr, false) }
             }
         }
-        if (ui.showOverlay) TimingLine(ui, Modifier.fillMaxWidth())
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PrimaryButton(if (hi) "फिर से स्कैन" else "Scan again", Modifier.weight(1f), onClick = vm::scanAgain)
-            SecondaryButton(if (hi) "यह गलत है" else "This is wrong", Modifier.weight(1f), onClick = onWrong)
-        }
-        Spacer(Modifier.height(4.dp))
     }
+
+    v.hazard?.let {
+        Box(Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.WarningSoft).padding(14.dp)) {
+            Text(it, style = MaterialTheme.typography.bodyLarge, color = Palette.Warning, fontWeight = FontWeight.Medium)
+        }
+    }
+
+    if (v.steps.isNotEmpty() || v.dropOffText != null) {
+        WhiteCard {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(AppIcon.Clipboard, Palette.Ink, 24.dp)
+                Spacer(Modifier.width(10.dp))
+                Text(if (hi) "कैसे फेंकें" else "How to dispose", style = MaterialTheme.typography.titleLarge)
+            }
+            v.steps.forEach { step ->
+                Row(verticalAlignment = Alignment.Top) {
+                    Box(Modifier.size(28.dp).clip(CircleShape).background(Palette.MintSoft), contentAlignment = Alignment.Center) {
+                        Icon(AppIcon.Check, Palette.Teal500, 18.dp)
+                    }
+                    Spacer(Modifier.width(12.dp))
+                    Text(step, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 3.dp))
+                }
+            }
+            v.dropOffText?.let { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
+            v.notes.forEach { Text(it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
+        }
+    }
+
+    // "Why it matters": Llama's explanation, checked against the KB
+    Column(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(Palette.MintSoft).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(AppIcon.LeafFilled, Palette.Teal500, 26.dp)
+            Spacer(Modifier.width(10.dp))
+            Text(if (hi) "यह क्यों ज़रूरी है" else "Why it matters", style = MaterialTheme.typography.titleLarge, color = Palette.Ink)
+        }
+        ui.question?.let { Text(it, style = MaterialTheme.typography.titleMedium, color = Palette.MintInk) }
+        val verified = ui.verified
+        when {
+            verified != null -> {
+                verified.output["why"]?.let { Text(it as String, style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk) }
+                verified.output["tip"]?.let {
+                    Text((if (hi) "सुझाव: " else "Tip: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.MintInk)
+                }
+                if (verified.status != "ok") {
+                    Text(
+                        if (hi) "ज्ञान-आधार से दिखाया गया" else "Shown from the knowledge base",
+                        style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
+                    )
+                }
+            }
+            ui.explaining -> Row(verticalAlignment = Alignment.Top) {
+                CircularProgressIndicator(Modifier.padding(top = 3.dp).size(14.dp), color = Palette.Teal500, strokeWidth = 2.dp)
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    ui.whyStream.ifEmpty { if (hi) "Llama इसी फ़ोन पर समझा रहा है…" else "Llama is explaining, on this phone…" },
+                    style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk,
+                    fontStyle = if (ui.whyStream.isEmpty()) FontStyle.Italic else FontStyle.Normal,
+                )
+            }
+            else -> Text("–", color = Palette.InkMuted)
+        }
+    }
+
+    if (ui.showOverlay) {
+        Text(
+            "card ${ui.cardMs?.let { "%.0f ms".format(it) } ?: "–"} · Llama ${ui.firstTokenS?.let { "%.1f s".format(it) } ?: "–"} first token, " +
+                "${ui.decodeTps?.let { "%.1f".format(it) } ?: "–"} tok/s",
+            style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
+            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+        )
+    }
+    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (onWrong != null) SecondaryButton(if (hi) "यह गलत है" else "This is wrong", Modifier.weight(1f), onClick = onWrong)
+        PrimaryButton(if (hi) "फिर से स्कैन" else "Scan again", Modifier.weight(1f), onClick = vm::scanAgain)
+    }
+    Spacer(Modifier.height(8.dp))
 }
 
 @Composable
@@ -521,17 +695,15 @@ fun ItemPicker(vm: AppViewModel, onPick: (String) -> Unit, onDismiss: () -> Unit
     val hi = vm.ui.language == "hi"
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Palette.Background,
-        confirmButton = { TextButton(onClick = onDismiss) { Text(if (hi) "रद्द करें" else "Cancel", color = Palette.Accent) } },
+        containerColor = Palette.Card,
+        confirmButton = { TextButton(onClick = onDismiss) { Text(if (hi) "रद्द करें" else "Cancel", color = Palette.Teal500) } },
         title = { Text(if (hi) "यह क्या है?" else "What is it?", style = MaterialTheme.typography.titleLarge) },
         text = {
             Column {
                 OutlinedTextField(
-                    filter, { filter = it },
-                    label = { Text(if (hi) "खोजें" else "Search") }, singleLine = true,
-                    shape = MaterialTheme.shapes.small,
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Palette.Accent, unfocusedBorderColor = Palette.Outline),
-                    modifier = Modifier.fillMaxWidth(),
+                    filter, { filter = it }, label = { Text(if (hi) "खोजें" else "Search") }, singleLine = true,
+                    shape = MaterialTheme.shapes.small, modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Palette.Teal500, unfocusedBorderColor = Palette.Outline),
                 )
                 Spacer(Modifier.height(8.dp))
                 LazyColumn(Modifier.height(340.dp)) {
@@ -560,70 +732,130 @@ fun AskScreen(vm: AppViewModel) {
     val context = LocalContext.current
     var text by remember { mutableStateOf("") }
     val hi = ui.language == "hi"
-    val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok ->
-        if (ok) vm.startVoice()
-    }
-    Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Text(if (hi) "पूछें" else "Ask", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            ui.verdict?.let { (if (hi) "अभी: " else "About: ") + it.name }
-                ?: if (hi) "पहले कोई चीज़ स्कैन करें, या सवाल में उसका नाम लिखें।" else "Scan an item first, or name it in your question.",
-            style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
-        )
-        OutlinedTextField(
-            text, { text = it }, Modifier.fillMaxWidth(),
-            label = { Text(if (hi) "आपका सवाल" else "Your question") },
-            shape = MaterialTheme.shapes.small,
-            colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Palette.Accent, unfocusedBorderColor = Palette.Outline),
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            PrimaryButton(if (hi) "पूछें" else "Ask", Modifier.weight(1f), enabled = !ui.explaining && text.isNotBlank()) {
-                vm.ask(text.trim())
-            }
-            val micLabel = when {
-                ui.listening -> if (hi) "रुकें" else "Stop"
-                ui.transcribing -> if (hi) "सुन रहा है…" else "Listening…"
-                else -> if (hi) "बोलें" else "Speak"
-            }
-            OutlinedButton(
-                onClick = {
-                    when {
-                        ui.listening -> vm.stopVoice()
-                        context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED -> vm.startVoice()
-                        else -> mic.launch(Manifest.permission.RECORD_AUDIO)
+    val mic = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { ok -> if (ok) vm.startVoice() }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Header(if (hi) "पूछें" else "Ask") {
+            Text(
+                ui.verdict?.let { (if (hi) "अभी: " else "About: ") + it.name }
+                    ?: if (hi) "कोई चीज़ स्कैन करें, या सवाल में उसका नाम लिखें या बोलें।"
+                    else "Scan an item, or name it in your question. Type or speak, English or Hindi.",
+                style = MaterialTheme.typography.bodyLarge, color = Color.White.copy(alpha = 0.85f),
+            )
+        }
+        Sheet {
+            WhiteCard {
+                OutlinedTextField(
+                    text, { text = it }, Modifier.fillMaxWidth(),
+                    label = { Text(if (hi) "आपका सवाल" else "Your question") },
+                    placeholder = { Text(if (hi) "पुरानी बैटरी कहाँ डालूँ?" else "Where does an old battery go?") },
+                    shape = MaterialTheme.shapes.small,
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = Palette.Teal500, unfocusedBorderColor = Palette.Outline),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    PrimaryButton(if (hi) "पूछें" else "Ask", Modifier.weight(1f), enabled = !ui.explaining && text.isNotBlank()) {
+                        vm.ask(text.trim())
                     }
-                },
-                enabled = !ui.transcribing,
-                modifier = Modifier.weight(1f).height(48.dp),
-                shape = MaterialTheme.shapes.small,
-                border = androidx.compose.foundation.BorderStroke(1.dp, if (ui.listening) Palette.Warning else Palette.Outline),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = if (ui.listening) Palette.Warning else Palette.Ink),
-            ) {
-                Icon(AppIcon.Mic, if (ui.listening) Palette.Warning else Palette.Ink, 18.dp)
-                Spacer(Modifier.width(6.dp))
-                Text(micLabel, style = MaterialTheme.typography.labelLarge)
+                    val micLabel = when {
+                        ui.listening -> if (hi) "रुकें" else "Stop"
+                        ui.transcribing -> if (hi) "सुन रहा है…" else "Listening…"
+                        else -> if (hi) "बोलें" else "Speak"
+                    }
+                    OutlinedButton(
+                        onClick = {
+                            when {
+                                ui.listening -> vm.stopVoice()
+                                context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED -> vm.startVoice()
+                                else -> mic.launch(Manifest.permission.RECORD_AUDIO)
+                            }
+                        },
+                        enabled = !ui.transcribing,
+                        modifier = Modifier.weight(1f).height(52.dp), shape = MaterialTheme.shapes.small,
+                        border = BorderStroke(1.dp, if (ui.listening) Palette.Warning else Palette.Outline),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = if (ui.listening) Palette.Warning else Palette.Ink),
+                    ) {
+                        Icon(AppIcon.Mic, if (ui.listening) Palette.Warning else Palette.Ink, 18.dp)
+                        Spacer(Modifier.width(6.dp))
+                        Text(micLabel, style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+                ui.transcript?.let { Text((if (hi) "सुना: " else "Heard: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
             }
-        }
-        ui.transcript?.let {
-            Text((if (hi) "सुना: " else "Heard: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted)
-        }
-        if (ui.voiceChoices.isNotEmpty()) {
-            SectionLabel(if (hi) "आपका मतलब?" else "Did you mean?")
-            ui.voiceChoices.forEach { id ->
-                Row(
-                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
-                        .border(1.dp, Palette.Outline, MaterialTheme.shapes.small)
-                        .clickable { vm.chooseVoice(id) }.padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.size(10.dp).clip(CircleShape).background(Bins.colour(vm.binColourOf(id))))
-                    Spacer(Modifier.width(12.dp))
-                    Text(vm.nameOf(id), style = MaterialTheme.typography.bodyLarge)
+            if (ui.voiceChoices.isNotEmpty()) {
+                Text(if (hi) "आपका मतलब?" else "Did you mean?", style = MaterialTheme.typography.titleMedium)
+                ui.voiceChoices.forEach { id ->
+                    Row(
+                        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.Card)
+                            .clickable { vm.chooseVoice(id) }.padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(Modifier.size(12.dp).clip(CircleShape).background(Bins.colour(vm.binColourOf(id))))
+                        Spacer(Modifier.width(12.dp))
+                        Text(vm.nameOf(id), style = MaterialTheme.typography.bodyLarge)
+                    }
                 }
             }
+            if (ui.verdict != null) ResultBody(vm, onWrong = null)
         }
-        if (ui.verdict != null) VerdictCard(vm, Modifier.weight(1f), onWrong = {})
     }
+}
+
+// --------------------------------------------------------------------------------------- history
+
+@Composable
+fun HistoryScreen(vm: AppViewModel) {
+    val ui = vm.ui
+    val hi = ui.language == "hi"
+    Column(Modifier.fillMaxSize()) {
+        Header(if (hi) "इतिहास" else "History")
+        if (ui.history.isEmpty()) {
+            Sheet {
+                WhiteCard {
+                    Text(if (hi) "अभी कोई स्कैन नहीं" else "Your scans show up here", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        if (hi) "किसी चीज़ को स्कैन करें; उसका डिब्बा यहाँ सहेजा जाएगा, सिर्फ़ इसी फ़ोन पर।"
+                        else "Scan an item and its bin is saved here, on this phone only.",
+                        style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                item { Spacer(Modifier.height(6.dp)) }
+                items(ui.history) { row ->
+                    Row(
+                        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(Palette.Card)
+                            .border(1.dp, Palette.Outline, MaterialTheme.shapes.medium).padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Box(Modifier.size(44.dp).clip(CircleShape).background(Bins.tint(row.binColour)), contentAlignment = Alignment.Center) {
+                            Box(Modifier.size(16.dp).clip(CircleShape).background(Bins.colour(row.binColour)))
+                        }
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(row.name, style = MaterialTheme.typography.titleMedium)
+                            Text(
+                                if (hi) "${row.binColourName} डिब्बा · ${row.streamName}" else "${row.binColourName} bin · ${row.streamName}",
+                                style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
+                            )
+                        }
+                        Text(whenText(row.timeMs, hi), style = MaterialTheme.typography.labelMedium, color = Palette.InkMuted)
+                    }
+                }
+                item { Spacer(Modifier.height(10.dp)) }
+            }
+        }
+    }
+}
+
+private fun whenText(timeMs: Long, hi: Boolean): String {
+    val then = Calendar.getInstance().apply { timeInMillis = timeMs }
+    val now = Calendar.getInstance()
+    val sameDay = then.get(Calendar.YEAR) == now.get(Calendar.YEAR) && then.get(Calendar.DAY_OF_YEAR) == now.get(Calendar.DAY_OF_YEAR)
+    val time = SimpleDateFormat("HH:mm", Locale.US).format(Date(timeMs))
+    return if (sameDay) (if (hi) "आज $time" else "Today $time") else SimpleDateFormat("d MMM", Locale.US).format(Date(timeMs))
 }
 
 // ---------------------------------------------------------------------------------------- impact
@@ -638,86 +870,60 @@ private val STREAM_NAMES = mapOf(
 fun ImpactScreen(vm: AppViewModel) {
     val ui = vm.ui
     val hi = ui.language == "hi"
-    LazyColumn(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        item {
-            Spacer(Modifier.height(4.dp))
-            Text(if (hi) "आपका असर" else "Your impact", style = MaterialTheme.typography.headlineSmall)
-        }
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         val s = ui.impact
-        if (s == null || (s["scans"] as? Number)?.toInt() == 0) {
-            item {
-                Panel {
-                    Text(
-                        if (hi) "अभी तक कोई स्कैन नहीं। कोई चीज़ स्कैन करें, यहाँ आपकी छँटाई दिखेगी।"
-                        else "No scans yet. Scan an item and your sorting shows up here.",
-                        style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted,
-                    )
-                }
+        Header(if (hi) "आपका असर" else "Your impact") {
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                HeaderStat("${s?.get("scans") ?: 0}", if (hi) "चीज़ें छाँटीं" else "Items sorted", Modifier.weight(1f))
+                HeaderStat("~${s?.get("diverted_kg_estimate") ?: 0} kg", if (hi) "लैंडफ़िल से बचाया" else "Kept from landfill", Modifier.weight(1f))
+                HeaderStat("${s?.get("current_streak_days") ?: 0}", if (hi) "लगातार दिन" else "Day streak", Modifier.weight(1f))
             }
-        } else {
-            item {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    StatTile(if (hi) "छाँटी गई चीज़ें" else "Items sorted", "${s["scans"]}", Modifier.weight(1f))
-                    StatTile(if (hi) "लगातार दिन" else "Day streak", "${s["current_streak_days"]}", Modifier.weight(1f))
+        }
+        Sheet {
+            val byStream = (s?.get("by_stream") as? Map<String, Any?>).orEmpty()
+            val total = byStream.values.sumOf { (it as? Number)?.toInt() ?: 0 }.coerceAtLeast(1)
+            WhiteCard {
+                Text(if (hi) "डिब्बे के हिसाब से" else "By bin", style = MaterialTheme.typography.titleLarge)
+                listOf("wet", "dry", "sanitary", "special_care").forEach { stream ->
+                    val n = (byStream[stream] as? Number)?.toInt() ?: 0
+                    val label = STREAM_NAMES[stream]?.let { if (hi) it.second else it.first } ?: stream
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(100.dp))
+                        Box(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(50)).background(Palette.Page)) {
+                            Box(Modifier.fillMaxHeight().fillMaxWidth(n.toFloat() / total).clip(RoundedCornerShape(50)).background(Bins.forStream(stream)))
+                        }
+                        Text("$n", style = MaterialTheme.typography.labelLarge, modifier = Modifier.width(34.dp), textAlign = TextAlign.End)
+                    }
                 }
-            }
-            item {
-                StatTile(
-                    if (hi) "लैंडफ़िल से बचाया (अनुमान)" else "Kept out of landfill (estimate)",
-                    "~${s["diverted_kg_estimate"]} kg · ${s["diverted_items"]} " + (if (hi) "चीज़ें" else "items"),
-                    Modifier.fillMaxWidth(),
+                Text(
+                    if (hi) "वज़न ज्ञान-आधार के सामान्य अनुमान से।" else "Weights are typical values from the knowledge base.",
+                    style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
                 )
             }
-            val byStream = (s["by_stream"] as? Map<String, Any?>).orEmpty()
-            val total = byStream.values.sumOf { (it as? Number)?.toInt() ?: 0 }.coerceAtLeast(1)
-            item {
-                Panel {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        SectionLabel(if (hi) "डिब्बे के हिसाब से" else "By bin")
-                        listOf("wet", "dry", "sanitary", "special_care").forEach { stream ->
-                            val n = (byStream[stream] as? Number)?.toInt() ?: 0
-                            val label = STREAM_NAMES[stream]?.let { if (hi) it.second else it.first } ?: stream
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(96.dp))
-                                Box(Modifier.weight(1f).height(10.dp).clip(RoundedCornerShape(50)).background(Palette.SurfaceStrong)) {
-                                    Box(
-                                        Modifier.fillMaxHeight().fillMaxWidth(n.toFloat() / total)
-                                            .clip(RoundedCornerShape(50)).background(Bins.forStream(stream)),
-                                    )
-                                }
-                                Text("$n", style = MaterialTheme.typography.labelLarge, modifier = Modifier.width(32.dp), textAlign = TextAlign.End)
-                            }
-                        }
-                        Text(
-                            if (hi) "वज़न ज्ञान-आधार के सामान्य अनुमान से।" else "Weights are typical values from the knowledge base.",
-                            style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
-                        )
-                    }
+            Text(if (hi) "सीखें" else "Learn", style = MaterialTheme.typography.titleLarge)
+            ui.didYouKnow?.let { d ->
+                Column(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).background(Palette.MintSoft).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    Text("${d["heading"]}", style = MaterialTheme.typography.labelMedium, color = Palette.Teal500)
+                    Text("${d["title"]}", style = MaterialTheme.typography.titleMedium, color = Palette.Ink)
+                    Text(d["text"] as String, style = MaterialTheme.typography.bodyMedium, color = Palette.MintInk)
                 }
             }
+            ui.quiz?.let { q -> QuizCard(q, hi) }
         }
-        ui.didYouKnow?.let { d ->
-            item {
-                Panel {
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        SectionLabel("${d["heading"]}")
-                        Text("${d["title"]}", style = MaterialTheme.typography.titleMedium)
-                        Text(d["text"] as String, style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
-            }
-        }
-        ui.quiz?.let { q -> item { QuizCard(q, hi) } }
-        item { Spacer(Modifier.height(8.dp)) }
     }
 }
 
 @Composable
-private fun StatTile(label: String, value: String, modifier: Modifier) {
-    Column(modifier.clip(MaterialTheme.shapes.medium).background(Palette.Surface).padding(16.dp)) {
-        Text(value, style = MaterialTheme.typography.titleLarge, color = Palette.Accent)
-        Spacer(Modifier.height(2.dp))
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted)
+private fun HeaderStat(value: String, label: String, modifier: Modifier) {
+    Column(
+        modifier.clip(MaterialTheme.shapes.small).background(Color.White.copy(alpha = 0.08f))
+            .border(1.dp, Color.White.copy(alpha = 0.14f), MaterialTheme.shapes.small).padding(12.dp),
+    ) {
+        Text(value, style = MaterialTheme.typography.titleLarge, color = Color.White)
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Color.White.copy(alpha = 0.8f))
     }
 }
 
@@ -725,38 +931,34 @@ private fun StatTile(label: String, value: String, modifier: Modifier) {
 @Composable
 fun QuizCard(q: Map<String, Any?>, hi: Boolean) {
     var picked by remember(q) { mutableStateOf<String?>(null) }
-    Panel {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            SectionLabel(if (hi) "आज का सवाल" else "Today's quiz")
-            Text(q["question"] as String, style = MaterialTheme.typography.titleMedium)
-            (q["options"] as List<Map<String, Any?>>).forEach { o ->
-                val stream = o["stream"] as String
-                val isAnswer = stream == q["answer"]
-                val border = when {
-                    picked == null -> Palette.Outline
-                    isAnswer -> Palette.Accent
-                    picked == stream -> Palette.Warning
-                    else -> Palette.Outline
-                }
-                Row(
-                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.Background)
-                        .border(1.dp, border, MaterialTheme.shapes.small)
-                        .clickable(enabled = picked == null) { picked = stream }.padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(Modifier.size(10.dp).clip(CircleShape).background(Bins.forStream(stream)))
-                    Spacer(Modifier.width(10.dp))
-                    Text(o["label"] as String, style = MaterialTheme.typography.bodyLarge)
-                }
+    WhiteCard {
+        Text(if (hi) "आज का सवाल" else "Today's quiz", style = MaterialTheme.typography.labelMedium, color = Palette.Teal500)
+        Text(q["question"] as String, style = MaterialTheme.typography.titleMedium)
+        (q["options"] as List<Map<String, Any?>>).forEach { o ->
+            val stream = o["stream"] as String
+            val isAnswer = stream == q["answer"]
+            val border = when {
+                picked == null -> Palette.Outline
+                isAnswer -> Palette.Teal500
+                picked == stream -> Palette.Warning
+                else -> Palette.Outline
             }
-            picked?.let {
-                val right = it == q["answer"]
-                Text(
-                    (if (right) (if (hi) "सही! " else "Correct! ") else (if (hi) "पूरा सही नहीं। " else "Not quite. ")) + q["explanation"],
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (right) Palette.Accent else Palette.Warning,
-                )
+            Row(
+                Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).border(1.5.dp, border, MaterialTheme.shapes.small)
+                    .clickable(enabled = picked == null) { picked = stream }.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Box(Modifier.size(12.dp).clip(CircleShape).background(Bins.forStream(stream)))
+                Spacer(Modifier.width(10.dp))
+                Text(o["label"] as String, style = MaterialTheme.typography.bodyLarge)
             }
+        }
+        picked?.let {
+            val right = it == q["answer"]
+            Text(
+                (if (right) (if (hi) "सही! " else "Correct! ") else (if (hi) "पूरा सही नहीं। " else "Not quite. ")) + q["explanation"],
+                style = MaterialTheme.typography.bodyMedium, color = if (right) Palette.Teal500 else Palette.Warning,
+            )
         }
     }
 }
@@ -764,81 +966,68 @@ fun QuizCard(q: Map<String, Any?>, hi: Boolean) {
 // -------------------------------------------------------------------------------------- settings
 
 @Composable
-fun SettingsScreen(vm: AppViewModel) {
+fun SettingsScreen(vm: AppViewModel, onClose: () -> Unit) {
     val ui = vm.ui
     val hi = ui.language == "hi"
     var exported by remember { mutableStateOf<String?>(null) }
-    Column(
-        Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Text(if (hi) "सेटिंग" else "Settings", style = MaterialTheme.typography.headlineSmall)
-
-        SectionLabel(if (hi) "भाषा" else "Language")
-        Row(
-            Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.Surface).padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            listOf("en" to "English", "hi" to "हिंदी").forEach { (code, label) ->
-                val selected = ui.language == code
-                Box(
-                    Modifier.weight(1f).clip(MaterialTheme.shapes.small)
-                        .background(if (selected) Palette.Background else Color.Transparent)
-                        .clickable { if (!selected) vm.setLanguage(code) }.padding(vertical = 10.dp),
-                    contentAlignment = Alignment.Center,
+    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+        Header(if (hi) "सेटिंग" else "Settings", onBack = onClose)
+        Sheet {
+            WhiteCard {
+                Text(if (hi) "भाषा" else "Language", style = MaterialTheme.typography.titleMedium)
+                Row(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small).background(Palette.Page).padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Text(
-                        label, style = MaterialTheme.typography.labelLarge,
-                        color = if (selected) Palette.Accent else Palette.InkMuted,
-                    )
+                    listOf("en" to "English", "hi" to "हिंदी").forEach { (code, label) ->
+                        val selected = ui.language == code
+                        Box(
+                            Modifier.weight(1f).clip(MaterialTheme.shapes.small)
+                                .background(if (selected) Palette.Teal800 else Color.Transparent)
+                                .clickable { if (!selected) vm.setLanguage(code) }.padding(vertical = 11.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(label, style = MaterialTheme.typography.labelLarge, color = if (selected) Color.White else Palette.InkMuted)
+                        }
+                    }
                 }
             }
-        }
-
-        SectionLabel(if (hi) "मॉडल (सब इसी फ़ोन पर, बिना इंटरनेट)" else "Models (all on this phone, no internet)")
-        Panel(padding = 12.dp) {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            WhiteCard {
+                Text(if (hi) "मॉडल (सब इसी फ़ोन पर, बिना इंटरनेट)" else "Models (all on this phone, no internet)", style = MaterialTheme.typography.titleMedium)
                 ui.models.forEach { (name, status) ->
                     val ok = status.startsWith("ready")
                     val busy = status.startsWith("loading")
                     Row(verticalAlignment = Alignment.Top) {
                         Box(
-                            Modifier.padding(top = 6.dp).size(8.dp).clip(CircleShape)
-                                .background(if (ok) Palette.Accent else if (busy) Palette.Amber else Palette.Warning),
+                            Modifier.padding(top = 6.dp).size(9.dp).clip(CircleShape)
+                                .background(if (ok) Palette.Teal500 else if (busy) Palette.Amber else Palette.Warning),
                         )
                         Spacer(Modifier.width(10.dp))
                         Column {
-                            Text(name, style = MaterialTheme.typography.titleMedium)
+                            Text(name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
                             Text(status, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted)
                         }
                     }
                 }
             }
-        }
-
-        SectionLabel(if (hi) "मापन" else "Measurements")
-        Panel(padding = 12.dp) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    if (hi) "समय दिखाएँ" else "Show timings on screen",
-                    style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f),
-                )
-                Switch(
-                    checked = ui.showOverlay, onCheckedChange = { vm.toggleOverlay() },
-                    colors = SwitchDefaults.colors(checkedTrackColor = Palette.Accent),
-                )
+            WhiteCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (hi) "समय दिखाएँ" else "Show timings on screen", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    Switch(
+                        checked = ui.showOverlay, onCheckedChange = { vm.toggleOverlay() },
+                        colors = SwitchDefaults.colors(checkedTrackColor = Palette.Teal500),
+                    )
+                }
+                SecondaryButton(if (hi) "रिपोर्ट के लिए समय सहेजें" else "Export timings for the report", Modifier.fillMaxWidth()) {
+                    exported = vm.exportTimings()
+                }
+                exported?.let { Text("Saved: $it", style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted) }
             }
+            Text(
+                "Built with Llama. Llama 3.2 is licensed under the Llama 3.2 Community License, " +
+                    "Copyright © Meta Platforms, Inc. All Rights Reserved.",
+                style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
+            )
         }
-        SecondaryButton(if (hi) "रिपोर्ट के लिए समय सहेजें" else "Export timings for the report", Modifier.fillMaxWidth()) {
-            exported = vm.exportTimings()
-        }
-        exported?.let { Text("Saved: $it", style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted) }
-
-        HorizontalDivider(color = Palette.Outline)
-        Text(
-            "Built with Llama. Llama 3.2 is licensed under the Llama 3.2 Community License, " +
-                "Copyright © Meta Platforms, Inc. All Rights Reserved.",
-            style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
-        )
     }
 }
