@@ -3,10 +3,9 @@
 Record on the phone with Android's screen recorder, airplane mode visibly on from the first shot.
 One take per scene; cut between scenes. Show the real app, no mock-ups.
 
-**Before recording (once, phone charging):** open SwachhSathi → Settings → **Prepare all
-explanations** and let it finish (about 30 minutes on an entry-level phone). Every explanation is
-then written by Llama on this phone and shows instantly during the video. Close other apps,
-charge to 100%, note the battery level.
+**Before recording:** every item's explanation ships with the app, so scans show it instantly.
+Ask one typed question once before recording, so Llama is already loaded (about 30 s) when
+the Ask shots start. Close other apps, charge to 100%, note the battery level.
 
 | # | Time | Shot | What to show | Say / caption |
 |---|---|---|---|---|

@@ -82,12 +82,20 @@ comes from the phone.
   ExecuTorch's shared thread pool, and a detector or SigLIP run at that moment deadlocked both on
   the phone. The lock also keeps peak memory down: camera analysis pauses while Llama works.
 - **Llama loads on the first explanation**, not at start, so scanning is ready in seconds.
-- **Explanations are kept on the phone** (`ExplanationCache`): a later scan of the same item,
-  condition and language shows the saved, checked answer at once. Settings can prepare all of
-  them ahead, on the phone. Typed and spoken questions always run Llama live.
+- **Explanations for plain scans ship with the app** (`models/llm/explanations_seed.jsonl`,
+  written by `models/llm/seed_explanations.py` with the same model, prompt and checks: 146 of
+  146 passed). On the phone Llama needs ~30 s to load and ~15 s to read its prompt; a shorter
+  prompt costs quality (TECHNICAL_REPORT §5.2) and ExecuTorch 1.5.1 cannot reuse a cached prompt prefix, so
+  writing them ahead is what makes scans instant. Typed and spoken questions run Llama live.
+- **Explanations are kept on the phone** (`ExplanationCache`). One cut short by Scan again is
+  finished later, only while the camera is idle; whole sentences already written are kept
+  meanwhile, after the same checks.
 - **Llama starts 1.5 s after a card**, so scanning the next item right away never waits behind
   Llama reading its prompt (that step cannot be interrupted).
-- The speech model loads per question and is released after use; detector and SigLIP stay loaded.
+- The speech model loads per question, while the user is still speaking, and is released after
+  use; recording stops about 1.2 s after the speaker pauses. Detector and SigLIP stay loaded.
+- **Every scan action gets a token**: work queued for an older action (a repeat tap, a photo
+  taken before Scan again) is dropped instead of replacing the newer card.
 - Targets (FuturePlan section 9) were set for a mid-range phone: app under about 60% of device RAM,
   detector under 50 ms per frame, Llama first token under 1.5 s, at least 15 tokens/s.
 

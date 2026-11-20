@@ -64,7 +64,7 @@ INTERNET permission). Runtimes, models and memory policy: [PIPELINES.md](PIPELIN
 | Unknown items | SigLIP 2 base image encoder, int8 `.pte`, cosine against KB item text embeddings; top 3 offered, never auto-decided | 94 MB | when not sure or not agreed |
 | Dirty / broken | Same SigLIP 2 embedding vs item-specific prompts ("dirty milk pouch" vs "clean milk pouch"); in the unsure band the app asks the user | 0 MB extra | stable item with condition rules |
 | Decision | KB (`kb.sqlite`) + city profile | <1 MB | every verdict |
-| Explanation | Llama 3.2 1B Instruct SpinQuant INT4 `.pte` + verifier; loads on first use, answers kept on the phone | 1.1 GB | 1.5 s after the card, or instantly from the phone's cache |
+| Explanation | Llama 3.2 1B Instruct SpinQuant INT4 `.pte` + verifier; plain-scan answers written ahead and shipped, questions live on the phone | 1.1 GB | instantly (shipped), questions 15–30 s |
 | Voice | Omnilingual ASR 300M CTC int8 (sherpa-onnx) → pronunciation-key matcher; Android text-to-speech | 366 MB | push-to-talk |
 | Impact | Scan log, items by stream, kg kept out of landfill (estimate), streak; education cards and quiz from KB facts | – | on demand |
 
@@ -157,7 +157,11 @@ A hand check of 16 random answers found them all consistent with the KB; two Hin
 awkward grammar. Off-topic questions: the guard declines all of them (126/126 across validation
 and training cases) and wrongly stops none of the 504 on-topic ones. Its fixed test questions are
 simple ("What is the capital of France?"), so this shows the guard is not over-eager, not that it
-catches every off-topic phrasing.
+catches every off-topic phrasing. On the phone it was over-eager with real questions: "what do I
+do with an old plastic carton" was declined, because the first word list knew only waste words
+and the scanned item's names. It now also accepts any word of any item's names (with one-letter
+slips, as speech recognition makes) and everyday verbs; 12 phone-style cases were added to the
+shared tests, and the declined set above is unchanged.
 
 Whatever still fails is never shown: the card keeps the KB's own text. So the user-facing error rate
 for bin and steps is zero by construction; Llama errors only cost an explanation.
@@ -228,9 +232,13 @@ entry-level phone rather than a flagship ([DEVICE.md](DEVICE.md),
 
 For reference, ExecuTorch reports 50.2 tokens/s and 0.3 s to first token for the same model on a
 flagship (OnePlus 12): this phone is roughly 10x slower, so the design leans on it. The bin card
-never waits for Llama; Llama loads on the first explanation, not at start; and every explanation
-Llama writes is kept on the phone, so the next scan of the same item and condition shows it at
-once (Settings can prepare all of them ahead, on the phone).
+never waits for Llama, and Llama loads only when first needed. A shorter prompt would cut the
+15 s but costs quality (useful 97% to about 70% without the worked examples, §5.2), and
+ExecuTorch 1.5.1's Android runner cannot reuse a cached prompt prefix. Plain scans always ask the
+same thing for an item, condition and language, so all 146 (53 items, each dirty/broken answer,
+English and Hindi) are written ahead with the same model, prompt and checks (146 of 146 passed)
+and ship with the app: a scan shows its explanation at once. Typed and spoken questions run
+Llama on the phone.
 
 **Real items.** Scanned on the phone by hand (table and hand), including items the detector never
 saw: the bin was right for every item except a computer mouse (put in dry instead of special
@@ -250,7 +258,11 @@ battery, so this is a short-run rate, scaled
 **Bugs the phone found** (all fixed and re-tested on the phone): an Android regex difference that
 made every explanation fail; a deadlock when Llama loaded while another model ran (fixed with one
 model at a time, which is also the memory rule); the shutter reusing a stale frame and crashing on
-a released camera image; timing that counted waiting as work.
+a released camera image; timing that counted waiting as work. The final check (2026-11-20) found
+suggestion taps queued behind Llama landing after Scan again (a carton card over a bottle),
+everyday questions declined by the topic guard, no feedback for ~10 s after Speak, and a gallery
+picture that silently failed to decode; all fixed and re-tested
+([notes](../eval/results/phone/session_notes_2026-11-20.md)).
 
 ## 6. Comparison with the state of the art
 
@@ -289,8 +301,9 @@ mistakes unfamiliar wet waste for dry items, which the agreement rule now catche
 photo set, retraining and a trained dirty/broken head are next. The open South Asian detection sets
 we found were not usable for training (§4). On the phone a computer mouse was put in the dry bin:
 electronics reach the user only through SigLIP suggestions. No KB item yet for used masks,
-gloves or calculators. Llama on a budget phone is slow the first time (15–30 s per explanation)
-until answers are cached; a shorter prompt would help but cost answer quality (§5.2). Battery was
+gloves or calculators. Llama on a budget phone takes 15–30 s for a typed or spoken question
+(scan explanations ship written ahead); a shorter prompt would help but cost answer quality
+(§5.2). Battery was
 measured over 4 minutes, not a full 15-minute run. Hindi KB text unreviewed; Tamil, Telugu,
 Bengali and Marathi not yet written. Voice measured on synthetic speech. One city profile. LoRA
 fine-tune tooled but not run.

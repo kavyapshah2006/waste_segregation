@@ -24,8 +24,8 @@ offline speech model. The app has no internet permission at all.
 - **Detector**: YOLO26n on TACO, 9.8 MB, 0.305 mAP50 on held-out images, in the same range as much
   larger published TACO systems ([§5.1](docs/TECHNICAL_REPORT.md#51-sorting-accuracy)).
 - **On an entry-level phone** (realme C61, Unisoc T612, 4 GB): detector 0.23–0.42 s per frame,
-  Llama 4.4 tokens/s; the bin card never waits for Llama, and explanations are kept on the phone
-  so repeat scans are instant. Real items scanned by hand: right bin for all but one (a computer
+  Llama 4.4 tokens/s; the bin card never waits for Llama, and every item's explanation ships
+  with the app (written ahead by the same Llama, same checks), so it shows at once. Real items scanned by hand: right bin for all but one (a computer
   mouse); airplane mode on throughout ([§5.6](docs/TECHNICAL_REPORT.md#56-on-a-budget-phone-speed-memory-real-items-offline)).
 
 **Built with Llama.** Licensed under the GNU AGPL-3.0 ([LICENSE](LICENSE)); third-party licences in [THIRD_PARTY.md](THIRD_PARTY.md) and [NOTICE](NOTICE).
@@ -67,7 +67,8 @@ Python dependencies are managed only with uv (`uv add <pkg>`, `uv run <cmd>`). `
    condition ask "Is it dirty?" or "Is it broken?".
 4. **Llama explains.** Llama 3.2 1B writes a short "why it matters" and a tip, checked against the
    knowledge base before it is shown; anything that fails the checks falls back to the KB's own text.
-   The card never waits for Llama, and every explanation it writes is kept on the phone.
+   The card never waits for Llama. Explanations for plain scans ship with the app, written
+   ahead by the same model and checks; Llama on the phone answers typed and spoken questions.
 5. **Ask and listen.** Type or speak a question in English or Hindi (offline speech recognition);
    off-topic questions are declined. Verdicts are read aloud. History and Impact keep a private
    record of what you sorted, with a daily fact and quiz.
@@ -87,9 +88,9 @@ cd android && ./gradlew :app:assembleRelease && cd ..                 # the APK 
 ./scripts/install_app.sh                                              # APK + models over USB (adb)
 ```
 
-On first use, open **Settings → Prepare all explanations** with the phone charging: Llama writes
-every item's explanation once, on the phone, so later scans show it instantly. The full
-measurement runbook is [docs/PHONE_SESSION.md](docs/PHONE_SESSION.md).
+Every item's explanation (English and Hindi) ships in the APK, so scans show it at once; to
+write them again with the phone's own Llama instead, use **Settings → Prepare all
+explanations**. The full measurement runbook is [docs/PHONE_SESSION.md](docs/PHONE_SESSION.md).
 
 ## Repository layout
 

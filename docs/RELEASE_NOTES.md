@@ -26,9 +26,8 @@ encoder run on the phone's Arm CPU through ExecuTorch; the app has no internet p
    the README's "Run it on a phone" steps download the models and `./scripts/install_app.sh`
    installs everything.
 3. Open SwachhSathi. Scanning is ready in a few seconds; Settings lists every model.
-4. Optional, recommended: **Settings → Prepare all explanations** with the phone charging (about
-   30 minutes on an entry-level phone). Llama writes each item's explanation once, on the phone, and
-   later scans show it instantly.
+4. Scan: every item's explanation (English and Hindi) ships with the app and shows at once.
+   Typed and spoken questions run Llama on the phone (about 30 s to load the first time).
 
 ## Measured (details: `docs/TECHNICAL_REPORT.md`, `eval/REPORT.md`)
 
@@ -45,8 +44,8 @@ encoder run on the phone's Arm CPU through ExecuTorch; the app has no internet p
 
 The detector knows 14 items and was trained on TACO (European litter photos), not Indian
 household waste; the other 39 knowledge-base items are reached by suggestions, voice or search, and
-a second model must agree before any verdict. Llama is slow on budget phones (explanations take
-15–30 s the first time; cached afterwards). Hindi text has not been reviewed by a native speaker;
+a second model must agree before any verdict. Llama is slow on budget phones: scan explanations
+ship with the app, but a typed or spoken question takes 15–30 s on an entry-level phone. Hindi text has not been reviewed by a native speaker;
 voice was measured on synthetic speech. One city profile. No knowledge-base item yet for masks,
 gloves or calculators.
 
