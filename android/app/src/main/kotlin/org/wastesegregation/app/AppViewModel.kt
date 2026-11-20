@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import java.util.concurrent.TimeUnit
 import wastesegregation.core.Assistant
 import wastesegregation.core.AttributeChecker
 import wastesegregation.core.Correction
@@ -137,6 +138,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     @Volatile private var searchStartMs: Long? = null
     /** Bumped to cancel a running explanation (scan again, new item). */
     @Volatile private var explainGeneration = 0
+    /**
+     * Bumped by every new scan action (scan again, a pick, a photo, a question). Work queued for an
+     * older action is dropped: on the phone, picks queued behind a busy model (repeat taps) landed
+     * after "Scan again" and showed the old item over the new one.
+     */
+    @Volatile private var scanToken = 0
+    /** Token of a suggestion tap still being shown (-1: none): repeat taps are ignored meanwhile. */
+    @Volatile private var pendingPick = -1
 
     private class Cancelled : RuntimeException()
 
@@ -224,6 +233,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             proxy.close()
             return
         }
+        val token = scanToken
         val t0 = SystemClock.elapsedRealtimeNanos()
         val bitmap = try {
             latency.time(Stages.CAPTURE) { proxy.toBitmap().rotate(proxy.imageInfo.rotationDegrees) }
@@ -252,14 +262,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         // The detector sees something but cannot decide: ask SigLIP straight away rather than
         // making the user wait and tap. (An empty view only gets the button: nothing to rank.)
         if (state.state == "unsure" && waited >= AUTO_SUGGEST_MS) {
-            suggest(bitmap)
+            suggest(bitmap, token)
             return
         }
         if (state.state == "stable" && state.itemId != null) {
-            if (!agrees(state.itemId!!, bitmap)) return
+            if (!agrees(state.itemId!!, bitmap, token)) return
             val best = detections.filter { it.itemId == state.itemId }.maxByOrNull { it.confidence }
             val crop = best?.let { bitmap.crop(it.bbox) } ?: bitmap
-            lock(state.itemId!!, crop, state.confidence, t0)
+            lock(state.itemId!!, crop, state.confidence, t0, token)
         }
     }
 
@@ -270,11 +280,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * BDWaste photos this rule lifts the right bin from 75% to 92% (eval/bdwaste/evaluate.py).
      * Without the SigLIP model the detector decides alone, as before.
      */
-    private fun agrees(itemId: String, frame: Bitmap): Boolean {
+    private fun agrees(itemId: String, frame: Bitmap, token: Int): Boolean {
         val siglip = siglip ?: return true
+        if (token != scanToken) return false
         update { it.copy(lookingCloser = true) }
         val top3 = siglip.suggest(siglip.embed(frame))
         latency.record(Stages.AGREEMENT, siglip.lastMs)
+        if (token != scanToken) return false  // the user moved on while SigLIP ran
         update { it.copy(lookingCloser = false) }
         if (FallbackRank.confirms(itemId, top3)) return true
         locked = true
@@ -292,21 +304,34 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         crop: Bitmap?,
         confidence: Double?,
         t0Nanos: Long,
+        token: Int,
         question: String? = null,
         language: String = ui.language,
     ) {
         val kb = kb ?: return
+        if (token != scanToken) return  // queued for an action the user has already left
         locked = true
         val attributes = linkedMapOf<String, Any?>()
         val ask = mutableListOf<String>()
         val siglip = siglip
         val checker = checker
         if (crop != null && siglip != null && checker != null && checker.attributesFor(itemId).isNotEmpty()) {
-            val emb = siglip.embed(crop).also { latency.record(Stages.ATTRIBUTES, siglip.lastMs) }
-            for ((attr, result) in checker.check(itemId, emb)) {
-                if (result.value == null) ask.add(attr) else attributes[attr] = result.value
+            // Llama may be reading its prompt (about 15 s, cannot be interrupted): rather than keep
+            // the user waiting for the card, ask the dirty/broken questions instead of checking.
+            if (Inference.lock.tryLock(ATTRIBUTE_WAIT_MS, TimeUnit.MILLISECONDS)) {
+                try {
+                    val emb = siglip.embed(crop).also { latency.record(Stages.ATTRIBUTES, siglip.lastMs) }
+                    for ((attr, result) in checker.check(itemId, emb)) {
+                        if (result.value == null) ask.add(attr) else attributes[attr] = result.value
+                    }
+                } finally {
+                    Inference.lock.unlock()
+                }
+            } else {
+                ask.addAll(checker.attributesFor(itemId))
             }
         }
+        if (token != scanToken) return
         val verdict = latency.time(Stages.KB) { kb.resolve(itemId, attributes, language) }
         val cardMs = (SystemClock.elapsedRealtimeNanos() - t0Nanos) / 1e6
         latency.record(Stages.FRAME_TO_CARD, cardMs)
@@ -324,6 +349,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun scanAgain() {
+        scanToken++
         cancelExplanation()
         capturing = false
         voter.reset()
@@ -521,7 +547,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 return
             }
             locked = true
-            work.execute { lock(match, null, null, SystemClock.elapsedRealtimeNanos(), question) }
+            val token = ++scanToken
+            work.execute { lock(match, null, null, SystemClock.elapsedRealtimeNanos(), token, question) }
             return
         }
         explain(question)
@@ -549,19 +576,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Suggestions from the SigLIP fallback for the last frame (or a picked photo). */
-    fun suggest(bitmap: Bitmap? = lastFrame) {
+    fun suggest(bitmap: Bitmap? = lastFrame, token: Int = scanToken) {
         val siglip = siglip
         if (siglip == null || bitmap == null) {
             update { it.copy(message = "Fallback model not loaded") }
             return
         }
+        if (token != scanToken) return
         locked = true  // stop scanning while the user chooses
         lastFrame = bitmap
         update { it.copy(lookingCloser = true, canSuggest = false, scanState = "unsure") }
         vision.execute {
+            if (token != scanToken) return@execute
             val emb = siglip.embed(bitmap).also { latency.record(Stages.FALLBACK, siglip.lastMs) }
             val suggestions = siglip.suggest(emb)
-            update { it.copy(suggestions = suggestions, lookingCloser = false) }
+            if (token == scanToken) update { it.copy(suggestions = suggestions, lookingCloser = false) }
         }
     }
 
@@ -587,9 +616,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         capturing = true
         locked = true  // stop live scanning while the photo is taken and analysed
+        val token = ++scanToken
         update { it.copy(lookingCloser = true, suggestions = emptyList(), canSuggest = false) }
         capture.takePicture(captureThread, object : ImageCapture.OnImageCapturedCallback() {
             override fun onCaptureSuccess(image: ImageProxy) {
+                if (token != scanToken) {  // "Scan again" while the photo was being taken
+                    image.close()
+                    return
+                }
                 // Copy the pixels now and give the buffer straight back to the camera.
                 val bitmap = try {
                     image.toBitmap().rotate(image.imageInfo.rotationDegrees).limit(PHOTO_MAX_SIDE)
@@ -605,6 +639,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
             private fun failed(why: String) {
                 capturing = false
+                if (token != scanToken) return
                 locked = false
                 update { it.copy(lookingCloser = false, message = "Couldn't take a photo ($why). Try again.") }
             }
@@ -634,9 +669,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun binColourOf(itemId: String): String? = kb?.resolve(itemId, emptyMap(), ui.language)?.binColour
 
     fun choose(itemId: String) {
+        if (pendingPick == scanToken) return  // one pick at a time: repeat taps used to queue up
         locked = true
+        val token = ++scanToken
+        pendingPick = token
+        val frame = lastFrame
         cancelExplanation()
-        vision.execute { lock(itemId, lastFrame, null, SystemClock.elapsedRealtimeNanos()) }
+        // Close the sheet at once so the tap visibly did something.
+        update { it.copy(suggestions = emptyList(), lookingCloser = true, canSuggest = false) }
+        vision.execute {
+            try {
+                lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos(), token)
+            } finally {
+                if (pendingPick == token) pendingPick = -1
+            }
+        }
     }
 
     /** "This is wrong": log the correction (with the photo), then show the right item. */
@@ -657,8 +704,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             ),
         )
         locked = true
+        val token = ++scanToken
         cancelExplanation()
-        vision.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos()) }
+        vision.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos(), token) }
     }
 
     fun photo(bitmap: Bitmap, fromShutter: Boolean = false) {
@@ -671,17 +719,20 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         lastFrame = bitmap
         cancelExplanation()
         locked = true
+        val token = ++scanToken
         vision.execute {
             try {
+                if (token != scanToken) return@execute
                 val t0 = SystemClock.elapsedRealtimeNanos()
                 val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
+                if (token != scanToken) return@execute
                 if (best != null && best.confidence >= GATE) {
-                    if (agrees(best.itemId!!, bitmap)) {
-                        lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0)
+                    if (agrees(best.itemId!!, bitmap, token)) {
+                        lock(best.itemId!!, bitmap.crop(best.bbox), best.confidence.toDouble(), t0, token)
                     }
                 } else {
                     update { it.copy(verdict = null) }
-                    suggest(bitmap)
+                    suggest(bitmap, token)
                 }
             } finally {
                 if (fromShutter) capturing = false
@@ -730,7 +781,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         when {
             top != null && !top.confirm -> {
                 locked = true
-                work.execute { lock(top.itemId, null, null, SystemClock.elapsedRealtimeNanos(), text, language) }
+                val token = ++scanToken
+                work.execute { lock(top.itemId, null, null, SystemClock.elapsedRealtimeNanos(), token, text, language) }
             }
             matches.isNotEmpty() -> update { it.copy(voiceChoices = matches.map { m -> m.itemId }) }
             ui.verdict != null -> {
@@ -748,7 +800,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val language = ui.language
         update { it.copy(voiceChoices = emptyList()) }
         locked = true
-        work.execute { lock(itemId, null, null, SystemClock.elapsedRealtimeNanos(), text, language) }
+        val token = ++scanToken
+        work.execute { lock(itemId, null, null, SystemClock.elapsedRealtimeNanos(), token, text, language) }
     }
 
     fun itemChoices(): List<Pair<String, String>> {
@@ -857,6 +910,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         const val AUTO_SUGGEST_MS = 1500L
         /** Llama starts this long after a card appears (not for typed or spoken questions). */
         const val EXPLAIN_DELAY_MS = 1500L
+        /** Longest a card waits for the model lock before asking the dirty/broken questions. */
+        const val ATTRIBUTE_WAIT_MS = 400L
         /** Shutter photos are scaled down to this long side: plenty for 640 px models, less memory. */
         const val PHOTO_MAX_SIDE = 1600
 
