@@ -22,14 +22,8 @@ class ExplanationCache(private val file: File) {
         if (file.exists()) {
             file.readLines().filter { it.isNotBlank() }.forEach { line ->
                 runCatching {
-                    @Suppress("UNCHECKED_CAST")
-                    val row = Json.parse(line) as Map<String, Any?>
-                    @Suppress("UNCHECKED_CAST")
-                    entries[row["key"] as String] = VerifiedOutput(
-                        row["status"] as String,
-                        row["output"] as Map<String, Any?>,
-                        (row["contradictions"] as List<Any?>).map { it as String },
-                    )
+                    val (key, value) = parse(line)
+                    entries[key] = value
                 }
             }
         }
@@ -37,6 +31,37 @@ class ExplanationCache(private val file: File) {
 
     @Synchronized
     fun get(key: String): VerifiedOutput? = entries[key]
+
+    /**
+     * Add the explanations shipped in the APK (written ahead with the same model, prompt and
+     * checks; models/llm/seed_explanations.py) for keys this phone has no full answer for.
+     * Kept in memory only: the APK is read again at each start. Returns how many were added.
+     */
+    @Synchronized
+    fun seed(file: File): Int {
+        var added = 0
+        file.readLines().filter { it.isNotBlank() }.forEach { line ->
+            runCatching {
+                val (key, value) = parse(line)
+                val old = entries[key]
+                if (value.status in SAVED && (old == null || old.status == "partial")) {
+                    entries[key] = value
+                    added++
+                }
+            }
+        }
+        return added
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun parse(line: String): Pair<String, VerifiedOutput> {
+        val row = Json.parse(line) as Map<String, Any?>
+        return row["key"] as String to VerifiedOutput(
+            row["status"] as String,
+            row["output"] as Map<String, Any?>,
+            (row["contradictions"] as List<Any?>).map { it as String },
+        )
+    }
 
     /**
      * Save an answer. "partial" (the complete sentences written before Llama was stopped, already

@@ -79,6 +79,8 @@ data class UiState(
     val message: String? = null,
     val listening: Boolean = false,
     val transcribing: Boolean = false,
+    /** A photo is waiting for Llama to finish reading its prompt (cannot be interrupted). */
+    val waitingForLlama: Boolean = false,
     /** Microphone loudness while listening (RMS, 0..1), for the level meter. */
     val voiceLevel: Float = 0f,
     val transcript: String? = null,
@@ -173,6 +175,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
         report()
         val kb = kb ?: return update { it.copy(status = "Knowledge base missing") }
+        // Explanations written ahead for plain scans: instant from the first scan, no Llama load.
+        runCatching { files.explanationSeed()?.let { explanations.seed(it) } }
         status["Detector"] = try {
             val pte = files.detector()
             val names = files.detectorNames()
@@ -854,6 +858,43 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         vision.execute { lock(itemId, frame, null, SystemClock.elapsedRealtimeNanos(), token) }
     }
 
+    /** Gallery: decode the picked picture off the main thread, small and upright, then analyse it. */
+    fun photoFromUri(uri: android.net.Uri) {
+        update { it.copy(lookingCloser = true, suggestions = emptyList(), canSuggest = false) }
+        captureThread.execute {
+            val bitmap = runCatching { decodeUpright(uri) }.getOrNull()
+            if (bitmap == null) {
+                update { it.copy(lookingCloser = false, message = "Couldn't open that picture. Try another one.") }
+            } else {
+                photo(bitmap)
+            }
+        }
+    }
+
+    /** Decode at about [PHOTO_MAX_SIDE] (not the camera's 12-50 MP) and apply the EXIF rotation. */
+    private fun decodeUpright(uri: android.net.Uri): Bitmap? {
+        val resolver = getApplication<Application>().contentResolver
+        val bounds = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, bounds) }
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+        var sample = 1
+        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= PHOTO_MAX_SIDE) sample *= 2
+        val options = android.graphics.BitmapFactory.Options().apply { inSampleSize = sample }
+        val decoded = resolver.openInputStream(uri)?.use { android.graphics.BitmapFactory.decodeStream(it, null, options) }
+            ?: return null
+        val degrees = runCatching {
+            resolver.openInputStream(uri)?.use {
+                when (android.media.ExifInterface(it).getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, 1)) {
+                    android.media.ExifInterface.ORIENTATION_ROTATE_90 -> 90
+                    android.media.ExifInterface.ORIENTATION_ROTATE_180 -> 180
+                    android.media.ExifInterface.ORIENTATION_ROTATE_270 -> 270
+                    else -> 0
+                }
+            }
+        }.getOrNull() ?: 0
+        return decoded.rotate(degrees).limit(PHOTO_MAX_SIDE)
+    }
+
     fun photo(bitmap: Bitmap, fromShutter: Boolean = false) {
         if (!ready) {
             if (fromShutter) capturing = false
@@ -865,11 +906,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         cancelExplanation()
         locked = true
         val token = ++scanToken
+        // Visible at once: a gallery photo used to show nothing until it was analysed.
+        update { it.copy(lookingCloser = true, suggestions = emptyList(), canSuggest = false) }
         vision.execute {
             try {
                 if (token != scanToken) return@execute
                 val t0 = SystemClock.elapsedRealtimeNanos()
-                val best = det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
+                // Llama may still be reading the last prompt: say so instead of looking stuck.
+                if (Inference.lock.isLocked) update { it.copy(waitingForLlama = true) }
+                val best = try {
+                    det?.detect(bitmap, latency)?.filter { it.itemId != null }?.maxByOrNull { it.confidence }
+                } finally {
+                    update { it.copy(waitingForLlama = false) }
+                }
                 if (token != scanToken) return@execute
                 if (best != null && best.confidence >= GATE) {
                     if (agrees(best.itemId!!, bitmap, token)) {

@@ -47,6 +47,7 @@ class ModelFiles(private val context: Context) {
     fun kb(): File? = asset("kb.sqlite")
     fun textEmbeddings(): File? = asset("text_embeddings.json")
     fun attributePrompts(): File? = asset("attribute_prompts.json")
+    fun explanationSeed(): File? = asset("explanations_seed.jsonl")
 
     companion object {
         /** Chosen by the answer-quality experiments (eval/results/llm_experiments). */

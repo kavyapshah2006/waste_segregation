@@ -299,8 +299,10 @@ fun ScanScreen(vm: AppViewModel, onSettings: () -> Unit) {
         mutableStateOf(context.checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
+    // Decoded off the main thread, downsampled and upright (vm.photoFromUri): a full-size gallery
+    // photo decoded here froze the screen, and a failed decode did nothing at all.
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { context.contentResolver.openInputStream(it)?.use(BitmapFactory::decodeStream) }?.let(vm::photo)
+        uri?.let(vm::photoFromUri)
     }
     var picking by remember { mutableStateOf(false) }
     val choosing = ui.suggestions.isNotEmpty() || ui.lookingCloser
@@ -390,6 +392,8 @@ fun ScanScreen(vm: AppViewModel, onSettings: () -> Unit) {
 private fun HintPill(ui: UiState, hi: Boolean) {
     val text = when {
         ui.preparing != null -> (if (hi) "व्याख्याएँ तैयार हो रही हैं " else "Preparing explanations ") + ui.preparing
+        ui.lookingCloser && ui.waitingForLlama ->
+            if (hi) "पिछला जवाब पूरा हो रहा है, बस कुछ सेकंड…" else "Finishing the last explanation, a few seconds…"
         ui.lookingCloser -> if (hi) "ध्यान से देख रहे हैं…" else "Looking closer…"
         ui.scanState == "stable" -> ui.liveItem ?: ""
         ui.scanState == "unsure" -> if (hi) "पक्का नहीं… स्थिर रखें" else "Not sure yet… hold steady"

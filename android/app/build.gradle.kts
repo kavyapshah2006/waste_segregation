@@ -72,6 +72,8 @@ val collectAppAssets = tasks.register<CollectAppAssets>("collectAppAssets") {
         repoRoot.resolve("models/vision/out/metadata.yaml"),
         repoRoot.resolve("models/fallback/out/text_embeddings.json"),
         repoRoot.resolve("models/attributes/out/attribute_prompts.json"),
+        // Llama's explanations for plain scans, written ahead on the laptop (models/llm/seed_explanations.py).
+        repoRoot.resolve("models/llm/explanations_seed.jsonl"),
     )
     outputDir.set(layout.buildDirectory.dir("generated/appAssets"))
 }
