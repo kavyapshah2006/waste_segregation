@@ -79,6 +79,8 @@ data class UiState(
     val message: String? = null,
     val listening: Boolean = false,
     val transcribing: Boolean = false,
+    /** Microphone loudness while listening (RMS, 0..1), for the level meter. */
+    val voiceLevel: Float = 0f,
     val transcript: String? = null,
     val voiceChoices: List<String> = emptyList(),
     /** The photo (detector crop or chosen frame) shown on the result card. */
@@ -409,6 +411,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** The user wants Llama now (a question, a spoken question): the background job gives way. */
+    private fun stopBackground() {
+        backgroundGeneration++
+        main.removeCallbacks(backgroundCheck)
+        if (llmBusy && !preparing && !ui.explaining) runCatching { llama?.stop() }
+    }
+
     /** Try the background job a little later (the user may be about to scan again). */
     private fun scheduleBackground() {
         main.removeCallbacks(backgroundCheck)
@@ -423,7 +432,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         // Never while the camera is scanning: only on another tab, or on a card whose own
         // explanation is done.
         val idle = screen != 0 || (ui.verdict != null && !ui.explaining)
-        if (!idle) return
+        if (!idle || ui.explaining || ui.listening || ui.transcribing) return
         val job = synchronized(unfinished) { unfinished.values.lastOrNull() } ?: return
         if (job.key.split("|").getOrNull(1) != kb.version) {
             forget(job.key)
@@ -675,6 +684,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun ask(question: String) {
         val kb = kb ?: return
+        stopBackground()
         if (ui.verdict == null) {
             val match = kb.search(question, ui.language).firstOrNull() ?: kb.search(question).firstOrNull()
             if (match == null) {
@@ -877,7 +887,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // ------------------------------------------------------------------ voice
 
-    /** Push-to-talk: record until [stopVoice] (or 8 s), transcribe on the phone, then act. */
+    /**
+     * Push-to-talk: record until the user stops talking (or taps Stop, or 8 s), transcribe on the
+     * phone, then act. The speech model loads while the user is still speaking.
+     */
     fun startVoice() {
         val speech = speech
         if (speech == null) {
@@ -885,15 +898,23 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         if (ui.listening || ui.transcribing) return
-        update { it.copy(listening = true, transcript = null, voiceChoices = emptyList()) }
+        stopBackground()  // Llama drains while the user speaks, so the answer is not kept waiting
+        update { it.copy(listening = true, transcript = null, voiceChoices = emptyList(), voiceLevel = 0f) }
         voiceThread.execute {
             try {
-                val audio = speech.record()
-                update { it.copy(listening = false, transcribing = true) }
+                speech.preload()
+                val audio = speech.record(onLevel = { level -> update { it.copy(voiceLevel = level) } })
+                if (audio.size < SpeechInput.SAMPLE_RATE / 4) {  // under a quarter second: nothing to hear
+                    speech.discard()
+                    handleTranscript("")
+                    return@execute
+                }
+                update { it.copy(listening = false, transcribing = true, voiceLevel = 0f) }
                 val text = latency.time(Stages.ASR) { speech.transcribe(audio) }
                 handleTranscript(text)
             } catch (e: Throwable) {
-                update { it.copy(listening = false, transcribing = false, message = "Voice failed: ${e.message}") }
+                speech.discard()
+                update { it.copy(listening = false, transcribing = false, voiceLevel = 0f, message = "Voice failed: ${e.message}") }
             }
         }
     }
@@ -906,7 +927,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val kb = kb ?: return
         // Devanagari in the transcript: answer in Hindi.
         val language = if (text.any { it in '\u0900'..'\u097F' }) "hi" else ui.language
-        update { it.copy(transcribing = false, transcript = text, language = language) }
+        update { it.copy(listening = false, transcribing = false, transcript = text, language = language) }
         if (text.isBlank()) {
             update { it.copy(message = if (language == "hi") "कुछ सुनाई नहीं दिया, फिर से बोलें" else "Didn't catch that, try again") }
             return
@@ -934,6 +955,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val text = ui.transcript
         val language = ui.language
         update { it.copy(voiceChoices = emptyList()) }
+        stopBackground()
         locked = true
         val token = ++scanToken
         work.execute { lock(itemId, null, null, SystemClock.elapsedRealtimeNanos(), token, text, language) }

@@ -789,7 +789,7 @@ fun AskScreen(vm: AppViewModel) {
                     }
                     val micLabel = when {
                         ui.listening -> if (hi) "रुकें" else "Stop"
-                        ui.transcribing -> if (hi) "सुन रहा है…" else "Listening…"
+                        ui.transcribing -> if (hi) "समझ रहा है…" else "Working…"
                         else -> if (hi) "बोलें" else "Speak"
                     }
                     OutlinedButton(
@@ -810,7 +810,19 @@ fun AskScreen(vm: AppViewModel) {
                         Text(micLabel, style = MaterialTheme.typography.labelLarge)
                     }
                 }
-                ui.transcript?.let { Text((if (hi) "सुना: " else "Heard: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
+                when {
+                    ui.listening -> ListeningLine(ui.voiceLevel, hi)
+                    ui.transcribing -> Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularProgressIndicator(Modifier.size(16.dp), color = Palette.Teal500, strokeWidth = 2.dp)
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            if (hi) "सुन लिया! आपकी बात समझ रहा है, बस कुछ सेकंड…"
+                            else "Got it! Working out what you said, just a few seconds…",
+                            style = MaterialTheme.typography.bodyMedium, color = Palette.MintInk,
+                        )
+                    }
+                    else -> ui.transcript?.let { Text((if (hi) "सुना: " else "Heard: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.InkMuted) }
+                }
             }
             if (ui.voiceChoices.isNotEmpty()) {
                 Text(if (hi) "आपका मतलब?" else "Did you mean?", style = MaterialTheme.typography.titleMedium)
@@ -828,6 +840,30 @@ fun AskScreen(vm: AppViewModel) {
             }
             if (ui.verdict != null) ResultBody(vm, onWrong = null)
         }
+    }
+}
+
+/** While recording: a live level meter, so the user sees the phone hears them. */
+@Composable
+private fun ListeningLine(level: Float, hi: Boolean) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        // Speech RMS is roughly 0.02-0.2: scale so normal speech lights most bars.
+        val lit = (level * 40f).coerceIn(0f, 5f)
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp), verticalAlignment = Alignment.Bottom) {
+            for (i in 0 until 5) {
+                val on = lit > i
+                Box(
+                    Modifier.width(5.dp).height((8 + i * 4).dp).clip(RoundedCornerShape(2.dp))
+                        .background(if (on) Palette.Warning else Palette.Outline),
+                )
+            }
+        }
+        Spacer(Modifier.width(12.dp))
+        Text(
+            if (hi) "सुन रहा है… बोलिए। रुकने पर अपने आप बंद होगा।"
+            else "Listening… speak now. It stops when you pause.",
+            style = MaterialTheme.typography.bodyMedium, color = Palette.Ink,
+        )
     }
 }
 
