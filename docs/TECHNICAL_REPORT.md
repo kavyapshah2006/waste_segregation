@@ -239,8 +239,13 @@ offered three choices and the right one was among them every time
 ([items](../eval/results/phone/items_2026-11-19.csv)). **Offline:** everything above ran with
 airplane mode on.
 
-Not measured (session cut short): a 15-minute sustained run, the per-stage timing export, and
-battery drain (the phone was charging over USB).
+**Battery** (final check, 2026-11-20): with the phone unplugged, airplane mode on and the app in
+continuous use (live scanning, explanations, typed and spoken questions, gallery photos), the
+battery's charge counter showed 50 mAh in 4.0 minutes: about 190 mAh per 15 minutes, 4% of the
+4,700 mAh battery, or roughly 16% per hour of non-stop use, screen included (Android's estimate:
+app 33 mAh, mostly the camera; screen 22 mAh). The planned 15-minute run was cut to 4 minutes on
+battery, so this is a short-run rate, scaled
+([batterystats](../eval/results/phone/batterystats_2026-11-20_1816.txt)).
 
 **Bugs the phone found** (all fixed and re-tested on the phone): an Android regex difference that
 made every explanation fail; a deadlock when Llama loaded while another model ran (fixed with one
@@ -285,8 +290,8 @@ photo set, retraining and a trained dirty/broken head are next. The open South A
 we found were not usable for training (§4). On the phone a computer mouse was put in the dry bin:
 electronics reach the user only through SigLIP suggestions. No KB item yet for used masks,
 gloves or calculators. Llama on a budget phone is slow the first time (15–30 s per explanation)
-until answers are cached; a shorter prompt would help but cost answer quality (§5.2). Not yet
-measured: a 15-minute sustained run and battery drain. Hindi KB text unreviewed; Tamil, Telugu,
+until answers are cached; a shorter prompt would help but cost answer quality (§5.2). Battery was
+measured over 4 minutes, not a full 15-minute run. Hindi KB text unreviewed; Tamil, Telugu,
 Bengali and Marathi not yet written. Voice measured on synthetic speech. One city profile. LoRA
 fine-tune tooled but not run.
 
