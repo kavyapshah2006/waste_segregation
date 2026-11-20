@@ -30,6 +30,7 @@ import wastesegregation.core.Json
 import wastesegregation.core.JsonNumber
 import wastesegregation.core.KnowledgeBase
 import wastesegregation.core.LatencyLog
+import wastesegregation.core.Prompt
 
 import wastesegregation.core.Scan
 import wastesegregation.core.Stages
@@ -365,7 +366,126 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     /** Stop a running explanation: the camera waits for Llama (memory), so never keep it waiting. */
     private fun cancelExplanation() {
         explainGeneration++
+        backgroundGeneration++
+        shownKey = null
         if (llmBusy) runCatching { llama?.stop() }
+    }
+
+    // ------------------------------------------------------------------ explanations left unfinished
+
+    /**
+     * A plain-scan explanation not finished yet (Scan again came first). Llama finishes it later,
+     * only while the camera is not in use, and saves it, so the next scan of that item is instant.
+     */
+    private data class Unfinished(val key: String, val verdict: Verdict, val attributes: Map<String, Any?>)
+
+    /** Newest last; at most [UNFINISHED_MAX]. Guarded by itself. */
+    private val unfinished = LinkedHashMap<String, Unfinished>()
+    /** Bumped to stop the background job (any new scan action, a new explanation). */
+    @Volatile private var backgroundGeneration = 0
+    /** Cache key of the plain explanation on screen now (updated when the background finishes it). */
+    @Volatile private var shownKey: String? = null
+    /** The screen showing: 0 scan/result, 1 ask, 2 history, 3 impact, -1 settings. */
+    @Volatile private var screen = 0
+    private val backgroundCheck = Runnable { startBackground() }
+
+    private fun keepUnfinished(job: Unfinished) = synchronized(unfinished) {
+        unfinished.remove(job.key)
+        unfinished[job.key] = job
+        while (unfinished.size > UNFINISHED_MAX) unfinished.remove(unfinished.keys.first())
+    }
+
+    private fun forget(key: String) = synchronized(unfinished) { unfinished.remove(key) }
+
+    /** Called by the screen when the tab changes. */
+    fun onScreen(index: Int) {
+        screen = index
+        // Back on a live camera: give the models back to the scanner.
+        if (index == 0 && ui.verdict == null) {
+            backgroundGeneration++
+            if (llmBusy && !preparing && !ui.explaining) runCatching { llama?.stop() }
+        } else {
+            scheduleBackground()
+        }
+    }
+
+    /** Try the background job a little later (the user may be about to scan again). */
+    private fun scheduleBackground() {
+        main.removeCallbacks(backgroundCheck)
+        main.postDelayed(backgroundCheck, BACKGROUND_IDLE_MS)
+    }
+
+    /** On the main thread: finish one unfinished explanation if nothing else needs the models. */
+    private fun startBackground() {
+        val kb = kb ?: return
+        // Only once Llama is loaded: its first load (~30 s) must never start behind the user's back.
+        if (llmBusy || preparing || llama == null) return
+        // Never while the camera is scanning: only on another tab, or on a card whose own
+        // explanation is done.
+        val idle = screen != 0 || (ui.verdict != null && !ui.explaining)
+        if (!idle) return
+        val job = synchronized(unfinished) { unfinished.values.lastOrNull() } ?: return
+        if (job.key.split("|").getOrNull(1) != kb.version) {
+            forget(job.key)
+            return scheduleBackground()
+        }
+        val token = ++backgroundGeneration
+        work.execute { runBackground(kb, job, token) }
+    }
+
+    private fun runBackground(kb: KnowledgeBase, job: Unfinished, token: Int) {
+        if (token != backgroundGeneration || llmBusy || preparing) return
+        val done = explanations.get(job.key)
+        if (done != null && done.status != "partial") {
+            forget(job.key)
+            main.post { scheduleBackground() }
+            return
+        }
+        llmBusy = true
+        val raw = StringBuilder()
+        var finished = false
+        try {
+            val llama = ensureLlama() ?: return
+            fun run(prompt: String, temperature: Float): String {
+                if (token != backgroundGeneration) throw Cancelled()
+                raw.setLength(0)
+                val text = llama.generate(prompt, temperature = temperature) { raw.append(it) }
+                if (token != backgroundGeneration) throw Cancelled()
+                return text
+            }
+            val explanation = Assistant.explain(kb, job.verdict, job.attributes, { run(it, 0f) }, null, sample = { run(it, 0.7f) })
+            explanations.put(job.key, explanation.verified)
+            forget(job.key)
+            finished = true
+            update {
+                // Still showing this item's partial answer: swap in the full one.
+                if (shownKey == job.key && it.verified?.status == "partial") {
+                    it.copy(verified = explanation.verified, cachedAnswers = explanations.size())
+                } else it.copy(cachedAnswers = explanations.size())
+            }
+        } catch (e: Cancelled) {
+            savePartial(job.key, job.verdict, raw.toString())
+        } catch (e: Throwable) {
+            forget(job.key)  // do not retry an item that fails every time
+        } finally {
+            llmBusy = false
+            if (finished || token == backgroundGeneration) main.post { scheduleBackground() }
+        }
+    }
+
+    /**
+     * Keep the complete sentences Llama wrote before it was stopped, if they pass the same KB
+     * checks as a full answer. Saved as "partial": shown at once next time, replaced when the
+     * full answer is written.
+     */
+    private fun savePartial(key: String, verdict: Verdict, raw: String) {
+        val sentences = completeSentences(partialWhy(raw))
+        if (sentences.length < PARTIAL_MIN_CHARS) return
+        val checked = Verifier.verify(Prompt.fullAnswer(Json.dumps(sentences).drop(1) + "}"), verdict)
+        val why = checked.output["why"] as String?
+        if (checked.status != "ok" || why.isNullOrBlank()) return
+        explanations.put(key, VerifiedOutput("partial", checked.output, emptyList()))
+        update { it.copy(cachedAnswers = explanations.size()) }
     }
 
     // ------------------------------------------------------------------ Llama
@@ -380,9 +500,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         // Plain scans reuse what Llama already wrote on this phone for the same item and condition.
         val key = if (question == null) ExplanationCache.key(kb.version, verdict.itemId, attributes, verdict.language) else null
         val cached = key?.let { explanations.get(it) }
+        backgroundGeneration++  // a new explanation on screen comes first
+        shownKey = key
         if (cached != null) {
             explainGeneration++
             update { it.copy(verified = cached, explaining = false, whyStream = "", question = null) }
+            // Only part of it was written before: finish it while the card is on screen.
+            if (cached.status == "partial") keepUnfinished(Unfinished(key, verdict, attributes))
+            scheduleBackground()
             return
         }
         if (llama == null && llamaFiles == null) {
@@ -392,7 +517,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             update { it.copy(verified = verified, question = question) }
             return
         }
-        val gen = ++explainGeneration
+        val gen = ++explainGeneration  // before stop(): the stopped run must see itself cancelled
+        if (llmBusy && !preparing) runCatching { llama?.stop() }  // a background job gives way
+        // Kept until it is written, so leaving early (Scan again) never throws the work away.
+        if (key != null) keepUnfinished(Unfinished(key, verdict, attributes))
         update { it.copy(explaining = true, whyStream = "", verified = null, question = question) }
         val start = Runnable {
             if (gen == explainGeneration) work.execute { runExplanation(gen, kb, verdict, attributes, question, key) }
@@ -412,6 +540,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     ) {
         if (gen != explainGeneration) return
         llmBusy = true
+        val raw = StringBuilder()
         try {
             val llama = ensureLlama()
             if (llama == null) {
@@ -422,7 +551,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 if (gen != explainGeneration) throw Cancelled()
                 val start = SystemClock.elapsedRealtimeNanos()
                 var first = true
-                val raw = StringBuilder()
+                raw.setLength(0)
                 val text = llama.generate(prompt, temperature = temperature) { piece ->
                     if (first) {
                         first = false
@@ -440,7 +569,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val explanation = Assistant.explain(
                 kb, verdict, attributes, { run(it, 0f) }, question, sample = { run(it, 0.7f) },
             )
-            key?.let { explanations.put(it, explanation.verified) }
+            key?.let {
+                explanations.put(it, explanation.verified)
+                forget(it)
+            }
             val tps = llama.lastStats?.let { decodeTokensPerSecond(it) }
             update {
                 it.copy(verified = explanation.verified, explaining = false, decodeTps = tps,
@@ -448,13 +580,16 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     cachedAnswers = explanations.size())
             }
         } catch (e: Cancelled) {
-            // Scan again or a new item: the new state is already on screen.
+            // Scan again or a new item: the new state is already on screen. Keep what was
+            // written; the rest is finished later (it stays in [unfinished]).
+            if (key != null) savePartial(key, verdict, raw.toString())
         } catch (e: Throwable) {
             if (gen == explainGeneration) {
                 update { it.copy(explaining = false, message = "Llama failed: ${e.message}") }
             }
         } finally {
             llmBusy = false
+            main.post { scheduleBackground() }
         }
     }
 
@@ -519,7 +654,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                     if (!preparing) break
                     val (id, attrs) = job
                     val key = ExplanationCache.key(kb.version, id, attrs, language)
-                    if (explanations.get(key) == null) {
+                    if (explanations.get(key)?.status.let { it == null || it == "partial" }) {
                         val verdict = kb.resolve(id, attrs, language)
                         val e = Assistant.explain(kb, verdict, attrs, { gen(it, 0f) }, null, sample = { gen(it, 0.7f) })
                         explanations.put(key, e.verified)
@@ -912,6 +1047,18 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         const val EXPLAIN_DELAY_MS = 1500L
         /** Longest a card waits for the model lock before asking the dirty/broken questions. */
         const val ATTRIBUTE_WAIT_MS = 400L
+        /** Quiet time (another tab, or a finished card) before Llama finishes left-over work. */
+        const val BACKGROUND_IDLE_MS = 4000L
+        /** Unfinished explanations kept for later; the oldest are dropped. */
+        const val UNFINISHED_MAX = 20
+        /** A partial answer shorter than this is not worth showing. */
+        const val PARTIAL_MIN_CHARS = 20
+
+        /** The text up to the last complete sentence ("" if there is none yet). */
+        fun completeSentences(text: String): String {
+            val end = Regex("""[.!?।](?=\s|$)""").findAll(text).lastOrNull() ?: return ""
+            return text.substring(0, end.range.last + 1).trim()
+        }
         /** Shutter photos are scaled down to this long side: plenty for 640 px models, less memory. */
         const val PHOTO_MAX_SIDE = 1600
 

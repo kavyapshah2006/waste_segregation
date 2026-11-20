@@ -118,6 +118,8 @@ fun App(vm: AppViewModel = viewModel()) {
     var settingsOpen by remember { mutableStateOf(false) }
     val ui = vm.ui
     val hi = ui.language == "hi"
+    // The view model finishes left-over explanations only while the camera is not scanning.
+    LaunchedEffect(tab, settingsOpen) { vm.onScreen(if (settingsOpen) -1 else tab) }
     BackHandler(enabled = settingsOpen || (tab == 0 && ui.verdict != null) || tab != 0) {
         when {
             settingsOpen -> settingsOpen = false
@@ -669,11 +671,18 @@ private fun ResultBody(vm: AppViewModel, onWrong: (() -> Unit)?) {
         val verified = ui.verified
         when {
             verified != null -> {
-                verified.output["why"]?.let { Text(it as String, style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk) }
-                verified.output["tip"]?.let {
+                val why = verified.output["why"] as String?
+                why?.let { Text(it, style = MaterialTheme.typography.bodyLarge, color = Palette.MintInk) }
+                // Llama sometimes repeats the answer as the tip (seen in Hindi): show it once.
+                (verified.output["tip"] as String?)?.takeIf { it.trim() != why?.trim() }?.let {
                     Text((if (hi) "सुझाव: " else "Tip: ") + it, style = MaterialTheme.typography.bodyMedium, color = Palette.MintInk)
                 }
-                if (verified.status != "ok") {
+                if (verified.status == "partial") {
+                    Text(
+                        if (hi) "बाकी जवाब जल्द ही, फ़ोन पर" else "The rest is being written on your phone",
+                        style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
+                    )
+                } else if (verified.status != "ok") {
                     Text(
                         if (hi) "ज्ञान-आधार से दिखाया गया" else "Shown from the knowledge base",
                         style = MaterialTheme.typography.labelSmall, color = Palette.InkMuted,
