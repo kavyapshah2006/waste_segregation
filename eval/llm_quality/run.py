@@ -64,7 +64,7 @@ def language_ok(text: str | None, language: str) -> bool | None:
 def guarded(kb: KnowledgeBase, case: Example) -> bool:
     """True if the app would decline this case's question without asking Llama."""
     question = QUESTIONS[case.question_kind][case.language]
-    return not is_on_topic(question, kb.names_of(case.item_id))
+    return not is_on_topic(question, kb.names_of(case.item_id), kb.topic_vocabulary())
 
 
 def score(

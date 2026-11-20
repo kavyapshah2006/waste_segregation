@@ -398,6 +398,66 @@
       "item": "pet_bottle",
       "question": "आज मौसम कैसा रहेगा?",
       "expected": false
+    },
+    {
+      "item": "cardboard_box",
+      "question": "what do I do with an old plastic carton",
+      "expected": true
+    },
+    {
+      "item": "cardboard_box",
+      "question": "what do i put an old cartin in",
+      "expected": true
+    },
+    {
+      "item": "shampoo_bottle",
+      "question": "Where does an empty shampoo bottle go?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Should I keep the caps on the bottles?",
+      "expected": true
+    },
+    {
+      "item": "aa_battery",
+      "question": "Where do old batteries go?",
+      "expected": true
+    },
+    {
+      "item": "food_scraps",
+      "question": "Can vegetable peels go in compost?",
+      "expected": true
+    },
+    {
+      "item": "pet_bottle",
+      "question": "पुरानी प्लास्टिक की बोतल कहाँ डालूँ?",
+      "expected": true
+    },
+    {
+      "item": "newspaper",
+      "question": "अखबार का क्या करूँ?",
+      "expected": true
+    },
+    {
+      "item": "cardboard_box",
+      "question": "Who won the cricket match yesterday?",
+      "expected": false
+    },
+    {
+      "item": "cardboard_box",
+      "question": "How do I bake a cake?",
+      "expected": false
+    },
+    {
+      "item": "pet_bottle",
+      "question": "Write me a poem about the moon",
+      "expected": false
+    },
+    {
+      "item": "pet_bottle",
+      "question": "भारत की राजधानी क्या है?",
+      "expected": false
     }
   ],
   "search": [

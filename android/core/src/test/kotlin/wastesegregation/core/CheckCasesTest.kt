@@ -63,7 +63,7 @@ class CheckCasesTest {
 
     @TestFactory
     fun isOnTopic() = section("is_on_topic") {
-        assertEquals(it["expected"], Assistant.isOnTopic(it["question"] as String?, kb.namesOf(it["item"] as String)))
+        assertEquals(it["expected"], Assistant.isOnTopic(it["question"] as String?, kb.namesOf(it["item"] as String), kb.topicVocabulary))
     }
 
     @TestFactory

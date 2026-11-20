@@ -219,6 +219,9 @@ class KnowledgeBase(private val data: KbData) {
         }
         return names
     }
+
+    /** Words of every item's names and aliases, for the off-topic guard. */
+    val topicVocabulary: Set<String> by lazy { Assistant.topicVocabulary(itemIds.flatMap { namesOf(it) }) }
 }
 
 /** Python's str() for JSON scalars, used where the reference code calls str(value). */

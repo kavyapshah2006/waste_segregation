@@ -92,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
 
     verdict = kb.resolve(item_id, attributes, args.lang, args.city)
     result["verdict"] = verdict.to_dict()
-    if not is_on_topic(args.question, kb.names_of(item_id)):
+    if not is_on_topic(args.question, kb.names_of(item_id), kb.topic_vocabulary()):
         result["prompt"] = None
         result["verified"] = declined(kb, verdict).to_dict()
         print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -34,7 +34,7 @@ def expected_for(kb: KnowledgeBase, case_input: dict) -> dict:
         detection["item_id"], attributes, language, case_input.get("city", "default_in")
     )
     question = case_input.get("question")
-    if not is_on_topic(question, kb.names_of(verdict.item_id)):
+    if not is_on_topic(question, kb.names_of(verdict.item_id), kb.topic_vocabulary()):
         # Off-topic question: Llama is never asked, so there is no prompt.
         return {
             "verdict": verdict.to_dict(),

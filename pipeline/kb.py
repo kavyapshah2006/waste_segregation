@@ -90,6 +90,7 @@ class KnowledgeBase:
             con.close()
         self.version = meta["kb_version"]
         self.strings = json.loads(meta["strings"])
+        self._vocabulary: frozenset[str] | None = None
 
     @property
     def item_ids(self) -> list[str]:
@@ -214,3 +215,13 @@ class KnowledgeBase:
         for aliases in item.get("aliases", {}).values():
             names.extend(aliases)
         return names
+
+    def topic_vocabulary(self) -> frozenset[str]:
+        """Words of every item's names and aliases, for the off-topic guard (cached)."""
+        if self._vocabulary is None:
+            from pipeline.assistant import topic_vocabulary
+
+            self._vocabulary = topic_vocabulary(
+                name for item_id in self.item_ids for name in self.names_of(item_id)
+            )
+        return self._vocabulary

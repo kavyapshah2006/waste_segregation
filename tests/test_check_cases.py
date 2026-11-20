@@ -68,7 +68,10 @@ def test_unsafe_instruction(kb, case):
 
 @_params("is_on_topic")
 def test_is_on_topic(kb, case):
-    assert is_on_topic(case["question"], kb.names_of(case["item"])) is case["expected"]
+    assert (
+        is_on_topic(case["question"], kb.names_of(case["item"]), kb.topic_vocabulary())
+        is case["expected"]
+    )
 
 
 @_params("search")

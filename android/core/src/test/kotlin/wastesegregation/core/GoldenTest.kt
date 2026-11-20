@@ -26,7 +26,7 @@ class GoldenTest {
         val attributes = detection["attributes"] as Map<String, Any?>? ?: emptyMap()
         val verdict = kb.resolve(itemId, attributes, language, input["city"] as String? ?: DEFAULT_CITY)
         val question = input["question"] as String?
-        if (!Assistant.isOnTopic(question, kb.namesOf(itemId))) {
+        if (!Assistant.isOnTopic(question, kb.namesOf(itemId), kb.topicVocabulary)) {
             return linkedMapOf(
                 "verdict" to verdict.toMap(),
                 "prompt" to null,

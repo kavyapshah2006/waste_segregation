@@ -386,7 +386,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         if (llama == null && llamaFiles == null) {
-            val verified = if (Assistant.isOnTopic(question, kb.namesOf(verdict.itemId))) {
+            val verified = if (Assistant.isOnTopic(question, kb.namesOf(verdict.itemId), kb.topicVocabulary)) {
                 VerifiedOutput("fallback", Verifier.kbOutput(verdict), listOf("no_model"))
             } else Assistant.declined(kb, verdict)
             update { it.copy(verified = verified, question = question) }
